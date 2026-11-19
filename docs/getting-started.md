@@ -27,6 +27,29 @@ No Rust toolchain is needed to use a downloaded `.app`.
 The app opens a new-tab workspace. **⌘,** opens Settings; **⌘K** opens symbol search. The Settings
 sidebar includes Kite Connect, appearance, Pine Studio, alerts, network and other integrations.
 
+## INDmoney and Groww
+
+1. Generate an access token in [INDstocks](https://www.indstocks.com/app/api-trading/access-tokens)
+   or [Groww Cloud](https://groww.in/trade-api/api-keys). Groww requires a plan that includes
+   Live Data and Backtesting. INDstocks tokens expire after 24 hours, and Groww dashboard access
+   tokens expire daily at 6 AM.
+2. Open **Settings → INDmoney** or **Settings → Groww** and paste the access token. Press Return
+   or leave the field to save it in your device’s secure storage. Use **Test Connection** to
+   verify that the account can retrieve a quote.
+3. Open **⌘K → Stocks**, select the provider, and search `NSE:INFY` or `BSE:INFY`. For an explicit
+   provider prefix, enter `INDMONEY:NSE:INFY` or `GROWW:NSE:INFY`. Use the same prefixes for
+   watchlist import and Pine symbol IDs.
+
+INDmoney covers NSE and BSE cash listings and currently listed NSE futures and options. Groww
+covers NSE and BSE cash listings, indices, and listed futures and options. Both update historical
+chart candles and poll real-time watchlist quotes over REST. Groww watchlist quotes report the
+last traded price. INDmoney watchlist quotes also include previous close and volume where available.
+These connections provide market data for charts, watchlists, Pine, and MCP.
+
+[INDstocks market data documentation](https://api-docs.indstocks.com/MarketQuote/) ·
+[Groww live data documentation](https://groww.in/trade-api/docs/curl/live-data) ·
+[Groww historical candle documentation](https://groww.in/trade-api/docs/curl/backtesting)
+
 ## 2. Prepare Kite Connect
 
 You need your own Zerodha account and a personal application in the

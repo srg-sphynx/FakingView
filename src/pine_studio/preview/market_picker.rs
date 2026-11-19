@@ -42,7 +42,7 @@ enum AssetType {
 
 impl AssetType {
     fn for_source(source: DataSource) -> Self {
-        if matches!(source, DataSource::Alpaca | DataSource::Kite) {
+        if source == DataSource::Alpaca || source.is_indian_market() {
             Self::Stock
         } else {
             Self::Crypto
@@ -52,7 +52,12 @@ impl AssetType {
     fn sources(self) -> Vec<DataSource> {
         match self {
             Self::Crypto => CRYPTO_SOURCES.to_vec(),
-            Self::Stock => vec![DataSource::Kite, DataSource::Alpaca],
+            Self::Stock => vec![
+                DataSource::Kite,
+                DataSource::IndMoney,
+                DataSource::Groww,
+                DataSource::Alpaca,
+            ],
         }
     }
 }
@@ -285,13 +290,19 @@ fn picker_ui(ui: &mut Ui, preview: &mut PreviewState) -> Option<PreviewMarket> {
         |ui| {
             ui.set_min_height(BODY_HEIGHT);
             ui.spacing_mut().item_spacing.y = 0.0;
-            if picker.asset == AssetType::Stock && !alpaca_configured() && !kite_configured() {
+            use crate::service::keychain::market_tokens::MarketToken;
+            if picker.asset == AssetType::Stock
+                && !alpaca_configured()
+                && !kite_configured()
+                && !MarketToken::IndMoney.is_saved()
+                && !MarketToken::Groww.is_saved()
+            {
                 if kit::notice_card(
                     ui,
                     Icon::TriangleFill,
                     theme::YELLOW,
-                    "Indian markets need a Kite session",
-                    Some("Sign in with your daily Kite Connect credentials in Settings."),
+                    "Indian markets need a provider session",
+                    Some("Connect Kite Connect, INDmoney or Groww in Settings."),
                     Some("Open Settings"),
                 ) {
                     preview.pending_settings = Some(DataSource::Kite);
@@ -556,7 +567,12 @@ mod tests {
         );
         assert_eq!(
             AssetType::Stock.sources(),
-            [DataSource::Kite, DataSource::Alpaca]
+            [
+                DataSource::Kite,
+                DataSource::IndMoney,
+                DataSource::Groww,
+                DataSource::Alpaca
+            ]
         );
         assert!(!AssetType::Crypto.sources().contains(&DataSource::Kite));
         let picker = Picker::new(&PreviewMarket {

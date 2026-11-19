@@ -243,6 +243,8 @@ static SEARCHES: WorkQueue = WorkQueue::new(4);
 static GECKOTERMINAL_LANE: WorkQueue = WorkQueue::new(1);
 static KRAKEN_LANE: WorkQueue = WorkQueue::new(1);
 static KITE_LANE: WorkQueue = WorkQueue::new(1);
+static IND_MONEY_LANE: WorkQueue = WorkQueue::new(1);
+static GROWW_LANE: WorkQueue = WorkQueue::new(1);
 
 pub fn submit(job: impl FnOnce() + Send + 'static) {
     QUEUE.submit(job);
@@ -264,6 +266,8 @@ fn lane(source: crate::model::DataSource) -> &'static WorkQueue {
         DataSource::DexScreener => &GECKOTERMINAL_LANE,
         DataSource::Kraken => &KRAKEN_LANE,
         DataSource::Kite => &KITE_LANE,
+        DataSource::IndMoney => &IND_MONEY_LANE,
+        DataSource::Groww => &GROWW_LANE,
         _ => &QUEUE,
     }
 }

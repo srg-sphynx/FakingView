@@ -53,8 +53,10 @@ const QUOTE_POLL: Duration = Duration::from_millis(100);
 const DEFAULT_ENTRY_PAGE: usize = 100;
 
 /// Providers searched when the caller names none: every one a market can be charted from.
-const ALL_SOURCES: [McpSource; 11] = [
+const ALL_SOURCES: [McpSource; 13] = [
     McpSource::Kite,
+    McpSource::IndMoney,
+    McpSource::Groww,
     McpSource::Binance,
     McpSource::Coinbase,
     McpSource::Okx,
@@ -477,7 +479,7 @@ fn search_all(
 impl FakingViewMcp {
     #[tool(
         name = "fakingview_search_symbols",
-        description = "Search the market data providers for symbols by ticker or name. Returns, per hit, the `source` and `symbol` to pass to fakingview_add_chart, fakingview_get_quotes, fakingview_create_price_alert and the watchlist tools, plus how the app labels it. Searches Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, CoinGecko, DEXScreener and (with API keys) Alpaca stocks side by side; a provider that fails is reported in `source_errors` while the others still answer. Hits only prove the provider lists the market; ask fakingview_get_quotes for a price.",
+        description = "Search the market data providers for symbols by ticker or name. Returns, per hit, the `source` and `symbol` to pass to fakingview_add_chart, fakingview_get_quotes, fakingview_create_price_alert and the watchlist tools, plus how the app labels it. Searches crypto venues alongside Alpaca, Kite Connect, INDmoney and Groww, which require credentials; a provider that fails is reported in `source_errors` while the others still answer. Hits only prove the provider lists the market; ask fakingview_get_quotes for a price.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,

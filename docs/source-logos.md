@@ -13,3 +13,10 @@ MEXC files redraw the owners' marks as vectors.
 `assets/source_logos/kite.svg` is a locally drawn geometric kite glyph for the Kite Connect
 data source. It is not copied from Zerodha's brand assets. Kite Connect is a Zerodha service;
 this fork is independent of Zerodha.
+
+## INDmoney and Groww
+
+- `indmoney.png` comes from [INDmoney’s website favicon](https://www.indmoney.com/favicon.ico).
+- `groww.png` comes from [Groww’s website favicon](https://groww.in/favicon.ico).
+
+Each provider retains ownership of its mark.

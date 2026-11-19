@@ -301,10 +301,12 @@ fn instrument_from(token: &str) -> Result<WatchlistInstrument, String> {
             Ok(item(source, &symbol, &symbol, &symbol))
         }
         DataSource::Alpaca => stock(&rest),
-        DataSource::Kite => {
+        DataSource::Kite | DataSource::IndMoney | DataSource::Groww => {
             let symbol = rest.to_uppercase();
             let valid = symbol.split_once(':').is_some_and(|(exchange, ticker)| {
-                crate::model::market::venue::INDIAN_EXCHANGES.contains(&exchange)
+                (matches!(exchange, "NSE" | "BSE")
+                    || source == DataSource::Kite
+                        && crate::model::market::venue::INDIAN_EXCHANGES.contains(&exchange))
                     && !ticker.is_empty()
                     && ticker.len() <= 100
                     && ticker
@@ -312,7 +314,10 @@ fn instrument_from(token: &str) -> Result<WatchlistInstrument, String> {
                         .all(|c| c.is_ascii_alphanumeric() || matches!(c, ' ' | '-' | '&' | '.'))
             });
             if !valid {
-                return Err("Kite markets are written NSE:INFY or BSE:INFY".to_owned());
+                return Err(format!(
+                    "{} markets are written NSE:INFY or BSE:INFY",
+                    source.display_name()
+                ));
             }
             Ok(item(source, &symbol, &symbol, &symbol))
         }

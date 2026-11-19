@@ -428,7 +428,9 @@ fn price_line(
 /// A dot and a line: crypto trades around the clock; a share says whether its market is open.
 fn status_line(ui: &Ui, at: Pos2, result: &SearchResult, quote: Option<&WatchlistQuote>) -> f32 {
     let (text, open) = match result.source {
-        DataSource::Kite => ("Indian exchange · session hours vary", false),
+        DataSource::Kite | DataSource::IndMoney | DataSource::Groww => {
+            ("Indian exchange · session hours vary", false)
+        }
         DataSource::Alpaca => match quote.map(|quote| quote.freshness) {
             Some(Freshness::Live) => ("Market open", true),
             Some(Freshness::MarketClosed) => ("Market closed", false),

@@ -70,6 +70,7 @@ pub enum Output {
     OpenAlpacaSettings,
     /// Open Settings on the Kite Connect page; reopen the picker after signing in.
     OpenKiteSettings,
+    OpenMarketTokenSettings(DataSource),
 }
 
 /// What the picker was opened for.
@@ -410,7 +411,7 @@ impl SymbolPicker {
             self.select_all = false;
         }
         if let Some(target) = self.settings_requested.take() {
-            if target == SettingsTarget::Kite {
+            if target != SettingsTarget::Alpaca {
                 // Drop the cached failed search; reopening after login must ask the new session.
                 self.close();
             }
@@ -1386,11 +1387,13 @@ impl SymbolPicker {
                 Rect::from_center_size(rect.center(), Vec2::splat(40.0)),
                 LoadingIndicator::new().size(40.0),
             );
-        } else if let Some((source, error)) = listing
-            .errors
-            .iter()
-            .find(|(source, _)| *source != DataSource::Alpaca)
-        {
+        } else if let Some((source, error)) = listing.errors.iter().find(|(source, error)| {
+            *source != DataSource::Alpaca
+                && !matches!(
+                    error,
+                    ProviderError::MarketTokenMissing(_) | ProviderError::MarketTokenRefused(_)
+                )
+        }) {
             widgets::no_results(
                 ui,
                 &format!("{} could not be searched", source.display_name()),
@@ -1417,6 +1420,26 @@ impl SymbolPicker {
     /// Provider failures stay separate. Kite comes first only in its own venue, on Stocks, or
     /// after a recent Indian market was selected without a session.
     fn notices(&self, listing: &Listing) -> Vec<Notice> {
+        if let Some(provider @ (DataSource::IndMoney | DataSource::Groww)) = self.lookup().venue
+            && let Some((_, error)) = listing
+                .errors
+                .iter()
+                .find(|(source, _)| *source == provider)
+            && matches!(
+                error,
+                ProviderError::MarketTokenMissing(_) | ProviderError::MarketTokenRefused(_)
+            )
+        {
+            let title = match provider {
+                DataSource::IndMoney => "Set up INDmoney market data",
+                _ => "Set up Groww market data",
+            };
+            return vec![Notice {
+                title,
+                detail: error.to_string(),
+                settings: Some(SettingsTarget::MarketToken(provider)),
+            }];
+        }
         let alpaca_failure = listing
             .errors
             .iter()
@@ -1764,6 +1787,7 @@ const NOTICE_HEIGHT: f32 = 60.0;
 enum SettingsTarget {
     Alpaca,
     Kite,
+    MarketToken(DataSource),
 }
 
 impl SettingsTarget {
@@ -1771,6 +1795,7 @@ impl SettingsTarget {
         match self {
             Self::Alpaca => Output::OpenAlpacaSettings,
             Self::Kite => Output::OpenKiteSettings,
+            Self::MarketToken(source) => Output::OpenMarketTokenSettings(source),
         }
     }
 }

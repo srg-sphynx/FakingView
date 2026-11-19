@@ -162,9 +162,9 @@ const ALPACA: [Timeframe; 8] = [
     Timeframe::MONTH_1,
 ];
 
-// Kite's larger intraday bars start at the session open (09:15 IST), so minute bars
+// Indian market history can use session-aligned intraday bars, so minute bars
 // are folded onto the app's UTC grid. Daily bars retain the Indian trading date.
-const KITE: [Timeframe; 2] = [minutes(1), Timeframe::DAY_1];
+const INDIA: [Timeframe; 2] = [minutes(1), Timeframe::DAY_1];
 
 /// GeckoTerminal's OHLCV aggregates (it indexes DEXScreener's pools): minute 1, 5 and 15, hour 1,
 /// 4 and 12, and the day.
@@ -196,7 +196,7 @@ impl DataSource {
             Self::Gate => &GATE,
             Self::Mexc => &MEXC,
             Self::Alpaca => &ALPACA,
-            Self::Kite => &KITE,
+            Self::Kite | Self::IndMoney | Self::Groww => &INDIA,
             Self::DexScreener => &GECKOTERMINAL,
             Self::CoinGecko | Self::Polymarket | Self::Kalshi | Self::CoinMarketCap => &[],
         }
@@ -221,6 +221,8 @@ impl DataSource {
             | Self::Mexc
             | Self::Alpaca
             | Self::Kite
+            | Self::IndMoney
+            | Self::Groww
             | Self::DexScreener => self.plan(timeframe).is_some(),
             Self::CoinGecko => samples::chart_days(timeframe, 1).is_some(),
             Self::Polymarket | Self::Kalshi | Self::CoinMarketCap => true,
@@ -242,7 +244,9 @@ impl DataSource {
             | Self::Gate
             | Self::Mexc
             | Self::Alpaca
-            | Self::Kite => true,
+            | Self::Kite
+            | Self::IndMoney
+            | Self::Groww => true,
             Self::DexScreener => self.plan(timeframe).is_some_and(|plan| {
                 let page_days = plan.base().nominal_ms() * GECKOTERMINAL_PAGE as i64 / 86_400_000;
                 page_days < GECKOTERMINAL_HISTORY_DAYS

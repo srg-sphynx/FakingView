@@ -124,6 +124,9 @@ impl FakingViewApp {
                 AppAction::OpenKiteSettings => {
                     self.open_settings_page(ctx, SettingsHost::open_kite);
                 }
+                AppAction::OpenMarketTokenSettings(source) => {
+                    self.open_settings_page(ctx, |host| host.open_market_token(source));
+                }
                 AppAction::OpenBrokerSettings => {
                     self.open_settings_page(ctx, SettingsHost::open_brokers);
                 }

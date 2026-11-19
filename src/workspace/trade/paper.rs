@@ -107,7 +107,7 @@ impl ChartWorkspace {
     }
 
     pub(in crate::workspace) fn supports_paper_trading(source: DataSource) -> bool {
-        !matches!(source, DataSource::CoinMarketCap | DataSource::Kite)
+        source != DataSource::CoinMarketCap && !source.is_indian_market()
     }
 
     /// Runs what the chart overlay asked for and returns why any of it failed, for the panel to

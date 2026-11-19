@@ -377,11 +377,11 @@ fn pills_beside_star<R>(
     .inner
 }
 
-/// The header's own currency label. Kite prices are already INR, so the shared precision
+/// The header's own currency label. Indian prices are already INR, so the shared precision
 /// formatter's unit changes without a price conversion; other providers retain their format.
 pub(super) fn headline_text(value: f64, source: DataSource) -> String {
     let text = format::headline(value, source.is_prediction_market());
-    if source == DataSource::Kite {
+    if source.is_indian_market() {
         text.replacen('$', "₹", 1)
     } else {
         text

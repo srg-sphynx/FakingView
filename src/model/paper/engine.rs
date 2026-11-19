@@ -951,8 +951,8 @@ impl PaperTradingEngine {
         request: &PaperOrderRequest,
         account: &PaperAccount,
     ) -> Result<(), PaperTradingError> {
-        // Kite quotes are INR; the paper engine has no INR account or conversion model.
-        if request.instrument.source == crate::model::DataSource::Kite {
+        // Indian market quotes are INR; the paper engine has no INR account or conversion model.
+        if request.instrument.source.is_indian_market() {
             return Err(PaperTradingError::UnsupportedSymbol);
         }
         if request.quantity < request.instrument.minimum_quantity {

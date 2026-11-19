@@ -189,6 +189,8 @@ pub fn for_source(source: DataSource) -> &'static dyn MarketSource {
         DataSource::DexScreener => &market::dexscreener::DEXSCREENER,
         DataSource::Alpaca => &market::alpaca::ALPACA,
         DataSource::Kite => &market::kite::KITE,
+        DataSource::IndMoney => &market::india::IND_MONEY,
+        DataSource::Groww => &market::india::GROWW,
         DataSource::Polymarket => &market::polymarket::POLYMARKET,
         DataSource::Kalshi => &market::kalshi::KALSHI,
         DataSource::CoinMarketCap => &market::cmc::COIN_MARKET_CAP,

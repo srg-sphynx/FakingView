@@ -43,6 +43,8 @@ pub struct CmcForm {
 pub struct ApiKeysState {
     pub alpaca: AlpacaForm,
     pub cmc: CmcForm,
+    pub ind_money: super::market_tokens::TokenForm,
+    pub groww: super::market_tokens::TokenForm,
     pub kite: crate::ui::settings::kite::KiteForm,
 }
 

@@ -4,20 +4,19 @@ mod candles;
 mod instruments;
 mod session;
 
+use super::request::{RateGate, encode};
 use crate::model::watchlist::quote::{SourceQuote, VolumeKind};
 use crate::model::{DataSource, Kline, Timeframe};
 use crate::service::net::http;
 use crate::service::{MarketSource, ProviderError, SearchResult, rank_results};
 use serde_json::Value;
 use std::collections::HashMap;
-use std::sync::Mutex;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 pub use session::{exchange_request_token, test_connection};
 
 const BASE_URL: &str = "https://api.kite.trade";
-const DAY_MS: i64 = 86_400_000;
-const IST_MS: i64 = 19_800_000;
+use super::indian_time::{DAY_MS, IST_MS};
 
 pub struct Kite;
 pub const KITE: Kite = Kite;
@@ -78,37 +77,6 @@ fn response_data(body: &str) -> Result<Value, ProviderError> {
         .get_mut("data")
         .ok_or_else(|| ProviderError::data("Kite Connect response has no data"))?;
     Ok(data.take())
-}
-
-/// A rate lane shared by every workspace and caller, so parallel charts cannot exceed Kite's cap.
-struct RateGate(Mutex<Option<Instant>>);
-
-impl RateGate {
-    const fn new() -> Self {
-        Self(Mutex::new(None))
-    }
-
-    fn wait(&self, spacing: Duration) {
-        let mut previous = crate::lock::lock(&self.0);
-        if let Some(previous) = *previous {
-            std::thread::sleep(spacing.saturating_sub(previous.elapsed()));
-        }
-        *previous = Some(Instant::now());
-    }
-}
-
-/// URI component encoding: exchange names and index symbols may contain spaces, `&` and `:`.
-pub(crate) fn encode(text: &str) -> String {
-    let mut out = String::with_capacity(text.len());
-    use std::fmt::Write;
-    for byte in text.bytes() {
-        if byte.is_ascii_alphanumeric() || b"-._~".contains(&byte) {
-            out.push(char::from(byte));
-        } else {
-            let _ = write!(out, "%{byte:02X}");
-        }
-    }
-    out
 }
 
 impl MarketSource for Kite {

@@ -1,10 +1,14 @@
 //! Historical candles. Intraday aggregation uses minutes because Kite's larger bars begin at the
 //! exchange session open, while FakingView's buckets begin at UTC midnight.
 
+pub(super) use super::super::indian_time::parse_timestamp;
+use super::super::indian_time::trading_date;
+use super::super::windowed_history::{History, paginate};
 use super::{
     BASE_URL, DAY_MS, IST_MS, RateGate, credentials, encode, instruments, request, response_data,
 };
-use crate::model::market::bucket::{FoldPlan, bucket_start_ms};
+#[cfg(test)]
+use crate::model::market::bucket::bucket_start_ms;
 use crate::model::{DataSource, Kline, Timeframe};
 use crate::service::ProviderError;
 use serde_json::Value;
@@ -72,29 +76,6 @@ fn page_span(base: Timeframe, requested: usize) -> i64 {
     lookback.clamp(7 * DAY_MS, days * DAY_MS)
 }
 
-struct History {
-    candles: Vec<Kline>,
-    /// Earliest instant covered by retained data, including known non-trading gaps.
-    coverage_start: i64,
-}
-
-impl History {
-    fn shape(self, plan: FoldPlan, limit: usize) -> Vec<Kline> {
-        let truncated = self.candles.first().is_some_and(|first| {
-            self.coverage_start > bucket_start_ms(plan.target(), first.open_time)
-        });
-        let mut bars = plan.fold(self.candles, false);
-        // The generic fold preserves a sole forming bucket. A bounded historical
-        // fetch whose coverage begins inside that bucket cannot establish its OHLC.
-        if truncated && !plan.is_native() && !bars.is_empty() {
-            bars.remove(0);
-        }
-        let skip = bars.len().saturating_sub(limit);
-        bars.drain(..skip);
-        bars
-    }
-}
-
 fn fetch(
     symbol: &str,
     base: Timeframe,
@@ -126,36 +107,18 @@ fn fetch(
 fn fetch_pages(
     base: Timeframe,
     start_ms: i64,
-    mut end: i64,
+    end_ms: i64,
     requested: usize,
-    mut page: impl FnMut(i64, i64) -> Result<Vec<Kline>, ProviderError>,
+    page: impl FnMut(i64, i64) -> Result<Vec<Kline>, ProviderError>,
 ) -> Result<History, ProviderError> {
-    let span = page_span(base, requested);
-    let mut bars = Vec::new();
-    let mut coverage_start = end;
-    for _ in 0..MAX_PAGES {
-        if end <= start_ms || bars.len() >= requested {
-            break;
-        }
-        let start = end.saturating_sub(span).max(start_ms);
-        let mut candles = page(start, end)?;
-        // Enforce each half-open page locally so boundary duplicates cannot
-        // prematurely fill the request or overwrite a newer page's tail.
-        candles.retain(|bar| bar.open_time >= start && bar.open_time < end);
-        bars.extend(candles);
-        coverage_start = start;
-        end = start;
-    }
-    let mut bars = super::super::candles::normalize(bars);
-    let skip = bars.len().saturating_sub(requested);
-    if skip > 0 {
-        coverage_start = coverage_start.max(bars[skip - 1].close_time.saturating_add(1));
-    }
-    bars.drain(..skip);
-    Ok(History {
-        candles: bars,
-        coverage_start,
-    })
+    paginate(
+        page_span(base, requested),
+        MAX_PAGES,
+        start_ms,
+        end_ms,
+        requested,
+        page,
+    )
 }
 
 fn history_url(token: u32, base: Timeframe, start_ms: i64, end_ms: i64) -> String {
@@ -199,7 +162,7 @@ fn parse_candles(body: &str, base: Timeframe) -> Result<Vec<Kline>, ProviderErro
         // IST midnight is on the previous UTC date. Preserve the Indian trading DATE as a UTC
         // calendar label so Monday, month and quarter folds do not attach it to Sunday/last month.
         let open_time = if base == Timeframe::DAY_1 {
-            (timestamp + IST_MS).div_euclid(DAY_MS) * DAY_MS
+            trading_date(timestamp)
         } else {
             timestamp
         };
@@ -236,80 +199,6 @@ fn parse_candles(body: &str, base: Timeframe) -> Result<Vec<Kline>, ProviderErro
         });
     }
     Ok(super::super::candles::normalize(out))
-}
-
-/// Kite historical timestamps include `+0530`; quote clocks omit it and are defined in IST.
-/// Unlike the app's legacy UTC parser, this preserves explicit positive and negative offsets.
-pub(super) fn parse_timestamp(text: &str) -> Option<i64> {
-    let text = text.trim();
-    let (date, time) = text.split_once(['T', ' '])?;
-    let mut date_parts = date.split('-');
-    let year = date_parts.next()?.parse::<i64>().ok()?;
-    let month = date_parts.next()?.parse::<i64>().ok()?;
-    let day = date_parts.next()?.parse::<i64>().ok()?;
-    if date_parts.next().is_some()
-        || !(1900..=2200).contains(&year)
-        || !(1..=12).contains(&month)
-        || !(1..=31).contains(&day)
-    {
-        return None;
-    }
-    let days = crate::format::days_from_civil(year, month, day);
-    if crate::format::civil_from_days(days) != (year, month, day) {
-        return None;
-    }
-    let (clock, offset_ms) = if let Some(clock) = time.strip_suffix('Z') {
-        (clock, 0)
-    } else if let Some((index, sign)) = time
-        .char_indices()
-        .find(|(_, character)| matches!(character, '+' | '-'))
-    {
-        let raw_offset = &time[index + 1..];
-        if raw_offset.len() != 4 && !(raw_offset.len() == 5 && raw_offset.as_bytes()[2] == b':') {
-            return None;
-        }
-        let offset = raw_offset.replace(':', "");
-        if offset.len() != 4 || !offset.bytes().all(|byte| byte.is_ascii_digit()) {
-            return None;
-        }
-        let hour: i64 = offset[..2].parse().ok()?;
-        let minute: i64 = offset[2..].parse().ok()?;
-        if hour > 14 || minute > 59 || hour == 14 && minute != 0 {
-            return None;
-        }
-        (
-            &time[..index],
-            (hour * 60 + minute) * 60_000 * if sign == '+' { 1 } else { -1 },
-        )
-    } else {
-        (time, IST_MS)
-    };
-    let mut parts = clock.split(':');
-    let hour: i64 = parts.next()?.parse().ok()?;
-    let minute: i64 = parts.next()?.parse().ok()?;
-    let seconds = parts.next()?;
-    if parts.next().is_some() || !(0..=23).contains(&hour) || !(0..=59).contains(&minute) {
-        return None;
-    }
-    if seconds.ends_with('.') {
-        return None;
-    }
-    let (second, fraction) = seconds.split_once('.').unwrap_or((seconds, ""));
-    let second: i64 = second.parse().ok()?;
-    if !(0..=59).contains(&second)
-        || fraction.len() > 9
-        || !fraction.bytes().all(|byte| byte.is_ascii_digit())
-    {
-        return None;
-    }
-    let fraction = fraction
-        .chars()
-        .chain("000".chars())
-        .take(3)
-        .collect::<String>()
-        .parse::<i64>()
-        .ok()?;
-    Some(days * DAY_MS + (hour * 3_600 + minute * 60 + second) * 1_000 + fraction - offset_ms)
 }
 
 #[cfg(test)]

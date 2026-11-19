@@ -35,7 +35,9 @@ impl InstrumentId {
     /// USDT); Kraken's are `BASE/QUOTE` (USD) in the common tickers, never the legacy `XBT`.
     pub fn api_symbol(&self) -> String {
         match self.source {
-            DataSource::Kite => self.symbol.to_uppercase(),
+            DataSource::Kite | DataSource::IndMoney | DataSource::Groww => {
+                self.symbol.to_uppercase()
+            }
             DataSource::Mexc => {
                 let upper = self.symbol.to_uppercase().replace(['/', '-', '_', ' '], "");
                 // Its own quotes (`USD1`, `USDE`), and a one-letter base is a real asset (`S`).
@@ -113,7 +115,9 @@ impl InstrumentId {
             | DataSource::Okx
             | DataSource::Kraken
             | DataSource::Gate => Self::new(source, symbol).api_symbol(),
-            DataSource::Alpaca | DataSource::Kite => symbol.to_uppercase(),
+            DataSource::Alpaca | DataSource::Kite | DataSource::IndMoney | DataSource::Groww => {
+                symbol.to_uppercase()
+            }
             DataSource::CoinGecko => symbol.to_lowercase(),
             _ => symbol.to_owned(),
         }

@@ -25,7 +25,7 @@ pub const SIDEBAR_WIDTH: f32 = 224.0;
 /// The Settings window: the sidebar and a 616-point page.
 pub const WINDOW_SIZE: Vec2 = Vec2::new(840.0, 600.0);
 /// The smallest the window can be made: tall enough for every sidebar row.
-pub const MIN_SIZE: Vec2 = Vec2::new(520.0, 500.0);
+pub const MIN_SIZE: Vec2 = Vec2::new(520.0, 560.0);
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub enum SettingsSection {
@@ -34,6 +34,8 @@ pub enum SettingsSection {
     PineStudio,
     Alpaca,
     Kite,
+    IndMoney,
+    Groww,
     Brokers,
     CoinMarketCap,
     Ai,
@@ -48,11 +50,13 @@ pub enum SettingsSection {
 }
 
 impl SettingsSection {
-    pub const ALL: [Self; 15] = [
+    pub const ALL: [Self; 17] = [
         Self::Appearance,
         Self::PineStudio,
         Self::Alpaca,
         Self::Kite,
+        Self::IndMoney,
+        Self::Groww,
         Self::Brokers,
         Self::CoinMarketCap,
         Self::Ai,
@@ -79,6 +83,8 @@ impl SettingsSection {
             Self::PineStudio => "Pine Studio",
             Self::Alpaca => "Alpaca",
             Self::Kite => "Kite Connect",
+            Self::IndMoney => "INDmoney",
+            Self::Groww => "Groww",
             Self::Brokers => "Brokers",
             Self::CoinMarketCap => "CoinMarketCap",
             Self::Ai => "AI Assistant",
@@ -100,6 +106,8 @@ impl SettingsSection {
             Self::PineStudio => Color32::from_rgb(172, 142, 104),
             Self::Alpaca => Color32::from_rgb(255, 159, 10),
             Self::Kite => Color32::from_rgb(190, 113, 77),
+            Self::IndMoney => Color32::from_rgb(137, 108, 169),
+            Self::Groww => Color32::from_rgb(39, 174, 141),
             Self::Brokers => Color32::from_rgb(255, 112, 67),
             Self::CoinMarketCap => Color32::from_rgb(10, 132, 255),
             Self::Ai => Color32::from_rgb(255, 214, 10),
@@ -121,6 +129,8 @@ impl SettingsSection {
             Self::PineStudio => "pinestudio",
             Self::Alpaca => "alpaca",
             Self::Kite => "kite",
+            Self::IndMoney => "indmoney",
+            Self::Groww => "groww",
             Self::Brokers => "brokers",
             Self::CoinMarketCap => "coinmarketcap",
             Self::Ai => "ai",
@@ -341,7 +351,7 @@ impl SettingsSection {
             Self::Appearance => Icon::Paintbrush,
             Self::PineStudio => Icon::AngleBrackets,
             Self::Alpaca => Icon::ChartLine,
-            Self::Kite => Icon::ChartLine,
+            Self::Kite | Self::IndMoney | Self::Groww => Icon::ChartLine,
             Self::Brokers => Icon::ArrowLeftRight,
             Self::CoinMarketCap => Icon::Gauge,
             Self::Ai => Icon::Sparkles,
@@ -461,6 +471,25 @@ pub fn show(
                 "Connect Zerodha Kite to chart Indian markets with your daily session.",
                 |ui| crate::ui::settings::kite::body(ui, &mut state.api_keys.kite),
             );
+        }
+        SettingsSection::IndMoney | SettingsSection::Groww => {
+            use crate::service::market::india::{GROWW, IND_MONEY};
+            let (provider, form, subtitle) = if section == SettingsSection::IndMoney {
+                (
+                    IND_MONEY,
+                    &mut state.api_keys.ind_money,
+                    "Chart Indian markets with the INDstocks API.",
+                )
+            } else {
+                (
+                    GROWW,
+                    &mut state.api_keys.groww,
+                    "Chart Indian markets with the Groww Trading API.",
+                )
+            };
+            page_shell(&mut page, section, subtitle, |ui| {
+                super::market_tokens::body(ui, form, provider)
+            });
         }
         SettingsSection::Brokers => {
             page_shell(

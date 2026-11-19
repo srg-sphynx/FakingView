@@ -199,8 +199,10 @@ impl Chart {
             | DataSource::Gate
             | DataSource::Mexc
             | DataSource::CoinGecko
-            | DataSource::Alpaca => self.source.display_symbol(&self.symbol),
-            DataSource::Kite => self.source.display_symbol(&self.symbol),
+            | DataSource::Alpaca
+            | DataSource::Kite
+            | DataSource::IndMoney
+            | DataSource::Groww => self.source.display_symbol(&self.symbol),
             DataSource::DexScreener => self.source.base_asset(&self.display_title()),
             DataSource::Polymarket | DataSource::Kalshi | DataSource::CoinMarketCap => {
                 String::new()

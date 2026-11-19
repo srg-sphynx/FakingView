@@ -19,6 +19,8 @@ fn source(source: DataSource) -> ImageSource<'static> {
         }
         DataSource::Alpaca => egui::include_image!("../../../assets/source_logos/alpaca.png"),
         DataSource::Kite => egui::include_image!("../../../assets/source_logos/kite.svg"),
+        DataSource::IndMoney => egui::include_image!("../../../assets/source_logos/indmoney.png"),
+        DataSource::Groww => egui::include_image!("../../../assets/source_logos/groww.png"),
         DataSource::Polymarket => {
             egui::include_image!("../../../assets/source_logos/polymarket.png")
         }

@@ -6,7 +6,7 @@
 
 **A native market workspace for Indian markets, charts and Pine Script.**
 
-Connect your own Zerodha Kite Connect session. Explore price history, follow streaming quotes,
+Connect your own Zerodha Kite Connect, INDmoney, or Groww account. Explore price history, follow live quotes,
 write indicators and keep your workspace on your Mac.
 
 [![Release](https://img.shields.io/github/v/release/srg-sphynx/FakingView?include_prereleases&label=preview)](https://github.com/srg-sphynx/FakingView/releases)
@@ -54,6 +54,13 @@ have their own accounts, credentials and terms.
 The [complete guide](docs/getting-started.md) covers installation, token renewal, the first chart,
 watchlists, Pine Studio and troubleshooting. Kite market-data access is required; a working API
 login alone does not establish historical or streaming-data entitlement.
+
+## INDmoney and Groww
+
+Open **Settings → INDmoney** or **Settings → Groww**, then add your provider’s access token.
+Use **Test Connection** to check live quote access. In **⌘K → Stocks**, select the provider and
+search for an exchange-qualified symbol such as `NSE:INFY`. Both sources refresh chart history
+and watchlist quotes over REST. [Setup and coverage](docs/getting-started.md#indmoney-and-groww)
 
 ## Built for your own Kite session
 
