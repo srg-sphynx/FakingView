@@ -13,6 +13,12 @@ pub enum ProviderError {
     /// The same for Alpaca, whose failures name it: they are usually its keys.
     #[error("Alpaca error: {0}")]
     Alpaca(http::Error),
+    #[error("Kite Connect error: {0}")]
+    Kite(http::Error),
+    #[error("Add your Kite Connect API key and access token in Settings to see Indian markets")]
+    KiteMissingKey,
+    #[error("Your Kite Connect session expired. Sign in again in Settings")]
+    KiteSessionExpired,
     /// The same for CoinMarketCap, whose failures name it: they are usually its key or plan.
     #[error("CoinMarketCap error: {0}")]
     CoinMarketCap(http::Error),
@@ -62,6 +68,7 @@ impl ProviderError {
             self,
             Self::Network(http::Error::Status(429))
                 | Self::Alpaca(http::Error::Status(429))
+                | Self::Kite(http::Error::Status(429))
                 | Self::CoinMarketCap(http::Error::Status(429))
         )
     }

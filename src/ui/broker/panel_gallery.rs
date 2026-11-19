@@ -1,7 +1,7 @@
 //! The live trading panel, its ticket and the Brokers settings page, drawn against the broker
 //! crate's mock exchange. A smoke test always runs (every surface draws without panicking and puts
 //! something on screen); the pictures are written by hand:
-//! `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib broker_panel_gallery -- --ignored`.
+//! `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib broker_panel_gallery -- --ignored`.
 
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};

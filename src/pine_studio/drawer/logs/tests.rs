@@ -5,7 +5,8 @@ use eframe::egui;
 use std::sync::{Arc, Mutex};
 
 fn manager(tag: &str) -> (PineStudio, std::path::PathBuf) {
-    let root = std::env::temp_dir().join(format!("degenview-sm-logs-{tag}-{}", std::process::id()));
+    let root =
+        std::env::temp_dir().join(format!("fakingview-sm-logs-{tag}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);
     let shared: crate::store::SharedStore = Arc::new(Mutex::new(Store::open_in_memory().unwrap()));
     let store =

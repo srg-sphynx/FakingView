@@ -119,6 +119,7 @@ impl ChartWorkspace {
                 ));
             }
             Some(Output::OpenAlpacaSettings) => actions.push(WorkspaceAction::OpenAlpacaSettings),
+            Some(Output::OpenKiteSettings) => actions.push(WorkspaceAction::OpenKiteSettings),
             None => {}
         }
         if !self.symbol_picker.is_open() {

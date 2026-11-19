@@ -9,7 +9,7 @@ use crate::service::update::{archive, code_signature, download, tag_signature};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-const APP_NAME: &str = "DegenView.app";
+const APP_NAME: &str = "FakingView.app";
 /// How long the relaunch helper waits for this process to exit before giving up.
 const RELAUNCH_WAIT_TICKS: u32 = 300;
 
@@ -26,9 +26,9 @@ impl Prepared {
     /// A stand-in for tests of code that only passes a `Prepared` along.
     pub(crate) fn for_test() -> Self {
         Self {
-            app: PathBuf::from("/Applications/DegenView.app"),
-            staging: PathBuf::from("/Applications/.DegenView-update"),
-            new_app: PathBuf::from("/Applications/.DegenView-update/new/DegenView.app"),
+            app: PathBuf::from("/Applications/FakingView.app"),
+            staging: PathBuf::from("/Applications/.FakingView-update"),
+            new_app: PathBuf::from("/Applications/.FakingView-update/new/FakingView.app"),
         }
     }
 }
@@ -48,12 +48,12 @@ pub fn install_target() -> Result<PathBuf, String> {
         .and_then(|exe| exe.canonicalize())
         .map_err(|error| error.to_string())?;
     let app = bundle_for_executable(&exe)
-        .ok_or_else(|| "DegenView is not running from an app bundle.".to_owned())?;
+        .ok_or_else(|| "FakingView is not running from an app bundle.".to_owned())?;
     if app
         .components()
         .any(|part| part.as_os_str() == "AppTranslocation")
     {
-        return Err("Move DegenView to the Applications folder first.".to_owned());
+        return Err("Move FakingView to the Applications folder first.".to_owned());
     }
     let parent = app.parent().ok_or("The app has no parent folder.")?;
     if !is_writable(parent) {
@@ -69,12 +69,12 @@ pub fn install_target() -> Result<PathBuf, String> {
 /// disk image it was downloaded in, which the user fixes by dragging it to Applications.
 fn not_writable_message(app: &Path, parent: &Path) -> String {
     if app.starts_with("/Volumes") {
-        return "Drag DegenView from the disk image to the Applications folder first.".to_owned();
+        return "Drag FakingView from the disk image to the Applications folder first.".to_owned();
     }
     format!("{} is not writable.", parent.display())
 }
 
-/// `/…/DegenView.app` for `/…/DegenView.app/Contents/MacOS/DegenView`.
+/// `/…/FakingView.app` for `/…/FakingView.app/Contents/MacOS/FakingView`.
 fn bundle_for_executable(exe: &Path) -> Option<PathBuf> {
     let macos = exe.parent()?;
     let contents = macos.parent()?;
@@ -161,7 +161,7 @@ pub fn apply(prepared: &Prepared) -> Result<(), String> {
 pub fn relaunch(prepared: &Prepared) -> Result<(), String> {
     spawn_relaunch(prepared).map_err(|error| {
         // Without the helper nobody would reopen the app; the new bundle is in place regardless.
-        format!("Updated, but could not restart: {error}. Reopen DegenView.")
+        format!("Updated, but could not restart: {error}. Reopen FakingView.")
     })
 }
 
@@ -176,13 +176,13 @@ fn swap(prepared: &Prepared) -> Result<(), String> {
 
 /// Environment the relaunched app gets: `open` otherwise starts it clean, which would drop a dev
 /// run's data/cache directories. Only names that are safe to show in a process listing belong
-/// here; credentials (`DEGENVIEW_ALPACA_*`, `DEGENVIEW_CMC_API_KEY`, …) must never be added: the
+/// here; credentials (`FAKINGVIEW_ALPACA_*`, `FAKINGVIEW_CMC_API_KEY`, …) must never be added: the
 /// relaunched app reads them from the Keychain again.
 const FORWARDED_ENV: &[&str] = &[
     "HOME",
-    "DEGENVIEW_CACHE_DIR",
-    "DEGENVIEW_NO_KEYCHAIN",
-    "DEGENVIEW_NO_NOTIFICATIONS",
+    "FAKINGVIEW_CACHE_DIR",
+    "FAKINGVIEW_NO_KEYCHAIN",
+    "FAKINGVIEW_NO_NOTIFICATIONS",
 ];
 
 /// What the helper needs itself (it runs `sh`, `kill`, `sleep`, `open`).
@@ -308,10 +308,10 @@ mod tests {
 
     #[test]
     fn an_app_run_from_the_disk_image_is_told_to_move_to_applications() {
-        let on_image = Path::new("/Volumes/DegenView/DegenView.app");
+        let on_image = Path::new("/Volumes/FakingView/FakingView.app");
         let message = not_writable_message(on_image, on_image.parent().unwrap());
         assert!(message.contains("Applications"), "{message}");
-        let elsewhere = Path::new("/opt/apps/DegenView.app");
+        let elsewhere = Path::new("/opt/apps/FakingView.app");
         assert_eq!(
             not_writable_message(elsewhere, elsewhere.parent().unwrap()),
             "/opt/apps is not writable."
@@ -322,16 +322,16 @@ mod tests {
     fn the_bundle_is_found_from_its_executable() {
         assert_eq!(
             bundle_for_executable(Path::new(
-                "/Applications/DegenView.app/Contents/MacOS/DegenView"
+                "/Applications/FakingView.app/Contents/MacOS/FakingView"
             )),
-            Some(PathBuf::from("/Applications/DegenView.app"))
+            Some(PathBuf::from("/Applications/FakingView.app"))
         );
         assert_eq!(
-            bundle_for_executable(Path::new("/repo/target/release/degenview")),
+            bundle_for_executable(Path::new("/repo/target/release/fakingview")),
             None
         );
         assert_eq!(
-            bundle_for_executable(Path::new("/x/Tools/Contents/MacOS/degenview")),
+            bundle_for_executable(Path::new("/x/Tools/Contents/MacOS/fakingview")),
             None
         );
     }
@@ -351,7 +351,7 @@ mod tests {
         };
         swap(&prepared).unwrap();
         assert_eq!(
-            fs::read_to_string(app.join("Contents/MacOS/DegenView")).unwrap(),
+            fs::read_to_string(app.join("Contents/MacOS/FakingView")).unwrap(),
             "new"
         );
         assert_eq!(
@@ -359,7 +359,7 @@ mod tests {
                 staging
                     .join("old")
                     .join(APP_NAME)
-                    .join("Contents/MacOS/DegenView")
+                    .join("Contents/MacOS/FakingView")
             )
             .unwrap(),
             "old"
@@ -380,7 +380,7 @@ mod tests {
         };
         assert!(swap(&prepared).is_err());
         assert_eq!(
-            fs::read_to_string(app.join("Contents/MacOS/DegenView")).unwrap(),
+            fs::read_to_string(app.join("Contents/MacOS/FakingView")).unwrap(),
             "old"
         );
         let _ = fs::remove_dir_all(root);
@@ -405,9 +405,9 @@ mod tests {
             "a macOS asset for this architecture"
         );
         // The download must be signed by the installed app's team, so this needs a signed install.
-        let installed = Path::new("/Applications/DegenView.app");
+        let installed = Path::new("/Applications/FakingView.app");
         let Ok(team_id) = code_signature::team_id(installed) else {
-            eprintln!("skipped: no Developer ID signed DegenView in /Applications");
+            eprintln!("skipped: no Developer ID signed FakingView in /Applications");
             return;
         };
         let root = scratch("live");
@@ -419,7 +419,7 @@ mod tests {
         assert!(archive::check_bundle(&prepared.new_app).is_ok());
         swap(&prepared).unwrap();
         assert_ne!(
-            fs::read(app.join("Contents/MacOS/DegenView")).unwrap(),
+            fs::read(app.join("Contents/MacOS/FakingView")).unwrap(),
             b"old"
         );
         let _ = fs::remove_dir_all(root);
@@ -436,13 +436,13 @@ mod tests {
     fn credentials_are_never_forwarded() {
         let vars = env(&[
             ("HOME", "/Users/me"),
-            ("DEGENVIEW_CACHE_DIR", "/tmp/cache"),
-            ("DEGENVIEW_NO_KEYCHAIN", "1"),
-            ("DEGENVIEW_NO_NOTIFICATIONS", "1"),
-            ("DEGENVIEW_ALPACA_KEY_ID", "canary-id"),
-            ("DEGENVIEW_ALPACA_SECRET_KEY", "canary-secret"),
-            ("DEGENVIEW_CMC_API_KEY", "canary-cmc"),
-            ("DEGENVIEW_CODESIGN_IDENTITY", "canary-identity"),
+            ("FAKINGVIEW_CACHE_DIR", "/tmp/cache"),
+            ("FAKINGVIEW_NO_KEYCHAIN", "1"),
+            ("FAKINGVIEW_NO_NOTIFICATIONS", "1"),
+            ("FAKINGVIEW_ALPACA_KEY_ID", "canary-id"),
+            ("FAKINGVIEW_ALPACA_SECRET_KEY", "canary-secret"),
+            ("FAKINGVIEW_CMC_API_KEY", "canary-cmc"),
+            ("FAKINGVIEW_CODESIGN_IDENTITY", "canary-identity"),
             ("AWS_SECRET_ACCESS_KEY", "canary-aws"),
         ]);
         let forwarded = forwarded_env(vars.clone().into_iter(), FORWARDED_ENV);
@@ -454,9 +454,9 @@ mod tests {
             names,
             [
                 "HOME",
-                "DEGENVIEW_CACHE_DIR",
-                "DEGENVIEW_NO_KEYCHAIN",
-                "DEGENVIEW_NO_NOTIFICATIONS"
+                "FAKINGVIEW_CACHE_DIR",
+                "FAKINGVIEW_NO_KEYCHAIN",
+                "FAKINGVIEW_NO_NOTIFICATIONS"
             ]
         );
         let helper = forwarded_env(vars.into_iter(), HELPER_ENV);
@@ -468,12 +468,12 @@ mod tests {
     fn the_helpers_command_line_and_environment_carry_no_secrets() {
         let vars = env(&[
             ("HOME", "/Users/me"),
-            ("DEGENVIEW_CACHE_DIR", "/tmp/cache"),
-            ("DEGENVIEW_ALPACA_SECRET_KEY", "canary-secret"),
-            ("DEGENVIEW_CMC_API_KEY", "canary-cmc"),
+            ("FAKINGVIEW_CACHE_DIR", "/tmp/cache"),
+            ("FAKINGVIEW_ALPACA_SECRET_KEY", "canary-secret"),
+            ("FAKINGVIEW_CMC_API_KEY", "canary-cmc"),
         ]);
         let command = relaunch_command(
-            Path::new("/Applications/DegenView.app"),
+            Path::new("/Applications/FakingView.app"),
             4242,
             &forwarded_env(vars.clone().into_iter(), FORWARDED_ENV),
             forwarded_env(vars.into_iter(), HELPER_ENV),
@@ -486,10 +486,10 @@ mod tests {
         assert!(!line.contains("canary"), "{line}");
         assert!(line.contains("--env HOME=/Users/me"), "{line}");
         assert!(
-            line.contains("--env DEGENVIEW_CACHE_DIR=/tmp/cache"),
+            line.contains("--env FAKINGVIEW_CACHE_DIR=/tmp/cache"),
             "{line}"
         );
-        assert!(line.ends_with("/Applications/DegenView.app"), "{line}");
+        assert!(line.ends_with("/Applications/FakingView.app"), "{line}");
         let envs: Vec<_> = command.get_envs().collect();
         assert!(envs.iter().all(|(name, _)| *name == "HOME"), "{envs:?}");
     }

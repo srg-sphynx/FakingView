@@ -1192,7 +1192,7 @@ mod tests {
     }
 
     /// The strip at rest, with a chip hovered, and with the overflow list open, as pictures. Run by
-    /// hand with `DEGENVIEW_GALLERY_DIR` set.
+    /// hand with `FAKINGVIEW_GALLERY_DIR` set.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_the_strip() {

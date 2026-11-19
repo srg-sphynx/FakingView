@@ -73,11 +73,11 @@ before the panel has ever been opened); **nothing is submitted by the menu**.
 
 ## Clipboard
 
-Copying drawings (menu, Cmd/Ctrl+C) writes `degenview-clipboard/v1` and a JSON body to the
+Copying drawings (menu, Cmd/Ctrl+C) writes `fakingview-clipboard/v1` and a JSON body to the
 system clipboard and keeps the copy for the menu's Paste. Pasting (menu or Cmd/Ctrl+V) accepts
 only that format: at most 256 KiB and 500 drawings, every drawing decoded and checked the way a
 saved chart's rows are, no rulers, no unreadable rows. Anything else on the clipboard is ignored
-silently; a damaged DegenView payload is reported. A paste gets fresh ids, is unlocked and shown,
+silently; a damaged FakingView payload is reported. A paste gets fresh ids, is unlocked and shown,
 moves every anchor by one time shift and one price shift (one price ratio on a log scale) so the
 first point lands on the click and the shapes keep their relationships, and is one undo step. A
 keyboard paste lands under the pointer of the chart it was last over.

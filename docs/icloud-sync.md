@@ -90,7 +90,7 @@ SettingsPage ← SyncView ← SyncHost (app thread: apply, actions)   ──mpsc
   core as JSON over a four-function C interface. It never throws across the boundary and refuses
   to stage data for any account other than the one the data is bound to.
 * **Linking.** `build.rs` compiles the Swift only with `--features icloud` and only for macOS
-  targets, and links it into the `degenview` binary alone. No file is added to the bundle, so
+  targets, and links it into the `fakingview` binary alone. No file is added to the bundle, so
   the updater's bundle checks are unchanged, and the alert agent never links Swift.
 
 ### SQLite tables
@@ -106,7 +106,7 @@ sync starts, every five minutes and on **Sync Now**.
 
 ### Record schema
 
-Private database, zone `DegenViewZone`, **one record type `DegenViewSyncRecord`** so new kinds of
+Private database, zone `FakingViewZone`, **one record type `FakingViewSyncRecord`** so new kinds of
 entity never need a manual schema deploy. `recordName = <kind>.<id>`, deterministic from the
 entity's identity, so repeated uploads and downloads hit the same record. Plain fields:
 `schemaVersion`, `entityType`, `revision`, `originDevice`, `payloadSize`. Encrypted
@@ -357,19 +357,19 @@ them sync too. Webhook secrets, API keys and MCP credentials are never in a sync
 
 Needed once, by the account holder, before a build can use iCloud:
 
-1. Identifiers → `es.nico.degenview`: enable **iCloud (CloudKit)** and **Push Notifications**.
-2. Create the container `iCloud.es.nico.degenview` and assign it to the App ID.
+1. Identifiers → `local.fakingview.desktop`: enable **iCloud (CloudKit)** and **Push Notifications**.
+2. Create the container `iCloud.local.fakingview.desktop` and assign it to the App ID.
 3. Regenerate the **Developer ID provisioning profile** for the app; base64 it into the
    `MACOS_PROFILE_APP` secret. The helper's profile is unchanged (it has no iCloud).
 4. For development: an Apple Development certificate and a Mac Development profile (register the
    test Macs) that includes iCloud. Development-signed builds use CloudKit's **Development**
    environment.
-5. Run a development-signed build once so CloudKit creates `DegenViewSyncRecord` in the
+5. Run a development-signed build once so CloudKit creates `FakingViewSyncRecord` in the
    Development environment, check the fields in the CloudKit Dashboard, then **Deploy Schema
    Changes to Production**. Repeat after any schema change. Production data is not recoverable
    from a missed deploy, so do this before every release that touches the record.
 6. Check it: `tools/check-cloudkit-schema.sh` exports the Development and Production schemas with
-   `xcrun cktool`, fails if Production lacks `DegenViewSyncRecord` or one of the five plain fields the
+   `xcrun cktool`, fails if Production lacks `FakingViewSyncRecord` or one of the five plain fields the
    bridge writes (`schemaVersion`, `entityType`, `revision`, `originDevice`, `payloadSize`; the
    payload and `modifiedAtMs` are encrypted values with no schema entry), and fails if the two
    schemas differ. It needs a CloudKit management token saved once with `xcrun cktool save-token`
@@ -381,16 +381,16 @@ Needed once, by the account holder, before a build can use iCloud:
 ## Build and release
 
 ```
-DEGENVIEW_ICLOUD=1 ./tools/bundle.sh          # + the usual DEGENVIEW_CODESIGN_IDENTITY, … variables
-tools/verify-icloud.sh target/DegenView.app Production
+FAKINGVIEW_ICLOUD=1 ./tools/bundle.sh          # + the usual FAKINGVIEW_CODESIGN_IDENTITY, … variables
+tools/verify-icloud.sh target/FakingView.app Production
 ```
 
-`DEGENVIEW_ICLOUD=1` builds with `--features icloud`, signs the *app* (never the helper) with
+`FAKINGVIEW_ICLOUD=1` builds with `--features icloud`, signs the *app* (never the helper) with
 `tools/entitlements-app.plist`, and runs `tools/verify-icloud.sh`, which checks the app's
 entitlements, the container and environment, that the embedded profile grants them, that the
 helper has none, and that no library or machine-specific path was bundled. Without the variable
 nothing changes: no Swift is compiled and the entitlements stay as before. The Release workflow
-passes the variable when the repository variable `DEGENVIEW_ICLOUD` is `1`; set it only after the
+passes the variable when the repository variable `FAKINGVIEW_ICLOUD` is `1`; set it only after the
 profile above is in `MACOS_PROFILE_APP`. A signed build whose profile does not grant its
 entitlements is **killed by macOS at launch**, so ship the first iCloud build as a hyphenated
 prerelease (the updater ignores those) and install it on a clean Mac first.

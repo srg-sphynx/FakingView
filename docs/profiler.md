@@ -1,14 +1,14 @@
-# Implement a Production-Ready Pine Script Profiler in DegenView
+# Implement a Production-Ready Pine Script Profiler in FakingView
 
 ## Objective
 
-Implement a complete, high-performance **Pine Script Profiler** in DegenView's existing Pine engine and Pine Studio.
+Implement a complete, high-performance **Pine Script Profiler** in FakingView's existing Pine engine and Pine Studio.
 
 The profiler must allow users to identify exactly which parts of their Pine scripts consume the most execution time, how frequently those parts execute, and where performance bottlenecks occur.
 
-The experience should be comparable to TradingView's Pine Profiler in terms of functionality, usability, accuracy, and visual clarity, while fitting naturally into DegenView's existing native Rust/egui architecture.
+The experience should be comparable to TradingView's Pine Profiler in terms of functionality, usability, accuracy, and visual clarity, while fitting naturally into FakingView's existing native Rust/egui architecture.
 
-**Use the attached TradingView screenshot as a reference for the profiler's visual presentation and interaction model, but not as an exact design specification.** Follow DegenView's existing design system and make thoughtful improvements where appropriate.
+**Use the attached TradingView screenshot as a reference for the profiler's visual presentation and interaction model, but not as an exact design specification.** Follow FakingView's existing design system and make thoughtful improvements where appropriate.
 
 This is not a prototype. The final implementation must be polished, performant, maintainable, thoroughly tested, and production-ready.
 
@@ -20,7 +20,7 @@ This is not a prototype. The final implementation must be polished, performant, 
 4. Present profiling results directly alongside the corresponding source code.
 5. Keep profiling overhead effectively zero when disabled.
 6. Ensure profiling does not change script behavior or output.
-7. Support indicators, strategies, libraries, and the Pine language constructs already implemented by DegenView.
+7. Support indicators, strategies, libraries, and the Pine language constructs already implemented by FakingView.
 8. Handle loops, nested scopes, functions, conditional branches, and repeated execution correctly.
 9. Maintain responsive UI behavior while profiling expensive scripts.
 10. Do not introduce a second Pine interpreter, duplicate execution pipeline, or unrelated profiling subsystem.
@@ -83,7 +83,7 @@ Where TradingView's implementation details are unknown, choose a technically sou
 
 ---
 
-# 2. Audit DegenView's Existing Architecture
+# 2. Audit FakingView's Existing Architecture
 
 Inspect the actual repository before modifying anything.
 
@@ -448,7 +448,7 @@ If a built-in operation has separate execution phases, make attribution consiste
 
 # 6. Pine Studio Integration
 
-The profiler must feel like a native part of DegenView's Pine Studio.
+The profiler must feel like a native part of FakingView's Pine Studio.
 
 Do not create a disconnected profiling window or separate source-code viewer.
 
@@ -514,7 +514,7 @@ Requirements:
 - Work in dark and light themes.
 - Respect the application's existing accent colors.
 
-Consider using a warm accent for expensive regions, as shown in the reference, but integrate it with DegenView's palette.
+Consider using a warm accent for expensive regions, as shown in the reference, but integrate it with FakingView's palette.
 
 Do not hardcode colors or dimensions throughout the rendering code.
 
@@ -538,7 +538,7 @@ Additional useful metrics may include average time per execution and inclusive/e
 
 Only show metrics whose semantics are reliable.
 
-Use DegenView's existing tooltip or popover infrastructure.
+Use FakingView's existing tooltip or popover infrastructure.
 
 Tooltips must:
 
@@ -712,7 +712,7 @@ A profile generated for one replay position must not silently appear valid for a
 
 # 9. Strategies, Indicators, and Alerts
 
-The profiler must work with the Pine script types supported by DegenView.
+The profiler must work with the Pine script types supported by FakingView.
 
 ## Indicators
 
@@ -747,7 +747,7 @@ Do not modify live alert subscriptions or their deduplication state.
 
 Profiling expensive scripts must not freeze the Pine Studio or chart UI.
 
-Follow DegenView's existing background-work architecture.
+Follow FakingView's existing background-work architecture.
 
 Requirements:
 
@@ -833,7 +833,7 @@ Account for profiling overhead when interpreting execution timeouts so that enab
 
 # 12. Visual Design and Polish
 
-The profiler should feel like it has always belonged in DegenView.
+The profiler should feel like it has always belonged in FakingView.
 
 Follow existing:
 
@@ -962,7 +962,7 @@ Test:
 - Keyboard navigation.
 - Multiple open scripts.
 
-Use DegenView's existing egui testing infrastructure where possible.
+Use FakingView's existing egui testing infrastructure where possible.
 
 ## 13.5 Performance benchmarks
 
@@ -1020,7 +1020,7 @@ Work in the following order.
 
 ### Phase 1 — Research and architecture audit
 
-Study TradingView's profiler and DegenView's existing compiler, runtime, and Pine Studio.
+Study TradingView's profiler and FakingView's existing compiler, runtime, and Pine Studio.
 
 Document the proposed timing semantics and source attribution model.
 
@@ -1104,10 +1104,10 @@ Do not claim production readiness if important tests, benchmarks, or manual UI c
 
 ## Final Goal
 
-Deliver a **fast, accurate, deeply integrated Pine Script Profiler** that helps DegenView users understand and optimize their scripts.
+Deliver a **fast, accurate, deeply integrated Pine Script Profiler** that helps FakingView users understand and optimize their scripts.
 
 A user should be able to enable profiling, execute a script, immediately see which lines and code blocks consume the most time, hover for precise execution statistics, and navigate directly to performance bottlenecks.
 
-The experience should feel comparable in quality and usability to TradingView's Pine Profiler, while remaining native to DegenView.
+The experience should feel comparable in quality and usability to TradingView's Pine Profiler, while remaining native to FakingView.
 
 **Prioritize measurement correctness, effectively zero disabled overhead, architectural cleanliness, and excellent UI polish. No shortcuts, no fragile instrumentation, and no half-finished implementation.**

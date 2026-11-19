@@ -209,7 +209,7 @@ impl Harness {
             PermissionSet::of(Permission::ALL),
         );
         let scripts_root = std::env::temp_dir().join(format!(
-            "degenview-mcp-e2e-{}",
+            "fakingview-mcp-e2e-{}",
             crate::model::watchlist::new_id()
         ));
         let locator_root = scripts_root.clone();
@@ -1442,15 +1442,15 @@ fn discovery_and_calls_work_for_a_permitted_client() {
     assert_eq!(
         tool_names(&url, "tok"),
         [
-            "degenview_add_chart",
-            "degenview_get_replay",
-            "degenview_list_charts",
-            "degenview_list_indicators",
-            "degenview_list_workspaces"
+            "fakingview_add_chart",
+            "fakingview_get_replay",
+            "fakingview_list_charts",
+            "fakingview_list_indicators",
+            "fakingview_list_workspaces"
         ]
     );
 
-    let workspaces = call(&url, "tok", "degenview_list_workspaces", json!({}));
+    let workspaces = call(&url, "tok", "fakingview_list_workspaces", json!({}));
     assert_eq!(workspaces["isError"], json!(false));
     assert_eq!(
         workspaces["structuredContent"]["workspaces"][0]["workspace_id"],
@@ -1460,14 +1460,14 @@ fn discovery_and_calls_work_for_a_permitted_client() {
     let charts = call(
         &url,
         "tok",
-        "degenview_list_charts",
+        "fakingview_list_charts",
         json!({"workspace_id": "1"}),
     );
     assert_eq!(charts["structuredContent"]["workspace_id"], "1");
     let missing = call(
         &url,
         "tok",
-        "degenview_list_charts",
+        "fakingview_list_charts",
         json!({"workspace_id": "99"}),
     );
     assert_eq!(error_code(&missing), "NOT_FOUND");
@@ -1475,7 +1475,7 @@ fn discovery_and_calls_work_for_a_permitted_client() {
     let added = call(
         &url,
         "tok",
-        "degenview_add_chart",
+        "fakingview_add_chart",
         json!({"workspace_id": "1", "source": "binance", "symbol": " btcusdt "}),
     );
     assert_eq!(added["isError"], json!(false), "{added}");
@@ -1507,7 +1507,7 @@ fn bad_arguments_never_reach_the_app() {
             &url,
             Some("tok"),
             "tools/call",
-            json!({"name": "degenview_add_chart", "arguments": arguments}),
+            json!({"name": "fakingview_add_chart", "arguments": arguments}),
         );
         let json = reply.json();
         let rejected = json.get("error").is_some() || json["result"]["isError"] == json!(true);
@@ -1523,17 +1523,17 @@ fn a_bad_id_names_the_tool_that_lists_good_ones() {
     for (arguments, listed_by) in [
         (
             json!({"workspace_id": "one", "chart_id": "2"}),
-            "degenview_list_workspaces",
+            "fakingview_list_workspaces",
         ),
         (
             json!({"workspace_id": "1", "chart_id": "two"}),
-            "degenview_list_charts",
+            "fakingview_list_charts",
         ),
     ] {
         let result = call(
             &url,
             "tok",
-            "degenview_list_chart_pine_instances",
+            "fakingview_list_chart_pine_instances",
             arguments.clone(),
         );
         assert_eq!(error_code(&result), "INVALID_ARGUMENT", "{arguments}");
@@ -1546,10 +1546,10 @@ fn a_bad_id_names_the_tool_that_lists_good_ones() {
 
 #[test]
 fn every_routed_tool_has_a_permission_and_an_unmapped_name_is_not_run() {
-    use crate::mcp::tools::{DegenViewMcp, required_permission};
+    use crate::mcp::tools::{FakingViewMcp, required_permission};
     let shared = McpShared::new();
     let (bridge, _inbox) = crate::mcp::bridge::channel(shared.clone(), Arc::new(|| {}));
-    let routed = DegenViewMcp::new(bridge, shared).routed_tool_names();
+    let routed = FakingViewMcp::new(bridge, shared).routed_tool_names();
     assert!(routed.len() >= 30, "{routed:?}");
     for name in &routed {
         assert!(
@@ -1558,7 +1558,7 @@ fn every_routed_tool_has_a_permission_and_an_unmapped_name_is_not_run() {
         );
     }
     // The other direction: a name with no tool behind it maps to nothing.
-    assert_eq!(required_permission("degenview_not_a_tool"), None);
+    assert_eq!(required_permission("fakingview_not_a_tool"), None);
 
     let harness = Harness::start(&[("full", "full-tok", BOTH)]);
     let url = harness.url();
@@ -1566,7 +1566,7 @@ fn every_routed_tool_has_a_permission_and_an_unmapped_name_is_not_run() {
         &url,
         Some("full-tok"),
         "tools/call",
-        json!({"name": "degenview_not_a_tool", "arguments": {}}),
+        json!({"name": "fakingview_not_a_tool", "arguments": {}}),
     );
     let body = unknown.json();
     assert!(
@@ -1581,79 +1581,79 @@ fn every_routed_tool_has_a_permission_and_an_unmapped_name_is_not_run() {
 /// credential can do, so it is made on purpose, never as a side effect of moving code.
 #[test]
 fn the_tool_list_and_its_permissions_are_pinned() {
-    use crate::mcp::tools::{DegenViewMcp, required_permission};
+    use crate::mcp::tools::{FakingViewMcp, required_permission};
     const TOOLS: [(&str, &str); 58] = [
-        ("degenview_add_chart", "charts.create"),
-        ("degenview_add_drawings", "drawings.write"),
-        ("degenview_add_indicator", "charts.indicators.write"),
+        ("fakingview_add_chart", "charts.create"),
+        ("fakingview_add_drawings", "drawings.write"),
+        ("fakingview_add_indicator", "charts.indicators.write"),
         (
-            "degenview_add_pine_script_to_chart",
+            "fakingview_add_pine_script_to_chart",
             "charts.pine_instances.write",
         ),
-        ("degenview_cancel_paper_orders", "paper.orders.cancel"),
-        ("degenview_close_paper_positions", "paper.positions.close"),
-        ("degenview_compile_pine_script", "pine.diagnostics.read"),
-        ("degenview_control_replay", "charts.replay.write"),
-        ("degenview_create_price_alert", "alerts.create"),
-        ("degenview_create_watchlist", "watchlists.write"),
-        ("degenview_delete_drawings", "drawings.delete"),
-        ("degenview_delete_price_alert", "alerts.delete"),
-        ("degenview_delete_watchlist", "watchlists.delete"),
-        ("degenview_get_candles", "charts.candles.read"),
-        ("degenview_get_chart_snapshot", "charts.snapshot.read"),
-        ("degenview_get_indicator_values", "charts.candles.read"),
-        ("degenview_get_market_candles", "markets.read"),
-        ("degenview_get_paper_account", "paper.read"),
-        ("degenview_get_pine_inputs", "pine.inputs.read"),
-        ("degenview_get_pine_instance", "pine.inputs.read"),
-        ("degenview_get_pine_report", "pine.reports.read"),
-        ("degenview_get_pine_script", "pine.scripts.read"),
-        ("degenview_get_pine_styles", "pine.styles.read"),
-        ("degenview_get_portfolio_holdings", "portfolio.read"),
-        ("degenview_get_quotes", "markets.read"),
-        ("degenview_get_replay", "charts.read"),
-        ("degenview_get_session_stats", "charts.candles.read"),
-        ("degenview_get_watchlist", "watchlists.read"),
-        ("degenview_list_chart_pine_instances", "pine.scripts.list"),
-        ("degenview_list_charts", "charts.read"),
-        ("degenview_list_drawings", "drawings.read"),
-        ("degenview_list_indicators", "charts.read"),
-        ("degenview_list_paper_accounts", "paper.read"),
-        ("degenview_list_paper_fills", "paper.read"),
-        ("degenview_list_paper_trades", "paper.read"),
-        ("degenview_list_pine_alerts", "pine.alerts.read"),
-        ("degenview_list_pine_scripts", "pine.scripts.list"),
-        ("degenview_list_portfolio_transactions", "portfolio.read"),
-        ("degenview_list_portfolios", "portfolio.read"),
-        ("degenview_list_price_alerts", "alerts.read"),
-        ("degenview_list_watchlists", "watchlists.read"),
-        ("degenview_list_workspaces", "charts.read"),
-        ("degenview_modify_paper_order", "paper.orders.place"),
-        ("degenview_pause_price_alert", "alerts.pause"),
-        ("degenview_place_paper_order", "paper.orders.place"),
-        ("degenview_remove_chart", "charts.delete"),
-        ("degenview_remove_indicator", "charts.indicators.write"),
+        ("fakingview_cancel_paper_orders", "paper.orders.cancel"),
+        ("fakingview_close_paper_positions", "paper.positions.close"),
+        ("fakingview_compile_pine_script", "pine.diagnostics.read"),
+        ("fakingview_control_replay", "charts.replay.write"),
+        ("fakingview_create_price_alert", "alerts.create"),
+        ("fakingview_create_watchlist", "watchlists.write"),
+        ("fakingview_delete_drawings", "drawings.delete"),
+        ("fakingview_delete_price_alert", "alerts.delete"),
+        ("fakingview_delete_watchlist", "watchlists.delete"),
+        ("fakingview_get_candles", "charts.candles.read"),
+        ("fakingview_get_chart_snapshot", "charts.snapshot.read"),
+        ("fakingview_get_indicator_values", "charts.candles.read"),
+        ("fakingview_get_market_candles", "markets.read"),
+        ("fakingview_get_paper_account", "paper.read"),
+        ("fakingview_get_pine_inputs", "pine.inputs.read"),
+        ("fakingview_get_pine_instance", "pine.inputs.read"),
+        ("fakingview_get_pine_report", "pine.reports.read"),
+        ("fakingview_get_pine_script", "pine.scripts.read"),
+        ("fakingview_get_pine_styles", "pine.styles.read"),
+        ("fakingview_get_portfolio_holdings", "portfolio.read"),
+        ("fakingview_get_quotes", "markets.read"),
+        ("fakingview_get_replay", "charts.read"),
+        ("fakingview_get_session_stats", "charts.candles.read"),
+        ("fakingview_get_watchlist", "watchlists.read"),
+        ("fakingview_list_chart_pine_instances", "pine.scripts.list"),
+        ("fakingview_list_charts", "charts.read"),
+        ("fakingview_list_drawings", "drawings.read"),
+        ("fakingview_list_indicators", "charts.read"),
+        ("fakingview_list_paper_accounts", "paper.read"),
+        ("fakingview_list_paper_fills", "paper.read"),
+        ("fakingview_list_paper_trades", "paper.read"),
+        ("fakingview_list_pine_alerts", "pine.alerts.read"),
+        ("fakingview_list_pine_scripts", "pine.scripts.list"),
+        ("fakingview_list_portfolio_transactions", "portfolio.read"),
+        ("fakingview_list_portfolios", "portfolio.read"),
+        ("fakingview_list_price_alerts", "alerts.read"),
+        ("fakingview_list_watchlists", "watchlists.read"),
+        ("fakingview_list_workspaces", "charts.read"),
+        ("fakingview_modify_paper_order", "paper.orders.place"),
+        ("fakingview_pause_price_alert", "alerts.pause"),
+        ("fakingview_place_paper_order", "paper.orders.place"),
+        ("fakingview_remove_chart", "charts.delete"),
+        ("fakingview_remove_indicator", "charts.indicators.write"),
         (
-            "degenview_remove_pine_instance",
+            "fakingview_remove_pine_instance",
             "charts.pine_instances.write",
         ),
-        ("degenview_resume_price_alert", "alerts.pause"),
-        ("degenview_save_pine_script", "pine.scripts.save"),
-        ("degenview_search_symbols", "markets.read"),
-        ("degenview_set_chart_type", "charts.view.write"),
-        ("degenview_set_timeframe", "charts.view.write"),
-        ("degenview_update_drawing", "drawings.write"),
+        ("fakingview_resume_price_alert", "alerts.pause"),
+        ("fakingview_save_pine_script", "pine.scripts.save"),
+        ("fakingview_search_symbols", "markets.read"),
+        ("fakingview_set_chart_type", "charts.view.write"),
+        ("fakingview_set_timeframe", "charts.view.write"),
+        ("fakingview_update_drawing", "drawings.write"),
         (
-            "degenview_update_pine_instance",
+            "fakingview_update_pine_instance",
             "charts.pine_instances.write",
         ),
-        ("degenview_update_pine_script", "pine.scripts.write"),
-        ("degenview_update_price_alert", "alerts.edit"),
-        ("degenview_update_watchlist", "watchlists.write"),
+        ("fakingview_update_pine_script", "pine.scripts.write"),
+        ("fakingview_update_price_alert", "alerts.edit"),
+        ("fakingview_update_watchlist", "watchlists.write"),
     ];
     let shared = McpShared::new();
     let (bridge, _inbox) = crate::mcp::bridge::channel(shared.clone(), Arc::new(|| {}));
-    let mut routed = DegenViewMcp::new(bridge, shared).routed_tool_names();
+    let mut routed = FakingViewMcp::new(bridge, shared).routed_tool_names();
     routed.sort();
     let found: Vec<(String, &str)> = routed
         .into_iter()
@@ -1681,19 +1681,19 @@ fn permissions_are_enforced_on_every_call_not_just_discovery() {
     assert_eq!(
         tool_names(&url, "read-tok"),
         [
-            "degenview_get_replay",
-            "degenview_list_charts",
-            "degenview_list_indicators",
-            "degenview_list_workspaces"
+            "fakingview_get_replay",
+            "fakingview_list_charts",
+            "fakingview_list_indicators",
+            "fakingview_list_workspaces"
         ]
     );
     assert!(tool_names(&url, "none-tok").is_empty());
 
     // Guessing the name of a hidden tool is denied, and nothing runs.
     let add = json!({"workspace_id": "1", "source": "binance", "symbol": "BTCUSDT"});
-    let denied = call(&url, "read-tok", "degenview_add_chart", add.clone());
+    let denied = call(&url, "read-tok", "fakingview_add_chart", add.clone());
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
-    let denied = call(&url, "none-tok", "degenview_list_workspaces", json!({}));
+    let denied = call(&url, "none-tok", "fakingview_list_workspaces", json!({}));
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
     assert!(harness.added.lock().unwrap().is_empty());
 
@@ -1709,7 +1709,7 @@ fn permissions_are_enforced_on_every_call_not_just_discovery() {
         let url = url.clone();
         let add = add.clone();
         std::thread::spawn(move || {
-            let result = call(&url, token, "degenview_add_chart", add);
+            let result = call(&url, token, "fakingview_add_chart", add);
             (may_add, result["isError"] == json!(false))
         })
     })
@@ -1724,15 +1724,15 @@ fn permissions_are_enforced_on_every_call_not_just_discovery() {
         harness.shared.clients(),
         PermissionSet::of([Permission::ChartsRead]),
     );
-    let denied = call(&url, "write-tok", "degenview_add_chart", add.clone());
+    let denied = call(&url, "write-tok", "fakingview_add_chart", add.clone());
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
     assert_eq!(
         tool_names(&url, "write-tok"),
         [
-            "degenview_get_replay",
-            "degenview_list_charts",
-            "degenview_list_indicators",
-            "degenview_list_workspaces"
+            "fakingview_get_replay",
+            "fakingview_list_charts",
+            "fakingview_list_indicators",
+            "fakingview_list_workspaces"
         ]
     );
 }
@@ -1808,7 +1808,7 @@ fn foreign_hosts_and_browser_origins_are_rejected() {
 fn oversized_bodies_are_refused() {
     let harness = Harness::start(&[("c1", "tok", BOTH)]);
     let padding = "x".repeat(crate::mcp::transport::MAX_BODY_BYTES + 1024);
-    let body = json!({"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"degenview_list_workspaces","arguments":{"pad": padding}}});
+    let body = json!({"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"fakingview_list_workspaces","arguments":{"pad": padding}}});
     let reply = post(&harness.url(), Some("tok"), &[PROTOCOL], &body.to_string());
     assert_eq!(reply.status, 413, "{}", reply.body);
     assert_eq!(
@@ -1900,7 +1900,7 @@ fn indicator_catalog_is_readable_with_charts_read() {
     let result = call(
         &harness.url(),
         "tok",
-        "degenview_list_indicators",
+        "fakingview_list_indicators",
         json!({}),
     );
     assert_eq!(result["isError"], json!(false), "{result}");
@@ -1927,13 +1927,13 @@ fn adding_an_indicator_needs_its_own_permission() {
         json!({"workspace_id": "1", "chart_id": "2", "indicator": "ema", "inputs": {"period": 50}});
 
     // charts.create is not enough, and the tool is not even offered.
-    assert!(!tool_names(&url, "rw-tok").contains(&"degenview_add_indicator".to_owned()));
-    let denied = call(&url, "rw-tok", "degenview_add_indicator", args.clone());
+    assert!(!tool_names(&url, "rw-tok").contains(&"fakingview_add_indicator".to_owned()));
+    let denied = call(&url, "rw-tok", "fakingview_add_indicator", args.clone());
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
     assert!(harness.indicators.lock().unwrap().is_empty());
 
-    assert!(tool_names(&url, "all-tok").contains(&"degenview_add_indicator".to_owned()));
-    let result = call(&url, "all-tok", "degenview_add_indicator", args);
+    assert!(tool_names(&url, "all-tok").contains(&"fakingview_add_indicator".to_owned()));
+    let result = call(&url, "all-tok", "fakingview_add_indicator", args);
     assert_eq!(result["isError"], json!(false), "{result}");
     assert_eq!(result["structuredContent"]["indicators"]["ema_period"], 50);
     assert_eq!(
@@ -1949,7 +1949,7 @@ fn adding_an_indicator_needs_its_own_permission() {
     let denied = call(
         &url,
         "all-tok",
-        "degenview_add_indicator",
+        "fakingview_add_indicator",
         json!({"workspace_id": "1", "chart_id": "2", "indicator": "rsi"}),
     );
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
@@ -1977,7 +1977,7 @@ fn bad_indicator_arguments_never_reach_the_app() {
             &url,
             Some("tok"),
             "tools/call",
-            json!({"name": "degenview_add_indicator", "arguments": arguments}),
+            json!({"name": "fakingview_add_indicator", "arguments": arguments}),
         );
         let json = reply.json();
         let rejected = json.get("error").is_some() || json["result"]["isError"] == json!(true);
@@ -1989,7 +1989,7 @@ fn bad_indicator_arguments_never_reach_the_app() {
     let missing = call(
         &url,
         "tok",
-        "degenview_add_indicator",
+        "fakingview_add_indicator",
         json!({"workspace_id": "1", "chart_id": "9", "indicator": "rsi"}),
     );
     assert_eq!(error_code(&missing), "NOT_FOUND");
@@ -2012,13 +2012,13 @@ fn alert_lifecycle_create_pause_resume_delete() {
     let harness = Harness::start(&[("c1", "tok", ALERT_ALL)]);
     let url = harness.url();
 
-    let listed = call(&url, "tok", "degenview_list_price_alerts", json!({}));
+    let listed = call(&url, "tok", "fakingview_list_price_alerts", json!({}));
     assert_eq!(listed["structuredContent"]["alerts"], json!([]));
 
     let created = call(
         &url,
         "tok",
-        "degenview_create_price_alert",
+        "fakingview_create_price_alert",
         create_args("70000"),
     );
     assert_eq!(created["isError"], json!(false), "{created}");
@@ -2033,27 +2033,27 @@ fn alert_lifecycle_create_pause_resume_delete() {
     let again = call(
         &url,
         "tok",
-        "degenview_create_price_alert",
+        "fakingview_create_price_alert",
         create_args("70000"),
     );
     assert_eq!(again["structuredContent"]["status"], "already_exists");
     assert_eq!(again["structuredContent"]["alert"]["alert_id"], id.as_str());
 
     let by_id = json!({"alert_id": id});
-    let paused = call(&url, "tok", "degenview_pause_price_alert", by_id.clone());
+    let paused = call(&url, "tok", "fakingview_pause_price_alert", by_id.clone());
     assert_eq!(paused["structuredContent"]["status"], "paused");
-    let again = call(&url, "tok", "degenview_pause_price_alert", by_id.clone());
+    let again = call(&url, "tok", "fakingview_pause_price_alert", by_id.clone());
     assert_eq!(again["structuredContent"]["status"], "already_paused");
-    let resumed = call(&url, "tok", "degenview_resume_price_alert", by_id.clone());
+    let resumed = call(&url, "tok", "fakingview_resume_price_alert", by_id.clone());
     assert_eq!(resumed["structuredContent"]["status"], "active");
-    let again = call(&url, "tok", "degenview_resume_price_alert", by_id.clone());
+    let again = call(&url, "tok", "fakingview_resume_price_alert", by_id.clone());
     assert_eq!(again["structuredContent"]["status"], "already_active");
 
-    let deleted = call(&url, "tok", "degenview_delete_price_alert", by_id.clone());
+    let deleted = call(&url, "tok", "fakingview_delete_price_alert", by_id.clone());
     assert_eq!(deleted["structuredContent"]["status"], "deleted");
-    let gone = call(&url, "tok", "degenview_delete_price_alert", by_id.clone());
+    let gone = call(&url, "tok", "fakingview_delete_price_alert", by_id.clone());
     assert_eq!(error_code(&gone), "NOT_FOUND");
-    let missing = call(&url, "tok", "degenview_pause_price_alert", by_id);
+    let missing = call(&url, "tok", "fakingview_pause_price_alert", by_id);
     assert_eq!(error_code(&missing), "NOT_FOUND");
 
     // The no-op retries never reached the runtime as changes.
@@ -2078,7 +2078,7 @@ fn each_alert_permission_gates_only_its_own_tools() {
     let created = call(
         &url,
         "create-tok",
-        "degenview_create_price_alert",
+        "fakingview_create_price_alert",
         create_args("70000"),
     );
     assert_eq!(created["isError"], json!(false), "{created}");
@@ -2089,20 +2089,20 @@ fn each_alert_permission_gates_only_its_own_tools() {
     let by_id = json!({"alert_id": id});
 
     let tools = [
-        ("degenview_list_price_alerts", json!({}), "read-tok"),
+        ("fakingview_list_price_alerts", json!({}), "read-tok"),
         (
-            "degenview_create_price_alert",
+            "fakingview_create_price_alert",
             create_args("71000"),
             "create-tok",
         ),
         (
-            "degenview_update_price_alert",
+            "fakingview_update_price_alert",
             json!({"alert_id": id, "note": "edited"}),
             "edit-tok",
         ),
-        ("degenview_pause_price_alert", by_id.clone(), "pause-tok"),
-        ("degenview_resume_price_alert", by_id.clone(), "pause-tok"),
-        ("degenview_delete_price_alert", by_id.clone(), "delete-tok"),
+        ("fakingview_pause_price_alert", by_id.clone(), "pause-tok"),
+        ("fakingview_resume_price_alert", by_id.clone(), "pause-tok"),
+        ("fakingview_delete_price_alert", by_id.clone(), "delete-tok"),
     ];
     for (tool, args, owner) in &tools {
         // Every other client is refused, however much else it may do.
@@ -2134,18 +2134,18 @@ fn each_alert_permission_gates_only_its_own_tools() {
     // Discovery shows each client exactly its own tools.
     assert_eq!(
         tool_names(&url, "read-tok"),
-        ["degenview_list_price_alerts"]
+        ["fakingview_list_price_alerts"]
     );
     assert_eq!(
         tool_names(&url, "pause-tok"),
         [
-            "degenview_pause_price_alert",
-            "degenview_resume_price_alert"
+            "fakingview_pause_price_alert",
+            "fakingview_resume_price_alert"
         ]
     );
     assert_eq!(
         tool_names(&url, "delete-tok"),
-        ["degenview_delete_price_alert"]
+        ["fakingview_delete_price_alert"]
     );
 
     // The owners can do their one thing.
@@ -2162,7 +2162,7 @@ fn global_cap_blocks_alert_deletion_even_if_the_client_was_granted_it() {
     let created = call(
         &url,
         "tok",
-        "degenview_create_price_alert",
+        "fakingview_create_price_alert",
         create_args("70000"),
     );
     let id = created["structuredContent"]["alert"]["alert_id"]
@@ -2177,11 +2177,11 @@ fn global_cap_blocks_alert_deletion_even_if_the_client_was_granted_it() {
     let denied = call(
         &url,
         "tok",
-        "degenview_delete_price_alert",
+        "fakingview_delete_price_alert",
         json!({"alert_id": id}),
     );
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
-    let listed = call(&url, "tok", "degenview_list_price_alerts", json!({}));
+    let listed = call(&url, "tok", "fakingview_list_price_alerts", json!({}));
     assert_eq!(
         listed["structuredContent"]["alerts"]
             .as_array()
@@ -2221,16 +2221,16 @@ fn bad_alert_arguments_never_reach_the_app() {
             &url,
             Some("tok"),
             "tools/call",
-            json!({"name": "degenview_create_price_alert", "arguments": arguments}),
+            json!({"name": "fakingview_create_price_alert", "arguments": arguments}),
         );
         let json = reply.json();
         let rejected = json.get("error").is_some() || json["result"]["isError"] == json!(true);
         assert!(rejected, "accepted {arguments}: {}", reply.body);
     }
     for tool in [
-        "degenview_pause_price_alert",
-        "degenview_resume_price_alert",
-        "degenview_delete_price_alert",
+        "fakingview_pause_price_alert",
+        "fakingview_resume_price_alert",
+        "fakingview_delete_price_alert",
     ] {
         for id in ["abc", "-1", "1.5", "", "99999999999999999999999"] {
             let result = call(&url, "tok", tool, json!({"alert_id": id}));
@@ -2265,7 +2265,7 @@ fn alert_editing_changes_only_what_is_given() {
     let created = call(
         &url,
         "tok",
-        "degenview_create_price_alert",
+        "fakingview_create_price_alert",
         create_args("70000"),
     );
     let id = created["structuredContent"]["alert"]["alert_id"]
@@ -2276,7 +2276,7 @@ fn alert_editing_changes_only_what_is_given() {
     let edited = call(
         &url,
         "tok",
-        "degenview_update_price_alert",
+        "fakingview_update_price_alert",
         json!({"alert_id": id, "target_price": "72500.5", "note": " breakout "}),
     );
     assert_eq!(edited["isError"], json!(false), "{edited}");
@@ -2292,7 +2292,7 @@ fn alert_editing_changes_only_what_is_given() {
     let flipped = call(
         &url,
         "tok",
-        "degenview_update_price_alert",
+        "fakingview_update_price_alert",
         json!({"alert_id": id, "condition": "crosses_below", "currency": "EUR", "frequency": "every_time"}),
     );
     let alert = &flipped["structuredContent"]["alert"];
@@ -2315,14 +2315,14 @@ fn alert_editing_changes_only_what_is_given() {
     let same = call(
         &url,
         "tok",
-        "degenview_update_price_alert",
+        "fakingview_update_price_alert",
         json!({"alert_id": id, "frequency": "every_time"}),
     );
     assert_eq!(same["structuredContent"]["status"], "unchanged");
     let cleared = call(
         &url,
         "tok",
-        "degenview_update_price_alert",
+        "fakingview_update_price_alert",
         json!({"alert_id": id, "note": ""}),
     );
     assert_eq!(cleared["structuredContent"]["alert"]["note"], "");
@@ -2334,7 +2334,7 @@ fn alert_editing_changes_only_what_is_given() {
     let missing = call(
         &url,
         "tok",
-        "degenview_update_price_alert",
+        "fakingview_update_price_alert",
         json!({"alert_id": "123", "note": "x"}),
     );
     assert_eq!(error_code(&missing), "NOT_FOUND");
@@ -2362,7 +2362,7 @@ fn bad_alert_edits_never_reach_the_app() {
             &url,
             Some("tok"),
             "tools/call",
-            json!({"name": "degenview_update_price_alert", "arguments": arguments}),
+            json!({"name": "fakingview_update_price_alert", "arguments": arguments}),
         );
         let json = reply.json();
         let rejected = json.get("error").is_some() || json["result"]["isError"] == json!(true);
@@ -2387,18 +2387,18 @@ fn editing_is_not_implied_by_create_pause_or_delete() {
     let created = call(
         &url,
         "tok",
-        "degenview_create_price_alert",
+        "fakingview_create_price_alert",
         create_args("70000"),
     );
     let id = created["structuredContent"]["alert"]["alert_id"]
         .as_str()
         .unwrap()
         .to_owned();
-    assert!(!tool_names(&url, "tok").contains(&"degenview_update_price_alert".to_owned()));
+    assert!(!tool_names(&url, "tok").contains(&"fakingview_update_price_alert".to_owned()));
     let denied = call(
         &url,
         "tok",
-        "degenview_update_price_alert",
+        "fakingview_update_price_alert",
         json!({"alert_id": id, "note": "x"}),
     );
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
@@ -2432,7 +2432,7 @@ fn pine_scripts_can_be_listed_read_compiled_and_their_inputs_read() {
     let url = harness.url();
     let id = seed_script(&harness, "Good", GOOD_SCRIPT);
 
-    let listed = call(&url, "tok", "degenview_list_pine_scripts", json!({}));
+    let listed = call(&url, "tok", "fakingview_list_pine_scripts", json!({}));
     assert_eq!(listed["isError"], json!(false), "{listed}");
     let scripts = listed["structuredContent"]["scripts"].as_array().unwrap();
     assert_eq!(scripts.len(), 1);
@@ -2448,7 +2448,7 @@ fn pine_scripts_can_be_listed_read_compiled_and_their_inputs_read() {
     let source = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "saved"}),
     );
     assert_eq!(source["structuredContent"]["source"], GOOD_SCRIPT);
@@ -2463,7 +2463,7 @@ fn pine_scripts_can_be_listed_read_compiled_and_their_inputs_read() {
     let no_draft = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "draft"}),
     );
     assert_eq!(error_code(&no_draft), "NOT_FOUND");
@@ -2471,7 +2471,7 @@ fn pine_scripts_can_be_listed_read_compiled_and_their_inputs_read() {
     let compiled = call(
         &url,
         "tok",
-        "degenview_compile_pine_script",
+        "fakingview_compile_pine_script",
         json!({"script_id": id}),
     );
     assert_eq!(
@@ -2482,7 +2482,7 @@ fn pine_scripts_can_be_listed_read_compiled_and_their_inputs_read() {
     let broken = call(
         &url,
         "tok",
-        "degenview_compile_pine_script",
+        "fakingview_compile_pine_script",
         json!({"source": "//@version=6\nindicator(\"B\")\nplot(\n"}),
     );
     assert_eq!(broken["structuredContent"]["success"], json!(false));
@@ -2496,7 +2496,7 @@ fn pine_scripts_can_be_listed_read_compiled_and_their_inputs_read() {
     let inputs = call(
         &url,
         "tok",
-        "degenview_get_pine_inputs",
+        "fakingview_get_pine_inputs",
         json!({"script_id": id}),
     );
     let first = &inputs["structuredContent"]["inputs"][0];
@@ -2523,19 +2523,19 @@ fn each_pine_permission_gates_only_its_own_tool() {
     let url = harness.url();
     let id = seed_script(&harness, "Good", GOOD_SCRIPT);
     let tools = [
-        ("degenview_list_pine_scripts", json!({}), "list-tok"),
+        ("fakingview_list_pine_scripts", json!({}), "list-tok"),
         (
-            "degenview_get_pine_script",
+            "fakingview_get_pine_script",
             json!({"script_id": id, "version": "saved"}),
             "read-tok",
         ),
         (
-            "degenview_compile_pine_script",
+            "fakingview_compile_pine_script",
             json!({"script_id": id}),
             "diag-tok",
         ),
         (
-            "degenview_get_pine_inputs",
+            "fakingview_get_pine_inputs",
             json!({"script_id": id}),
             "inputs-tok",
         ),
@@ -2560,7 +2560,7 @@ fn each_pine_permission_gates_only_its_own_tool() {
             }
         }
     }
-    assert_eq!(tool_names(&url, "read-tok"), ["degenview_get_pine_script"]);
+    assert_eq!(tool_names(&url, "read-tok"), ["fakingview_get_pine_script"]);
 
     // Source is private: the global cap switches it off whatever the client was granted.
     harness.shared.replace(
@@ -2570,7 +2570,7 @@ fn each_pine_permission_gates_only_its_own_tool() {
     let denied = call(
         &url,
         "read-tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "saved"}),
     );
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
@@ -2582,50 +2582,50 @@ fn bad_pine_arguments_are_refused_and_paths_cannot_be_reached() {
     let url = harness.url();
     let id = seed_script(&harness, "Good", GOOD_SCRIPT);
     let cases = [
-        ("degenview_get_pine_script", json!({"script_id": id})),
+        ("fakingview_get_pine_script", json!({"script_id": id})),
         (
-            "degenview_get_pine_script",
+            "fakingview_get_pine_script",
             json!({"script_id": id, "version": "latest"}),
         ),
         (
-            "degenview_get_pine_script",
+            "fakingview_get_pine_script",
             json!({"script_id": "../etc/passwd", "version": "saved"}),
         ),
         (
-            "degenview_get_pine_script",
+            "fakingview_get_pine_script",
             json!({"script_id": "a/b", "version": "saved"}),
         ),
         (
-            "degenview_get_pine_script",
+            "fakingview_get_pine_script",
             json!({"script_id": "", "version": "saved"}),
         ),
         (
-            "degenview_get_pine_script",
+            "fakingview_get_pine_script",
             json!({"script_id": "x".repeat(65), "version": "saved"}),
         ),
         (
-            "degenview_get_pine_script",
+            "fakingview_get_pine_script",
             json!({"script_id": id, "version": "saved", "path": "/etc/hosts"}),
         ),
-        ("degenview_compile_pine_script", json!({})),
+        ("fakingview_compile_pine_script", json!({})),
         (
-            "degenview_compile_pine_script",
+            "fakingview_compile_pine_script",
             json!({"script_id": id, "source": "plot(close)"}),
         ),
         (
-            "degenview_compile_pine_script",
+            "fakingview_compile_pine_script",
             json!({"source": "plot(close)", "version": "draft"}),
         ),
         (
-            "degenview_compile_pine_script",
+            "fakingview_compile_pine_script",
             json!({"source": "x".repeat(200_001)}),
         ),
         (
-            "degenview_get_pine_inputs",
+            "fakingview_get_pine_inputs",
             json!({"script_id": id, "version": "other"}),
         ),
         (
-            "degenview_get_pine_inputs",
+            "fakingview_get_pine_inputs",
             json!({"script_id": "..", "version": "saved"}),
         ),
     ];
@@ -2643,7 +2643,7 @@ fn bad_pine_arguments_are_refused_and_paths_cannot_be_reached() {
     let missing = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": "deadbeef", "version": "saved"}),
     );
     assert_eq!(error_code(&missing), "NOT_FOUND");
@@ -2656,12 +2656,12 @@ fn script_errors_do_not_leak_file_system_paths() {
     let root = harness.scripts_root.to_string_lossy().into_owned();
     for (tool, args) in [
         (
-            "degenview_get_pine_script",
+            "fakingview_get_pine_script",
             json!({"script_id": "nope", "version": "saved"}),
         ),
-        ("degenview_list_pine_scripts", json!({})),
+        ("fakingview_list_pine_scripts", json!({})),
         (
-            "degenview_compile_pine_script",
+            "fakingview_compile_pine_script",
             json!({"script_id": "nope"}),
         ),
     ] {
@@ -2698,7 +2698,7 @@ fn applied_pine_tools_reach_the_app_and_return_typed_results() {
     let list = call(
         &url,
         "tok",
-        "degenview_list_chart_pine_instances",
+        "fakingview_list_chart_pine_instances",
         json!({"workspace_id": "1", "chart_id": "2"}),
     );
     assert_eq!(list["isError"], json!(false), "{list}");
@@ -2707,23 +2707,23 @@ fn applied_pine_tools_reach_the_app_and_return_typed_results() {
         "Strat"
     );
 
-    let detail = call(&url, "tok", "degenview_get_pine_instance", instance_args());
+    let detail = call(&url, "tok", "fakingview_get_pine_instance", instance_args());
     assert_eq!(detail["structuredContent"]["bar_count"], 500);
     // With no script behind it, the instance is simply unlinked (filled in on the worker side).
     assert_eq!(detail["structuredContent"]["script_status"], "unlinked");
 
-    let styles = call(&url, "tok", "degenview_get_pine_styles", instance_args());
+    let styles = call(&url, "tok", "fakingview_get_pine_styles", instance_args());
     assert_eq!(styles["structuredContent"]["available"], json!(false));
 
     let mut report_args = instance_args();
     report_args["trades_limit"] = json!(10);
     report_args["include_equity"] = json!(true);
-    let report = call(&url, "tok", "degenview_get_pine_report", report_args);
+    let report = call(&url, "tok", "fakingview_get_pine_report", report_args);
     assert_eq!(report["isError"], json!(false), "{report}");
     assert_eq!(report["structuredContent"]["available"], json!(false));
     assert_eq!(report["structuredContent"]["reason"], "No report yet");
 
-    let alerts = call(&url, "tok", "degenview_list_pine_alerts", json!({}));
+    let alerts = call(&url, "tok", "fakingview_list_pine_alerts", json!({}));
     assert_eq!(
         alerts["structuredContent"]["event_history_available"],
         json!(false)
@@ -2732,7 +2732,7 @@ fn applied_pine_tools_reach_the_app_and_return_typed_results() {
     let missing = call(
         &url,
         "tok",
-        "degenview_get_pine_report",
+        "fakingview_get_pine_report",
         json!({"workspace_id": "1", "chart_id": "2", "instance_id": "9"}),
     );
     assert_eq!(error_code(&missing), "NOT_FOUND");
@@ -2750,14 +2750,18 @@ fn each_applied_pine_permission_gates_only_its_own_tool() {
     let url = harness.url();
     let tools = [
         (
-            "degenview_list_chart_pine_instances",
+            "fakingview_list_chart_pine_instances",
             json!({"workspace_id": "1", "chart_id": "2"}),
             "list-tok",
         ),
-        ("degenview_get_pine_instance", instance_args(), "inputs-tok"),
-        ("degenview_get_pine_styles", instance_args(), "styles-tok"),
-        ("degenview_get_pine_report", instance_args(), "reports-tok"),
-        ("degenview_list_pine_alerts", json!({}), "alerts-tok"),
+        (
+            "fakingview_get_pine_instance",
+            instance_args(),
+            "inputs-tok",
+        ),
+        ("fakingview_get_pine_styles", instance_args(), "styles-tok"),
+        ("fakingview_get_pine_report", instance_args(), "reports-tok"),
+        ("fakingview_list_pine_alerts", json!({}), "alerts-tok"),
     ];
     for (tool, args, owner) in &tools {
         for token in [
@@ -2789,27 +2793,27 @@ fn bad_applied_pine_arguments_never_reach_the_app() {
     let url = harness.url();
     let mut cases = vec![
         (
-            "degenview_get_pine_instance",
+            "fakingview_get_pine_instance",
             json!({"workspace_id": "1", "chart_id": "2"}),
         ),
         (
-            "degenview_get_pine_instance",
+            "fakingview_get_pine_instance",
             json!({"workspace_id": "1", "chart_id": "x", "instance_id": "1"}),
         ),
         (
-            "degenview_get_pine_instance",
+            "fakingview_get_pine_instance",
             json!({"workspace_id": "1", "chart_id": "2", "instance_id": "-1"}),
         ),
         (
-            "degenview_get_pine_styles",
+            "fakingview_get_pine_styles",
             json!({"workspace_id": "w", "chart_id": "2", "instance_id": "1"}),
         ),
         (
-            "degenview_list_chart_pine_instances",
+            "fakingview_list_chart_pine_instances",
             json!({"workspace_id": "1"}),
         ),
         (
-            "degenview_list_chart_pine_instances",
+            "fakingview_list_chart_pine_instances",
             json!({"workspace_id": "1", "chart_id": "2", "extra": 1}),
         ),
     ];
@@ -2824,7 +2828,7 @@ fn bad_applied_pine_arguments_never_reach_the_app() {
         for (key, value) in bad.as_object().unwrap() {
             args[key] = value.clone();
         }
-        cases.push(("degenview_get_pine_report", args));
+        cases.push(("fakingview_get_pine_report", args));
     }
     for (tool, arguments) in cases {
         let reply = rpc(
@@ -2865,7 +2869,7 @@ fn a_script_is_edited_as_a_draft_and_only_then_saved() {
     let draft = call(
         &url,
         "tok",
-        "degenview_update_pine_script",
+        "fakingview_update_pine_script",
         json!({"script_id": id, "source": EDIT_V2, "expected_revision": sha(EDIT_V1)}),
     );
     assert_eq!(draft["isError"], json!(false), "{draft}");
@@ -2885,13 +2889,13 @@ fn a_script_is_edited_as_a_draft_and_only_then_saved() {
     let saved = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "saved"}),
     );
     let draft_read = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "draft"}),
     );
     assert_eq!(saved["structuredContent"]["source"], EDIT_V1);
@@ -2901,14 +2905,14 @@ fn a_script_is_edited_as_a_draft_and_only_then_saved() {
     let wrong = call(
         &url,
         "tok",
-        "degenview_save_pine_script",
+        "fakingview_save_pine_script",
         json!({"script_id": id, "expected_revision": sha(EDIT_V1)}),
     );
     assert_eq!(error_code(&wrong), "CONFLICT");
     let done = call(
         &url,
         "tok",
-        "degenview_save_pine_script",
+        "fakingview_save_pine_script",
         json!({"script_id": id, "expected_revision": sha(EDIT_V2)}),
     );
     assert_eq!(done["isError"], json!(false), "{done}");
@@ -2918,14 +2922,14 @@ fn a_script_is_edited_as_a_draft_and_only_then_saved() {
     let saved = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "saved"}),
     );
     assert_eq!(saved["structuredContent"]["source"], EDIT_V2);
     let gone = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "draft"}),
     );
     assert_eq!(error_code(&gone), "NOT_FOUND");
@@ -2944,7 +2948,7 @@ fn a_stale_edit_is_a_conflict_and_the_newer_text_survives() {
         call(
             &url,
             "tok",
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             json!({"script_id": id, "source": source, "expected_revision": revision}),
         )
     };
@@ -2961,7 +2965,7 @@ fn a_stale_edit_is_a_conflict_and_the_newer_text_survives() {
     let draft = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "draft"}),
     );
     assert_eq!(draft["structuredContent"]["source"], EDIT_V2);
@@ -2986,7 +2990,7 @@ fn saving_a_draft_with_errors_is_refused_and_the_draft_is_kept() {
     let draft = call(
         &url,
         "tok",
-        "degenview_update_pine_script",
+        "fakingview_update_pine_script",
         json!({"script_id": id, "source": broken, "expected_revision": sha(EDIT_V1)}),
     );
     // A broken draft is allowed (it is only a draft) and its problems are reported.
@@ -3005,21 +3009,21 @@ fn saving_a_draft_with_errors_is_refused_and_the_draft_is_kept() {
     let refused = call(
         &url,
         "tok",
-        "degenview_save_pine_script",
+        "fakingview_save_pine_script",
         json!({"script_id": id, "expected_revision": sha(broken)}),
     );
     assert_eq!(error_code(&refused), "COMPILATION_FAILED");
     let saved = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "saved"}),
     );
     assert_eq!(saved["structuredContent"]["source"], EDIT_V1);
     let kept = call(
         &url,
         "tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "draft"}),
     );
     assert_eq!(kept["structuredContent"]["source"], broken);
@@ -3050,7 +3054,7 @@ fn editing_and_saving_are_separate_permissions_and_neither_is_implied_by_reading
             error_code(&call(
                 &url,
                 token,
-                "degenview_update_pine_script",
+                "fakingview_update_pine_script",
                 update.clone()
             )),
             "PERMISSION_DENIED",
@@ -3062,7 +3066,7 @@ fn editing_and_saving_are_separate_permissions_and_neither_is_implied_by_reading
             error_code(&call(
                 &url,
                 token,
-                "degenview_save_pine_script",
+                "fakingview_save_pine_script",
                 save.clone()
             )),
             "PERMISSION_DENIED",
@@ -3073,12 +3077,15 @@ fn editing_and_saving_are_separate_permissions_and_neither_is_implied_by_reading
         harness.stub.pine_calls.lock().unwrap().is_empty(),
         "no denied call reached the app"
     );
-    assert!(!tool_names(&url, "read-tok").contains(&"degenview_update_pine_script".to_owned()));
+    assert!(!tool_names(&url, "read-tok").contains(&"fakingview_update_pine_script".to_owned()));
     assert_eq!(
         tool_names(&url, "write-tok"),
-        ["degenview_update_pine_script"]
+        ["fakingview_update_pine_script"]
     );
-    assert_eq!(tool_names(&url, "save-tok"), ["degenview_save_pine_script"]);
+    assert_eq!(
+        tool_names(&url, "save-tok"),
+        ["fakingview_save_pine_script"]
+    );
 
     // The global cap overrides a grant: with writes capped off, even the writer is refused.
     harness.shared.replace(
@@ -3089,7 +3096,7 @@ fn editing_and_saving_are_separate_permissions_and_neither_is_implied_by_reading
         error_code(&call(
             &url,
             "write-tok",
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             update
         )),
         "PERMISSION_DENIED"
@@ -3097,7 +3104,7 @@ fn editing_and_saving_are_separate_permissions_and_neither_is_implied_by_reading
     let read = call(
         &url,
         "read-tok",
-        "degenview_get_pine_script",
+        "fakingview_get_pine_script",
         json!({"script_id": id, "version": "saved"}),
     );
     assert_eq!(
@@ -3118,44 +3125,44 @@ fn bad_edit_arguments_never_reach_the_app() {
     let good = sha(EDIT_V1);
     let cases = [
         (
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             json!({"script_id": id, "source": EDIT_V2}),
         ),
         (
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             json!({"script_id": id, "source": EDIT_V2, "expected_revision": "abc"}),
         ),
         (
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             json!({"script_id": id, "source": EDIT_V2, "expected_revision": good.to_uppercase()}),
         ),
         (
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             json!({"script_id": id, "source": EDIT_V2, "expected_revision": "z".repeat(64)}),
         ),
         (
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             json!({"script_id": "../x", "source": EDIT_V2, "expected_revision": good}),
         ),
         (
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             json!({"script_id": id, "source": "x".repeat(200_001), "expected_revision": good}),
         ),
         (
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             json!({"script_id": id, "source": EDIT_V2, "expected_revision": good, "path": "/tmp/x"}),
         ),
         (
-            "degenview_update_pine_script",
+            "fakingview_update_pine_script",
             json!({"script_id": id, "source": 5, "expected_revision": good}),
         ),
-        ("degenview_save_pine_script", json!({"script_id": id})),
+        ("fakingview_save_pine_script", json!({"script_id": id})),
         (
-            "degenview_save_pine_script",
+            "fakingview_save_pine_script",
             json!({"script_id": id, "expected_revision": "nope"}),
         ),
         (
-            "degenview_save_pine_script",
+            "fakingview_save_pine_script",
             json!({"script_id": id, "expected_revision": good, "source": EDIT_V2}),
         ),
     ];
@@ -3203,12 +3210,12 @@ fn applying_scripts_has_its_own_permission() {
     let url = harness.url();
     let id = seed_script(&harness, "Good", GOOD_SCRIPT);
     let tools = [
-        ("degenview_add_pine_script_to_chart", apply_args(&id)),
+        ("fakingview_add_pine_script_to_chart", apply_args(&id)),
         (
-            "degenview_update_pine_instance",
+            "fakingview_update_pine_instance",
             json!({"workspace_id": "1", "chart_id": "2", "instance_id": "1", "visible": false}),
         ),
-        ("degenview_remove_pine_instance", instance_args()),
+        ("fakingview_remove_pine_instance", instance_args()),
     ];
     for (tool, args) in &tools {
         let allowed = call(&url, "apply-tok", tool, args.clone());
@@ -3225,13 +3232,13 @@ fn applying_scripts_has_its_own_permission() {
     assert_eq!(
         tool_names(&url, "apply-tok"),
         [
-            "degenview_add_pine_script_to_chart",
-            "degenview_remove_pine_instance",
-            "degenview_update_pine_instance",
+            "fakingview_add_pine_script_to_chart",
+            "fakingview_remove_pine_instance",
+            "fakingview_update_pine_instance",
         ]
     );
     assert!(
-        !tool_names(&url, "ind-tok").contains(&"degenview_add_pine_script_to_chart".to_owned())
+        !tool_names(&url, "ind-tok").contains(&"fakingview_add_pine_script_to_chart".to_owned())
     );
 
     harness
@@ -3251,7 +3258,7 @@ fn a_saved_script_reaches_the_app_with_checked_inputs() {
     let mut args = apply_args(&id);
     args["inputs"] = json!({"len": 50});
     args["visible"] = json!(false);
-    let result = call(&url, "tok", "degenview_add_pine_script_to_chart", args);
+    let result = call(&url, "tok", "fakingview_add_pine_script_to_chart", args);
     assert_eq!(result["isError"], json!(false), "{result}");
     assert_eq!(result["structuredContent"]["status"], json!("added"));
     assert_eq!(result["structuredContent"]["instance_id"], json!("7"));
@@ -3262,7 +3269,7 @@ fn a_saved_script_reaches_the_app_with_checked_inputs() {
     let result = call(
         &url,
         "tok",
-        "degenview_add_pine_script_to_chart",
+        "fakingview_add_pine_script_to_chart",
         at_default,
     );
     assert_eq!(result["isError"], json!(false), "{result}");
@@ -3329,7 +3336,7 @@ fn an_unusable_script_or_input_never_reaches_the_app() {
             &url,
             Some("tok"),
             "tools/call",
-            json!({"name": "degenview_add_pine_script_to_chart", "arguments": arguments}),
+            json!({"name": "fakingview_add_pine_script_to_chart", "arguments": arguments}),
         );
         let json = reply.json();
         let rejected = json.get("error").is_some() || json["result"]["isError"] == json!(true);
@@ -3344,7 +3351,7 @@ fn an_unusable_script_or_input_never_reaches_the_app() {
         let result = call(
             &url,
             "tok",
-            "degenview_update_pine_instance",
+            "fakingview_update_pine_instance",
             arguments.clone(),
         );
         assert_eq!(error_code(&result), "INVALID_ARGUMENT", "{arguments}");
@@ -3360,7 +3367,7 @@ fn an_applied_script_can_be_changed_and_removed() {
     let result = call(
         &url,
         "tok",
-        "degenview_update_pine_instance",
+        "fakingview_update_pine_instance",
         json!({
             "workspace_id": "1", "chart_id": "2", "instance_id": "1",
             "inputs": {"len": 30, "unset": null}, "visible": false
@@ -3370,7 +3377,7 @@ fn an_applied_script_can_be_changed_and_removed() {
     let result = call(
         &url,
         "tok",
-        "degenview_remove_pine_instance",
+        "fakingview_remove_pine_instance",
         instance_args(),
     );
     assert_eq!(result["structuredContent"]["status"], json!("removed"));
@@ -3425,10 +3432,10 @@ fn candles_and_drawings_have_their_own_permissions() {
     ]);
     let url = harness.url();
     let tools = [
-        ("degenview_get_candles", chart_args(), "candles-tok"),
-        ("degenview_list_drawings", chart_args(), "read-tok"),
+        ("fakingview_get_candles", chart_args(), "candles-tok"),
+        ("fakingview_list_drawings", chart_args(), "read-tok"),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             with(
                 chart_args(),
                 json!({"drawings": [{
@@ -3440,7 +3447,7 @@ fn candles_and_drawings_have_their_own_permissions() {
             "write-tok",
         ),
         (
-            "degenview_delete_drawings",
+            "fakingview_delete_drawings",
             with(chart_args(), json!({"drawing_ids": ["1"]})),
             "delete-tok",
         ),
@@ -3470,19 +3477,19 @@ fn candles_and_drawings_have_their_own_permissions() {
     assert_eq!(
         tool_names(&url, "candles-tok"),
         [
-            "degenview_get_candles",
-            "degenview_get_indicator_values",
-            "degenview_get_session_stats"
+            "fakingview_get_candles",
+            "fakingview_get_indicator_values",
+            "fakingview_get_session_stats"
         ]
     );
-    assert_eq!(tool_names(&url, "read-tok"), ["degenview_list_drawings"]);
+    assert_eq!(tool_names(&url, "read-tok"), ["fakingview_list_drawings"]);
     assert_eq!(
         tool_names(&url, "write-tok"),
-        ["degenview_add_drawings", "degenview_update_drawing"]
+        ["fakingview_add_drawings", "fakingview_update_drawing"]
     );
     assert_eq!(
         tool_names(&url, "delete-tok"),
-        ["degenview_delete_drawings"]
+        ["fakingview_delete_drawings"]
     );
     // Neither seeing the chart nor creating charts implies reading its candles or drawing on it.
     assert!(
@@ -3493,7 +3500,7 @@ fn candles_and_drawings_have_their_own_permissions() {
     harness
         .shared
         .replace(harness.shared.clients(), PermissionSet::none());
-    let denied = call(&url, "candles-tok", "degenview_get_candles", chart_args());
+    let denied = call(&url, "candles-tok", "fakingview_get_candles", chart_args());
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
 }
 
@@ -3505,7 +3512,7 @@ fn candles_arrive_as_named_columns_and_page_back_without_overlap() {
         let result = call(
             &url,
             "tok",
-            "degenview_get_candles",
+            "fakingview_get_candles",
             with(chart_args(), extra),
         );
         assert_eq!(result["isError"], json!(false), "{result}");
@@ -3562,104 +3569,110 @@ fn bad_candle_and_drawing_arguments_never_reach_the_app() {
     let add = |drawing: Value| with(chart_args(), json!({"drawings": [drawing]}));
     let cases = [
         (
-            "degenview_get_candles",
+            "fakingview_get_candles",
             with(chart_args(), json!({"limit": 0})),
         ),
         (
-            "degenview_get_candles",
+            "fakingview_get_candles",
             with(chart_args(), json!({"limit": 5000})),
         ),
         (
-            "degenview_get_candles",
+            "fakingview_get_candles",
             with(chart_args(), json!({"before": "tomorrow"})),
         ),
         (
-            "degenview_get_candles",
+            "fakingview_get_candles",
             with(chart_args(), json!({"extra": 1})),
         ),
         (
-            "degenview_get_candles",
+            "fakingview_get_candles",
             json!({"workspace_id": "x", "chart_id": "2"}),
         ),
-        ("degenview_list_drawings", json!({"workspace_id": "1"})),
+        ("fakingview_list_drawings", json!({"workspace_id": "1"})),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             with(chart_args(), json!({"drawings": []})),
         ),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             with(chart_args(), json!({"drawings": vec![line(json!({})); 26]})),
         ),
-        ("degenview_add_drawings", add(line(json!({"color": "red"})))),
-        ("degenview_add_drawings", add(line(json!({"width": 0})))),
-        ("degenview_add_drawings", add(line(json!({"dash": "wavy"})))),
-        ("degenview_add_drawings", add(line(json!({"tool": "fib"})))),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
+            add(line(json!({"color": "red"}))),
+        ),
+        ("fakingview_add_drawings", add(line(json!({"width": 0})))),
+        (
+            "fakingview_add_drawings",
+            add(line(json!({"dash": "wavy"}))),
+        ),
+        ("fakingview_add_drawings", add(line(json!({"tool": "fib"})))),
+        (
+            "fakingview_add_drawings",
             add(line(json!({"text": "label"}))),
         ),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             add(line(json!({"fill_color": "#112233"}))),
         ),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             add(line(json!({"stroke": "blue"}))),
         ),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             add(line(json!({"a": {"time": "soon", "price": 1.0}}))),
         ),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             add(line(json!({"a": {"time": time_of_day(2)}}))),
         ),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             add(line(json!({"a": {"time": time_of_day(2), "price": 0}}))),
         ),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             add(line(json!({"a": {"time": time_of_day(2), "price": -4}}))),
         ),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             add(line(
                 json!({"a": {"time": time_of_day(2), "price": 1, "price_from": "low"}}),
             )),
         ),
         (
-            "degenview_add_drawings",
+            "fakingview_add_drawings",
             add(line(
                 json!({"a": {"time": time_of_day(2), "price_from": "mid"}}),
             )),
         ),
         (
-            "degenview_update_drawing",
+            "fakingview_update_drawing",
             with(chart_args(), json!({"drawing_id": "1"})),
         ),
         (
-            "degenview_update_drawing",
+            "fakingview_update_drawing",
             with(chart_args(), json!({"drawing_id": "0", "hidden": true})),
         ),
         (
-            "degenview_update_drawing",
+            "fakingview_update_drawing",
             with(chart_args(), json!({"drawing_id": "x", "hidden": true})),
         ),
         (
-            "degenview_update_drawing",
+            "fakingview_update_drawing",
             with(chart_args(), json!({"drawing_id": "1", "color": "nope"})),
         ),
         (
-            "degenview_delete_drawings",
+            "fakingview_delete_drawings",
             with(chart_args(), json!({"drawing_ids": []})),
         ),
         (
-            "degenview_delete_drawings",
+            "fakingview_delete_drawings",
             with(chart_args(), json!({"drawing_ids": ["a"]})),
         ),
         (
-            "degenview_delete_drawings",
+            "fakingview_delete_drawings",
             with(chart_args(), json!({"drawing_ids": vec!["1"; 51]})),
         ),
     ];
@@ -3686,7 +3699,7 @@ fn an_agent_reads_the_candles_and_draws_a_support_line_through_the_lows() {
     let result = call(
         &url,
         "tok",
-        "degenview_get_candles",
+        "fakingview_get_candles",
         with(chart_args(), json!({"limit": 100})),
     );
     let bars = result["structuredContent"]["bars"]
@@ -3710,7 +3723,7 @@ fn an_agent_reads_the_candles_and_draws_a_support_line_through_the_lows() {
     let drawn = call(
         &url,
         "tok",
-        "degenview_add_drawings",
+        "fakingview_add_drawings",
         with(
             chart_args(),
             json!({"drawings": [
@@ -3751,7 +3764,7 @@ fn an_agent_reads_the_candles_and_draws_a_support_line_through_the_lows() {
     );
 
     // The listing agrees with what was returned.
-    let listed = call(&url, "tok", "degenview_list_drawings", chart_args());
+    let listed = call(&url, "tok", "fakingview_list_drawings", chart_args());
     assert_eq!(listed["structuredContent"]["total"], json!(2));
     assert_eq!(
         listed["structuredContent"]["drawings"][0],
@@ -3762,7 +3775,7 @@ fn an_agent_reads_the_candles_and_draws_a_support_line_through_the_lows() {
     let moved = call(
         &url,
         "tok",
-        "degenview_update_drawing",
+        "fakingview_update_drawing",
         with(
             chart_args(),
             json!({"drawing_id": "1", "color": "#00C853", "b": {"time": last[0], "price": 108.0}}),
@@ -3781,7 +3794,7 @@ fn an_agent_reads_the_candles_and_draws_a_support_line_through_the_lows() {
     let again = call(
         &url,
         "tok",
-        "degenview_update_drawing",
+        "fakingview_update_drawing",
         with(chart_args(), json!({"drawing_id": "1", "color": "#00C853"})),
     );
     assert_eq!(again["structuredContent"]["status"], json!("unchanged"));
@@ -3789,7 +3802,7 @@ fn an_agent_reads_the_candles_and_draws_a_support_line_through_the_lows() {
     let gone = call(
         &url,
         "tok",
-        "degenview_delete_drawings",
+        "fakingview_delete_drawings",
         with(chart_args(), json!({"drawing_ids": ["1", "2"]})),
     );
     assert_eq!(gone["structuredContent"]["status"], json!("removed"));
@@ -3814,7 +3827,7 @@ fn one_bad_drawing_refuses_the_batch_and_a_locked_one_is_left_alone() {
     let refused = call(
         &url,
         "tok",
-        "degenview_add_drawings",
+        "fakingview_add_drawings",
         with(chart_args(), json!({"drawings": [good.clone(), outside]})),
     );
     let message = refused["structuredContent"]["message"].as_str().unwrap();
@@ -3828,13 +3841,13 @@ fn one_bad_drawing_refuses_the_batch_and_a_locked_one_is_left_alone() {
     let made = call(
         &url,
         "tok",
-        "degenview_add_drawings",
+        "fakingview_add_drawings",
         with(chart_args(), json!({"drawings": [good.clone(), good]})),
     );
     assert_eq!(made["structuredContent"]["drawing_ids"], json!(["1", "2"]));
     // The person locks one in the app.
     harness.stub.chart.lock().unwrap().drawings[0].set_locked(true);
-    let listed = call(&url, "tok", "degenview_list_drawings", chart_args());
+    let listed = call(&url, "tok", "fakingview_list_drawings", chart_args());
     assert_eq!(
         listed["structuredContent"]["drawings"][0]["editable"],
         json!(false)
@@ -3842,7 +3855,7 @@ fn one_bad_drawing_refuses_the_batch_and_a_locked_one_is_left_alone() {
     let edit = call(
         &url,
         "tok",
-        "degenview_update_drawing",
+        "fakingview_update_drawing",
         with(chart_args(), json!({"drawing_id": "1", "hidden": true})),
     );
     assert_eq!(error_code(&edit), "CONFLICT");
@@ -3850,7 +3863,7 @@ fn one_bad_drawing_refuses_the_batch_and_a_locked_one_is_left_alone() {
     let delete = call(
         &url,
         "tok",
-        "degenview_delete_drawings",
+        "fakingview_delete_drawings",
         with(chart_args(), json!({"drawing_ids": ["2", "1"]})),
     );
     assert_eq!(error_code(&delete), "CONFLICT");
@@ -3858,14 +3871,14 @@ fn one_bad_drawing_refuses_the_batch_and_a_locked_one_is_left_alone() {
     let unknown = call(
         &url,
         "tok",
-        "degenview_update_drawing",
+        "fakingview_update_drawing",
         with(chart_args(), json!({"drawing_id": "77", "hidden": true})),
     );
     assert_eq!(error_code(&unknown), "NOT_FOUND");
     let elsewhere = call(
         &url,
         "tok",
-        "degenview_list_drawings",
+        "fakingview_list_drawings",
         json!({"workspace_id": "1", "chart_id": "99"}),
     );
     assert_eq!(error_code(&elsewhere), "NOT_FOUND");

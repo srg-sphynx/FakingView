@@ -1469,7 +1469,7 @@ fn a_failed_deletion_says_why_changes_nothing_and_can_be_retried() {
     assert!(!status.cloud_deleting && !status.cloud_deleted);
     assert_eq!(
         status.cloud_delete_error.as_deref(),
-        Some("DegenView couldn't reach iCloud.")
+        Some("FakingView couldn't reach iCloud.")
     );
     assert_eq!(cloud.names(), ["watchlist.1"], "nothing was deleted");
     // Trying again clears the error and succeeds.

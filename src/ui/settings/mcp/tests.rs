@@ -16,7 +16,7 @@ use eframe::egui::{self, Id, Pos2, Rect, Ui, vec2};
 fn connection_json_names_the_endpoint_and_never_invents_a_token() {
     let with_token = connection_json("http://127.0.0.1:8765/mcp", Some("dvmcp_abc"));
     let parsed: serde_json::Value = serde_json::from_str(&with_token).unwrap();
-    let server = &parsed["mcpServers"]["degenview"];
+    let server = &parsed["mcpServers"]["fakingview"];
     assert_eq!(server["url"], "http://127.0.0.1:8765/mcp");
     assert_eq!(server["headers"]["Authorization"], "Bearer dvmcp_abc");
 
@@ -69,7 +69,7 @@ fn a_set_of_permissions_reads_as_how_much_and_where_not_as_a_capsule_per_area() 
             false
         )
     );
-    // Anything that changes DegenView says so, names what it changes, and counts the rest.
+    // Anything that changes FakingView says so, names what it changes, and counts the rest.
     let mixed = PermissionSet::of([
         Permission::ChartsRead,
         Permission::ChartsCreate,

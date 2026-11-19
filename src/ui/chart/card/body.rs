@@ -37,8 +37,17 @@ pub(super) fn symbol_info(symbol: &str, source: DataSource, chart_type: ChartTyp
     SymbolInfo {
         ticker: symbol.to_owned(),
         ticker_id: format!("{}:{}", source.watchlist_slug(), symbol),
-        currency: "USD".to_owned(),
-        kind: if source == DataSource::Alpaca {
+        currency: if source == DataSource::Kite {
+            "INR"
+        } else {
+            "USD"
+        }
+        .to_owned(),
+        kind: if source == DataSource::Kite {
+            // The source includes equities, indices and derivatives; the exchange id alone
+            // cannot establish a contract's instrument type.
+            "unknown"
+        } else if source == DataSource::Alpaca {
             "stock"
         } else {
             "crypto"
@@ -661,6 +670,14 @@ mod tests {
         assert_eq!(info.ticker_id, "BINANCE:BTCUSDT");
         assert_eq!(info.currency, "USD");
         assert_eq!(info.base_currency, None);
+    }
+
+    #[test]
+    fn indian_quotes_report_inr_without_guessing_a_contract_type() {
+        let info = symbol_info("NSE:INFY", DataSource::Kite, ChartType::Candles);
+        assert_eq!(info.currency, "INR");
+        assert_eq!(info.kind, "unknown");
+        assert_eq!(info.ticker_id, "KITE:NSE:INFY");
     }
 
     #[test]

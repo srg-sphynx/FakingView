@@ -205,7 +205,7 @@ fn every_mode_has_a_hint() {
     }
 }
 
-/// The page in the Settings window's size, in both themes; with `DEGENVIEW_GALLERY_DIR` set the
+/// The page in the Settings window's size, in both themes; with `FAKINGVIEW_GALLERY_DIR` set the
 /// pictures are written out to look at.
 #[test]
 fn the_network_page_draws_in_every_mode_and_both_themes() {
@@ -264,7 +264,7 @@ fn the_network_page_draws_in_every_mode_and_both_themes() {
                     page_shell(
                         &mut page,
                         SettingsSection::Network,
-                        "Route DegenView's connections through a proxy.",
+                        "Route FakingView's connections through a proxy.",
                         |ui| {
                             body(
                                 ui,

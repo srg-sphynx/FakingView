@@ -1,6 +1,6 @@
 //! The watchlist sidebar as pictures, in both themes: the default columns with the month's chart,
 //! a wider list with every price column, the chart off, compact rows and loading charts. Run by
-//! hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib watchlist::gallery -- --ignored`.
+//! hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib watchlist::gallery -- --ignored`.
 
 use crate::model::DataSource;
 use crate::model::InstrumentId;

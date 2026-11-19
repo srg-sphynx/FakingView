@@ -8,3 +8,8 @@ not licensed under the application's GPL-3.0-only terms.
 A new provider adds its mark here (one file named after the provider, `.svg` where the owner publishes one),
 an arm in `ui::kit::source_logo::source`, and a line in this list. The OKX, Kraken, Bybit, Gate.io and
 MEXC files redraw the owners' marks as vectors.
+## FakingView Kite source glyph
+
+`assets/source_logos/kite.svg` is a locally drawn geometric kite glyph for the Kite Connect
+data source. It is not copied from Zerodha's brand assets. Kite Connect is a Zerodha service;
+this fork is independent of Zerodha.

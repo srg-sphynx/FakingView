@@ -486,7 +486,10 @@ mod tests {
                 "{odd}"
             );
         }
-        assert_eq!(clean_tool("degenview_list_charts"), "degenview_list_charts");
+        assert_eq!(
+            clean_tool("fakingview_list_charts"),
+            "fakingview_list_charts"
+        );
         assert_eq!(clean_tool("bad name\n; rm -rf /"), "badnamerm-rf");
         assert_eq!(clean_tool(&"t".repeat(500)).len(), TOOL_LIMIT);
     }
@@ -534,7 +537,7 @@ mod tests {
         AuditGuard::begin(
             &shared,
             &client(),
-            "degenview_remove_chart",
+            "fakingview_remove_chart",
             &NumberOrString::Number(5),
             args.as_object(),
         )
@@ -542,7 +545,7 @@ mod tests {
         drop(AuditGuard::begin(
             &shared,
             &client(),
-            "degenview_add_chart",
+            "fakingview_add_chart",
             &NumberOrString::String("x".into()),
             None,
         ));
@@ -555,7 +558,7 @@ mod tests {
                 rows[0].code.as_str()
             ),
             (
-                "degenview_remove_chart",
+                "fakingview_remove_chart",
                 McpAuditOutcome::Failed,
                 "NOT_FOUND"
             )
@@ -660,12 +663,12 @@ mod tests {
     fn a_call_records_where_it_came_from_only_when_that_was_another_machine() {
         let shared = McpShared::new();
         let id = NumberOrString::Number(1);
-        AuditGuard::begin(&shared, &client(), "degenview_list_charts", &id, None)
+        AuditGuard::begin(&shared, &client(), "fakingview_list_charts", &id, None)
             .finish(McpAuditOutcome::Succeeded, "");
         AuditGuard::begin(
             &shared,
             &remote_client(),
-            "degenview_list_charts",
+            "fakingview_list_charts",
             &id,
             None,
         )
@@ -674,7 +677,7 @@ mod tests {
             peer: "::ffff:198.51.100.7".parse().unwrap(),
             ..client()
         };
-        AuditGuard::begin(&shared, &mapped, "degenview_list_charts", &id, None)
+        AuditGuard::begin(&shared, &mapped, "fakingview_list_charts", &id, None)
             .finish(McpAuditOutcome::Succeeded, "");
         let rows = shared.audit().take(0, false);
         assert_eq!(

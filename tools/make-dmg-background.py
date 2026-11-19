@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerates the art behind the icons in the macOS disk image's window.
 
-The window shows DegenView.app on the left and an Applications shortcut on the right
+The window shows FakingView.app on the left and an Applications shortcut on the right
 (packaging/macos/dmg-settings.py places them); this draws the arrow between them and a hint under
 them. The output is committed, so this only runs when the art changes.
 
@@ -30,7 +30,7 @@ APP_X, APPLICATIONS_X, ICON_Y = 180, 480, 125  # icon centres
 HINT_Y = 232
 TOP, BOTTOM = (156, 164, 178), (126, 134, 150)  # the vertical gradient
 FOREGROUND = (255, 255, 255)
-HINT = "Drag DegenView to Applications"
+HINT = "Drag FakingView to Applications"
 FONTS = ["/System/Library/Fonts/Helvetica.ttc", "/Library/Fonts/Arial.ttf"]
 
 

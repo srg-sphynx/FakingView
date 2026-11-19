@@ -1,4 +1,4 @@
-use super::DegenViewApp;
+use super::FakingViewApp;
 use super::tabs::{TabContent, TabState};
 use super::window::settings_viewport_id;
 use crate::host::mcp;
@@ -141,7 +141,7 @@ impl McpState {
     }
 }
 
-impl DegenViewApp {
+impl FakingViewApp {
     /// Applies queued MCP Settings changes and runs the tool requests the server queued. Every
     /// request is checked again just before it runs (see `mcp::bridge::Request::run`).
     pub(super) fn tick_mcp(&mut self, ctx: &egui::Context) {

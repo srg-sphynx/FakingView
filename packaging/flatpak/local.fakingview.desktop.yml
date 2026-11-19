@@ -3,14 +3,14 @@
 # below. See docs/flatpak.md.
 #
 # The runtime branch must match the container tag in .github/workflows/flatpak.yml.
-app-id: es.nico.degenview
+app-id: local.fakingview.desktop
 runtime: org.freedesktop.Platform
 runtime-version: "26.08"
 sdk: org.freedesktop.Sdk
 sdk-extensions:
   # Cargo.toml needs rustc >= 1.95 (`rust-version`); this extension tracks Rust stable.
   - org.freedesktop.Sdk.Extension.rust-stable
-command: degenview
+command: fakingview
 
 finish-args:
   # Market data providers, WebSockets, the MCP server's loopback port, snapshot sharing.
@@ -24,26 +24,26 @@ finish-args:
 build-options:
   append-path: /usr/lib/sdk/rust-stable/bin
   env:
-    CARGO_HOME: /run/build/degenview/cargo
+    CARGO_HOME: /run/build/fakingview/cargo
     CARGO_NET_OFFLINE: "true"
     # There is no .git in the sandbox; the workflow replaces this with the short commit hash.
-    DEGENVIEW_BUILD_ID: unknown
+    FAKINGVIEW_BUILD_ID: unknown
 
 modules:
-  - name: degenview
+  - name: fakingview
     buildsystem: simple
     build-commands:
       # The generator writes the vendored-sources config as `cargo/config`, which cargo deprecates.
       - mv cargo/config cargo/config.toml
-      # Only the app. `degenview-alert-agent` is the macOS login item and is not installed.
-      - cargo --offline build --release --locked --bin degenview
-      - install -Dm755 target/release/degenview -t /app/bin
-      - install -Dm644 packaging/flatpak/es.nico.degenview.desktop -t /app/share/applications
-      - install -Dm644 packaging/flatpak/es.nico.degenview.metainfo.xml -t /app/share/metainfo
-      - install -Dm644 assets/brand/DegenView-512-rounded.png /app/share/icons/hicolor/512x512/apps/es.nico.degenview.png
+      # Only the app. `fakingview-alert-agent` is the macOS login item and is not installed.
+      - cargo --offline build --release --locked --bin fakingview
+      - install -Dm755 target/release/fakingview -t /app/bin
+      - install -Dm644 packaging/flatpak/local.fakingview.desktop.desktop -t /app/share/applications
+      - install -Dm644 packaging/flatpak/local.fakingview.desktop.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 assets/brand/FakingView-512-rounded.png /app/share/icons/hicolor/512x512/apps/local.fakingview.desktop.png
       # The built-in fonts are under the SIL OFL, which wants its text to come with them.
-      - install -Dm644 assets/fonts/OFL-JetBrainsMono.txt assets/fonts/OFL-NotoSansSymbols2.txt -t /app/share/licenses/es.nico.degenview
-      - install -Dm644 assets/fonts/README.md /app/share/licenses/es.nico.degenview/FONTS.md
+      - install -Dm644 assets/fonts/OFL-JetBrainsMono.txt assets/fonts/OFL-NotoSansSymbols2.txt -t /app/share/licenses/local.fakingview.desktop
+      - install -Dm644 assets/fonts/README.md /app/share/licenses/local.fakingview.desktop/FONTS.md
     sources:
       - type: dir
         path: ../..

@@ -37,11 +37,11 @@ pub fn open_default() -> Result<SharedStore, Box<dyn std::error::Error>> {
     let dir = data_dir().ok_or("cannot locate the application data directory")?;
     std::fs::create_dir_all(&dir)?;
     Ok(Arc::new(Mutex::new(Store::open(
-        &dir.join("degenview.sqlite"),
+        &dir.join("fakingview.sqlite"),
     )?)))
 }
 
-const APP_DIR: &str = "es.nico.degenview";
+const APP_DIR: &str = "local.fakingview.desktop";
 
 /// The app's data directory: `~/Library/Application Support` on macOS, `%APPDATA%` on Windows,
 /// `$XDG_DATA_HOME` (or `~/.local/share`) elsewhere.
@@ -61,7 +61,7 @@ pub fn data_dir() -> Option<PathBuf> {
 }
 
 /// Overrides `cache_dir` (dev runs and manual verification against a scratch directory).
-pub const CACHE_DIR_ENV: &str = "DEGENVIEW_CACHE_DIR";
+pub const CACHE_DIR_ENV: &str = "FAKINGVIEW_CACHE_DIR";
 
 /// Where regenerable network data lives (icons, lookups, FX rates) — separate from `data_dir`
 /// because the OS may reclaim it and the user may clear it: `~/Library/Caches` on macOS,
@@ -522,7 +522,9 @@ mod tests {
         let mac = cache_dir_from(&env_of(&[("HOME", "/Users/a")]), true, false);
         assert_eq!(
             mac,
-            Some(PathBuf::from("/Users/a/Library/Caches/es.nico.degenview"))
+            Some(PathBuf::from(
+                "/Users/a/Library/Caches/local.fakingview.desktop"
+            ))
         );
         let windows = cache_dir_from(
             &env_of(&[("LOCALAPPDATA", "C:\\L"), ("APPDATA", "C:\\R")]),
@@ -533,7 +535,7 @@ mod tests {
             windows,
             Some(
                 PathBuf::from("C:\\L")
-                    .join("es.nico.degenview")
+                    .join("local.fakingview.desktop")
                     .join("Cache")
             )
         );
@@ -542,11 +544,11 @@ mod tests {
             false,
             false,
         );
-        assert_eq!(xdg, Some(PathBuf::from("/x/es.nico.degenview")));
+        assert_eq!(xdg, Some(PathBuf::from("/x/local.fakingview.desktop")));
         let home = cache_dir_from(&env_of(&[("HOME", "/home/a")]), false, false);
         assert_eq!(
             home,
-            Some(PathBuf::from("/home/a/.cache/es.nico.degenview"))
+            Some(PathBuf::from("/home/a/.cache/local.fakingview.desktop"))
         );
         assert_eq!(cache_dir_from(&env_of(&[]), false, false), None);
     }
@@ -564,7 +566,10 @@ mod tests {
             false,
             false,
         );
-        assert_eq!(empty, Some(PathBuf::from("/h/.cache/es.nico.degenview")));
+        assert_eq!(
+            empty,
+            Some(PathBuf::from("/h/.cache/local.fakingview.desktop"))
+        );
     }
 
     #[test]

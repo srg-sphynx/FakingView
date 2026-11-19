@@ -1,6 +1,6 @@
 //! A `multipart/form-data` body (RFC 7578), built by hand so no dependency is needed for it.
 //!
-//! Image hosts that are not DegenView's own take their upload as a form holding the file. A
+//! Image hosts that are not FakingView's own take their upload as a form holding the file. A
 //! provider builds one with [`Form`], and the result is a request body and the `Content-Type`
 //! that names its boundary.
 
@@ -37,7 +37,7 @@ impl Form {
             random[..16].copy_from_slice(&nanos.to_le_bytes());
         }
         let boundary: String = random.iter().map(|byte| format!("{byte:02x}")).collect();
-        Self::with_boundary(format!("----DegenView{boundary}"))
+        Self::with_boundary(format!("----FakingView{boundary}"))
     }
 
     fn with_boundary(boundary: String) -> Self {
@@ -135,7 +135,7 @@ Content-Type: image/png\r\n\
         assert_ne!(a.content_type(), b.content_type());
         assert!(
             a.content_type()
-                .starts_with("multipart/form-data; boundary=----DegenView")
+                .starts_with("multipart/form-data; boundary=----FakingView")
         );
     }
 

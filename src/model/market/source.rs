@@ -16,6 +16,7 @@ pub enum DataSource {
     CoinGecko,
     DexScreener,
     Alpaca,
+    Kite,
     Polymarket,
     Kalshi,
     CoinMarketCap,
@@ -34,6 +35,7 @@ impl DataSource {
             Self::CoinGecko => "CoinGecko",
             Self::DexScreener => "DEXScreener",
             Self::Alpaca => "Alpaca (IEX)",
+            Self::Kite => "Kite Connect (India)",
             Self::Polymarket => "Polymarket",
             Self::Kalshi => "Kalshi",
             Self::CoinMarketCap => "CoinMarketCap",
@@ -53,6 +55,7 @@ impl DataSource {
             Self::CoinGecko => "COINGECKO",
             Self::DexScreener => "DEXSCREENER",
             Self::Alpaca => "ALPACA",
+            Self::Kite => "KITE",
             Self::Polymarket => "POLYMARKET",
             Self::Kalshi => "KALSHI",
             Self::CoinMarketCap => "CMC",
@@ -61,7 +64,7 @@ impl DataSource {
 
     /// The source a `watchlist_slug` names, in any case.
     pub fn from_watchlist_slug(slug: &str) -> Option<Self> {
-        const ALL: [DataSource; 13] = [
+        const ALL: [DataSource; 14] = [
             DataSource::Binance,
             DataSource::Coinbase,
             DataSource::Okx,
@@ -72,6 +75,7 @@ impl DataSource {
             DataSource::CoinGecko,
             DataSource::DexScreener,
             DataSource::Alpaca,
+            DataSource::Kite,
             DataSource::Polymarket,
             DataSource::Kalshi,
             DataSource::CoinMarketCap,
@@ -92,7 +96,8 @@ impl DataSource {
     ];
 
     /// The sources whose watchlist prices come from a shared ticker socket, REST filling in.
-    pub const QUOTE_STREAMS: [DataSource; 5] = [
+    pub const QUOTE_STREAMS: [DataSource; 6] = [
+        DataSource::Kite,
         DataSource::Coinbase,
         DataSource::Okx,
         DataSource::Kraken,
@@ -124,6 +129,7 @@ impl DataSource {
                 | Self::Mexc
                 | Self::DexScreener
                 | Self::Alpaca
+                | Self::Kite
         )
     }
 
@@ -152,7 +158,8 @@ impl DataSource {
             | Self::Gate
             | Self::Mexc
             | Self::CoinGecko
-            | Self::Alpaca => raw.to_uppercase(),
+            | Self::Alpaca
+            | Self::Kite => raw.to_uppercase(),
             Self::CoinMarketCap => super::cmc::title(raw).to_owned(),
             _ => raw.to_owned(),
         }
@@ -165,6 +172,12 @@ impl DataSource {
         let upper = symbol.trim().to_uppercase();
         let head = upper.split(['/', '-', ' ', '_']).next().unwrap_or(&upper);
         match self {
+            Self::Kite => upper
+                .split_once(':')
+                .map_or(upper.as_str(), |(_, symbol)| symbol)
+                .split(" — ")
+                .next()
+                .unwrap_or(&upper),
             // A one-letter "base" is a bare wrapped asset (WBTC, WETH), not a pair.
             Self::Binance | Self::Bybit => split_binance_pair(head)
                 .map(|(base, _)| base)
@@ -283,6 +296,27 @@ mod tests {
     }
 
     use super::*;
+
+    #[test]
+    fn kite_identity_is_case_normalized_and_exchange_qualified() {
+        use crate::model::InstrumentId;
+        assert_eq!(
+            InstrumentId::new(DataSource::Kite, "nse:infy").key(),
+            "KITE:NSE:INFY"
+        );
+        assert_ne!(
+            InstrumentId::new(DataSource::Kite, "NSE:INFY").key(),
+            InstrumentId::new(DataSource::Kite, "BSE:INFY").key()
+        );
+        assert_eq!(DataSource::Kite.base_asset("NSE:INFY — Infosys"), "INFY");
+        assert_eq!(DataSource::Kite.base_asset("NSE:NIFTY 50"), "NIFTY 50");
+        assert!(DataSource::Kite.streams_quotes());
+        assert!(DataSource::Kite.provides_volume());
+        assert_eq!(
+            DataSource::from_watchlist_slug("kite"),
+            Some(DataSource::Kite)
+        );
+    }
 
     #[test]
     fn markets_are_named_as_their_exchange_names_them() {

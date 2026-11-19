@@ -1,5 +1,5 @@
 //! The whole window written as PNGs for a person to look at. Run by hand:
-//! `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_studio_window -- --ignored`.
+//! `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_studio_window -- --ignored`.
 
 use super::rig::{Rig, Scenario, Shown, picture};
 use crate::model::ChartCanvas;
@@ -154,7 +154,7 @@ fn gallery_of_the_studio_window() {
                     case.name,
                     if light { "light" } else { "dark" }
                 );
-                if let Ok(filter) = std::env::var("DEGENVIEW_GALLERY_FILTER")
+                if let Ok(filter) = std::env::var("FAKINGVIEW_GALLERY_FILTER")
                     && !filter.split(',').any(|part| tag.contains(part))
                 {
                     continue;

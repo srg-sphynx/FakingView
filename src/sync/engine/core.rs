@@ -117,7 +117,7 @@ pub struct Status {
     pub last_send_ms: Option<i64>,
     pub last_fetch_ms: Option<i64>,
     pub last_error: Option<String>,
-    /// iCloud confirmed that this Mac's request to delete all DegenView data there is done.
+    /// iCloud confirmed that this Mac's request to delete all FakingView data there is done.
     pub cloud_deleted: bool,
     /// A deletion was requested and iCloud has not answered yet.
     pub cloud_deleting: bool,
@@ -317,7 +317,7 @@ impl<T: SyncTransport> SyncCore<T> {
         self.reconcile_needed = true;
     }
 
-    /// Asks iCloud to delete every DegenView record for this account. Nothing local is touched
+    /// Asks iCloud to delete every FakingView record for this account. Nothing local is touched
     /// here; `Status::cloud_deleted` turns true once iCloud confirms, and only then should the
     /// caller forget the binding.
     pub fn delete_cloud_data(&mut self) {
@@ -1303,9 +1303,9 @@ impl<T: SyncTransport> SyncCore<T> {
 /// What the user is told when iCloud could not delete their data.
 fn delete_failure_text(kind: ErrorKind, message: &str) -> String {
     match kind {
-        ErrorKind::Network => "DegenView couldn't reach iCloud.".to_string(),
+        ErrorKind::Network => "FakingView couldn't reach iCloud.".to_string(),
         ErrorKind::AccountUnavailable => "iCloud isn't available right now.".to_string(),
-        ErrorKind::Permission => "DegenView isn't allowed to change this iCloud data.".to_string(),
+        ErrorKind::Permission => "FakingView isn't allowed to change this iCloud data.".to_string(),
         _ if message.is_empty() => "iCloud didn't confirm the deletion.".to_string(),
         _ => format!("iCloud didn't confirm the deletion ({message})."),
     }

@@ -900,7 +900,7 @@ fn freezing_leaves_the_live_chart_as_it_was() {
 // MARK: Pictures
 
 /// The selection over the grid, written as PNGs in both themes to look at. Run by hand:
-/// `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_portion_selection -- --ignored`.
+/// `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_portion_selection -- --ignored`.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_portion_selection() {

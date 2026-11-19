@@ -41,36 +41,36 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 use std::sync::Arc;
 
-pub const LIST_WORKSPACES: &str = "degenview_list_workspaces";
-pub const LIST_CHARTS: &str = "degenview_list_charts";
-pub const ADD_CHART: &str = "degenview_add_chart";
-pub const LIST_INDICATORS: &str = "degenview_list_indicators";
-pub const ADD_INDICATOR: &str = "degenview_add_indicator";
-pub const LIST_ALERTS: &str = "degenview_list_price_alerts";
-pub const CREATE_ALERT: &str = "degenview_create_price_alert";
-pub const UPDATE_ALERT: &str = "degenview_update_price_alert";
-pub const LIST_PINE_SCRIPTS: &str = "degenview_list_pine_scripts";
-pub const GET_PINE_SCRIPT: &str = "degenview_get_pine_script";
-pub const COMPILE_PINE_SCRIPT: &str = "degenview_compile_pine_script";
-pub const GET_PINE_INPUTS: &str = "degenview_get_pine_inputs";
-pub const UPDATE_PINE_SCRIPT: &str = "degenview_update_pine_script";
-pub const SAVE_PINE_SCRIPT: &str = "degenview_save_pine_script";
-pub const LIST_CHART_PINE: &str = "degenview_list_chart_pine_instances";
-pub const GET_PINE_INSTANCE: &str = "degenview_get_pine_instance";
-pub const GET_PINE_STYLES: &str = "degenview_get_pine_styles";
-pub const GET_PINE_REPORT: &str = "degenview_get_pine_report";
-pub const LIST_PINE_ALERTS: &str = "degenview_list_pine_alerts";
-pub const ADD_PINE_TO_CHART: &str = "degenview_add_pine_script_to_chart";
-pub const UPDATE_PINE_INSTANCE: &str = "degenview_update_pine_instance";
-pub const REMOVE_PINE_INSTANCE: &str = "degenview_remove_pine_instance";
-pub const GET_CANDLES: &str = "degenview_get_candles";
-pub const LIST_DRAWINGS: &str = "degenview_list_drawings";
-pub const ADD_DRAWINGS: &str = "degenview_add_drawings";
-pub const UPDATE_DRAWING: &str = "degenview_update_drawing";
-pub const DELETE_DRAWINGS: &str = "degenview_delete_drawings";
-pub const PAUSE_ALERT: &str = "degenview_pause_price_alert";
-pub const RESUME_ALERT: &str = "degenview_resume_price_alert";
-pub const DELETE_ALERT: &str = "degenview_delete_price_alert";
+pub const LIST_WORKSPACES: &str = "fakingview_list_workspaces";
+pub const LIST_CHARTS: &str = "fakingview_list_charts";
+pub const ADD_CHART: &str = "fakingview_add_chart";
+pub const LIST_INDICATORS: &str = "fakingview_list_indicators";
+pub const ADD_INDICATOR: &str = "fakingview_add_indicator";
+pub const LIST_ALERTS: &str = "fakingview_list_price_alerts";
+pub const CREATE_ALERT: &str = "fakingview_create_price_alert";
+pub const UPDATE_ALERT: &str = "fakingview_update_price_alert";
+pub const LIST_PINE_SCRIPTS: &str = "fakingview_list_pine_scripts";
+pub const GET_PINE_SCRIPT: &str = "fakingview_get_pine_script";
+pub const COMPILE_PINE_SCRIPT: &str = "fakingview_compile_pine_script";
+pub const GET_PINE_INPUTS: &str = "fakingview_get_pine_inputs";
+pub const UPDATE_PINE_SCRIPT: &str = "fakingview_update_pine_script";
+pub const SAVE_PINE_SCRIPT: &str = "fakingview_save_pine_script";
+pub const LIST_CHART_PINE: &str = "fakingview_list_chart_pine_instances";
+pub const GET_PINE_INSTANCE: &str = "fakingview_get_pine_instance";
+pub const GET_PINE_STYLES: &str = "fakingview_get_pine_styles";
+pub const GET_PINE_REPORT: &str = "fakingview_get_pine_report";
+pub const LIST_PINE_ALERTS: &str = "fakingview_list_pine_alerts";
+pub const ADD_PINE_TO_CHART: &str = "fakingview_add_pine_script_to_chart";
+pub const UPDATE_PINE_INSTANCE: &str = "fakingview_update_pine_instance";
+pub const REMOVE_PINE_INSTANCE: &str = "fakingview_remove_pine_instance";
+pub const GET_CANDLES: &str = "fakingview_get_candles";
+pub const LIST_DRAWINGS: &str = "fakingview_list_drawings";
+pub const ADD_DRAWINGS: &str = "fakingview_add_drawings";
+pub const UPDATE_DRAWING: &str = "fakingview_update_drawing";
+pub const DELETE_DRAWINGS: &str = "fakingview_delete_drawings";
+pub const PAUSE_ALERT: &str = "fakingview_pause_price_alert";
+pub const RESUME_ALERT: &str = "fakingview_resume_price_alert";
+pub const DELETE_ALERT: &str = "fakingview_delete_price_alert";
 
 /// The permission a tool needs, or `None` for a name this server does not have.
 pub fn required_permission(tool: &str) -> Option<Permission> {
@@ -139,6 +139,7 @@ pub enum McpSource {
     Coingecko,
     Dexscreener,
     Alpaca,
+    Kite,
 }
 
 impl McpSource {
@@ -154,11 +155,12 @@ impl McpSource {
             Self::Coingecko => DataSource::CoinGecko,
             Self::Dexscreener => DataSource::DexScreener,
             Self::Alpaca => DataSource::Alpaca,
+            Self::Kite => DataSource::Kite,
         }
     }
 }
 
-/// The built-in indicators, by the ids `degenview_list_indicators` returns.
+/// The built-in indicators, by the ids `fakingview_list_indicators` returns.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum McpIndicator {
@@ -182,7 +184,7 @@ impl McpIndicator {
 }
 
 pub(super) fn parse_chart_id(raw: &str) -> Result<u64, CallToolResult> {
-    parse_id(raw, "chart_id", "degenview_list_charts")
+    parse_id(raw, "chart_id", "fakingview_list_charts")
 }
 
 pub(super) fn failure(error: &McpError) -> CallToolResult {
@@ -211,7 +213,7 @@ pub(super) fn parse_id(raw: &str, what: &str, listed_by: &str) -> Result<u64, Ca
 }
 
 pub(super) fn parse_workspace_id(raw: &str) -> Result<u64, CallToolResult> {
-    parse_id(raw, "workspace_id", "degenview_list_workspaces")
+    parse_id(raw, "workspace_id", "fakingview_list_workspaces")
 }
 
 /// The client the HTTP guard authenticated for this request, as a tool argument: a tool names
@@ -239,18 +241,18 @@ fn identity(context: &RequestContext<RoleServer>) -> Option<&ClientIdentity> {
 
 pub(super) fn unexpected() -> CallToolResult {
     failure(&McpError::AppUnavailable(
-        "Unexpected response from DegenView".into(),
+        "Unexpected response from FakingView".into(),
     ))
 }
 
 #[derive(Clone)]
-pub struct DegenViewMcp {
+pub struct FakingViewMcp {
     pub(super) bridge: BridgeClient,
     pub(super) shared: Arc<McpShared>,
     tool_router: ToolRouter<Self>,
 }
 
-impl DegenViewMcp {
+impl FakingViewMcp {
     /// Each domain routes its own tools; this is where they are put together.
     pub fn new(bridge: BridgeClient, shared: Arc<McpShared>) -> Self {
         Self {
@@ -312,7 +314,7 @@ impl Stop {
     }
 }
 
-impl DegenViewMcp {
+impl FakingViewMcp {
     /// Checks a call's permission and runs it, stopping it if the client leaves or cancels.
     async fn run_tool(
         &self,
@@ -366,6 +368,12 @@ pub(super) async fn alpaca_configured() -> bool {
         .unwrap_or(false)
 }
 
+pub(super) async fn kite_configured() -> bool {
+    tokio::task::spawn_blocking(crate::service::keychain::api_keys::kite_configured)
+        .await
+        .unwrap_or(false)
+}
+
 /// Drops the `uint`, `uint8` … `uint64` formats schemars puts on unsigned integers. They are not
 /// JSON Schema formats, so clients warn about each one (Claude Code prints `unknown format "uint"
 /// ignored in schema`); the `minimum: 0` schemars emits beside them already says the same thing.
@@ -401,10 +409,10 @@ fn with_standard_formats(mut tool: Tool) -> Tool {
 
 #[tool_handler(
     router = self.tool_router,
-    name = "DegenView",
-    instructions = "Inspect and change DegenView, a market dashboard, within what this credential is allowed. Charts: list workspaces first, then list or add charts and built-in indicators by workspace_id; read candles and indicator values (RSI, EMA, Bollinger, trend flips), add or remove built-in indicators, change a workspace's timeframe and a chart's type, control a workspace's replay, take a picture of a chart, remove charts, and add, edit or delete drawings. Pine scripts: list, read, compile and edit scripts (an edit is a draft until saved, and every edit needs the revision you last read), and apply a saved script to a chart. Price alerts: list, create, edit, pause and delete. Markets: search the providers for symbols, read quotes, and read candles of any market. Watchlists: list and read them (optionally with quotes), create, edit and delete. Paper trading (simulated money): read accounts, positions, orders, fills and closed trades; place, change and cancel orders and close positions with their own permissions. Some changes wait for the user's approval in DegenView: deleting alerts, charts, drawings, watchlists or script instances, saving over a script, and paper orders, changes and closes. Such a call answers CONFIRMATION_REQUIRED (with a confirmation_id and what it would do) and changes nothing; ask the user to approve it, then repeat the exact same call. CONFIRMATION_DENIED means the user said no: do not repeat it unless they ask. Only the tools this credential may use are listed."
+    name = "FakingView",
+    instructions = "Inspect and change FakingView, a market dashboard, within what this credential is allowed. Charts: list workspaces first, then list or add charts and built-in indicators by workspace_id; read candles and indicator values (RSI, EMA, Bollinger, trend flips), add or remove built-in indicators, change a workspace's timeframe and a chart's type, control a workspace's replay, take a picture of a chart, remove charts, and add, edit or delete drawings. Pine scripts: list, read, compile and edit scripts (an edit is a draft until saved, and every edit needs the revision you last read), and apply a saved script to a chart. Price alerts: list, create, edit, pause and delete. Markets: search the providers for symbols, read quotes, and read candles of any market. Watchlists: list and read them (optionally with quotes), create, edit and delete. Paper trading (simulated money): read accounts, positions, orders, fills and closed trades; place, change and cancel orders and close positions with their own permissions. Some changes wait for the user's approval in FakingView: deleting alerts, charts, drawings, watchlists or script instances, saving over a script, and paper orders, changes and closes. Such a call answers CONFIRMATION_REQUIRED (with a confirmation_id and what it would do) and changes nothing; ask the user to approve it, then repeat the exact same call. CONFIRMATION_DENIED means the user said no: do not repeat it unless they ask. Only the tools this credential may use are listed."
 )]
-impl ServerHandler for DegenViewMcp {
+impl ServerHandler for FakingViewMcp {
     async fn call_tool(
         &self,
         request: CallToolRequestParams,

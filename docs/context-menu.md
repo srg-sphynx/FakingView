@@ -1,14 +1,14 @@
-# Implement TradingView-Style Chart Right-Click Context Menus in DegenView (Rust)
+# Implement TradingView-Style Chart Right-Click Context Menus in FakingView (Rust)
 
 ## Objective
 
-Implement a complete, polished, production-ready right-click context menu system for DegenView charts, closely matching TradingView Supercharts.
+Implement a complete, polished, production-ready right-click context menu system for FakingView charts, closely matching TradingView Supercharts.
 
 Use the attached TradingView screenshot as the primary visual reference and TradingView's official documentation as the behavioral reference.
 
 The context menu must provide real, working actions—not decorative menu entries.
 
-It must integrate with DegenView's existing:
+It must integrate with FakingView's existing:
 
 - Chart viewport and financial coordinate transforms
 - Chart settings and appearance templates
@@ -92,7 +92,7 @@ Do not invent TradingView behavior or claim exact parity without verification.
 
 ---
 
-# 2. Inspect DegenView's existing architecture
+# 2. Inspect FakingView's existing architecture
 
 Read the attached Rust architecture and inspect the repository before making changes.
 
@@ -359,7 +359,7 @@ The screenshot's groups are:
 
 - Settings
 
-Use the screenshot for proportions and grouping, but adapt dimensions to DegenView's existing design system.
+Use the screenshot for proportions and grouping, but adapt dimensions to FakingView's existing design system.
 
 Do not hardcode the screenshot's pixel dimensions.
 
@@ -452,13 +452,13 @@ Do not invent a price.
 
 ## 11. Paste
 
-Implement Paste using DegenView's existing drawing and clipboard systems.
+Implement Paste using FakingView's existing drawing and clipboard systems.
 
 TradingView's Paste action is context-dependent.
 
 Research exactly which objects TradingView allows users to copy and paste.
 
-### Required DegenView behavior
+### Required FakingView behavior
 
 At minimum, support copying and pasting supported user-created drawing objects.
 
@@ -514,7 +514,7 @@ Implement:
 
 The symbol and price must reflect the clicked chart.
 
-Clicking this item opens DegenView's existing price-alert editor.
+Clicking this item opens FakingView's existing price-alert editor.
 
 Prefill:
 
@@ -545,7 +545,7 @@ Do not implement a second alert editor.
 
 Research TradingView's default condition when an alert is created from the chart.
 
-Where DegenView supports crossing above/below, choose an appropriate default based on the clicked price and current market price.
+Where FakingView supports crossing above/below, choose an appropriate default based on the clicked price and current market price.
 
 If the reference behavior cannot be confirmed, use the application's existing alert default.
 
@@ -613,7 +613,7 @@ Use the existing ticket's last-used/default quantity where appropriate.
 
 The screenshot suggests quick-order entries.
 
-For DegenView:
+For FakingView:
 
 - Open the existing paper-trading ticket prefilled with the relevant side, type, quantity, and price.
 - Require the normal confirmation or submission action.
@@ -696,7 +696,7 @@ Verify whether TradingView supports moving or replacing the lock by clicking els
 
 ### Linked charts
 
-DegenView supports optional synchronization of horizontal chart position and zoom.
+FakingView supports optional synchronization of horizontal chart position and zoom.
 
 Do not automatically synchronize cursor locking unless the application already has a separate synchronized-crosshair setting.
 
@@ -733,7 +733,7 @@ This must be a functional data view, not a screenshot or static table.
 
 Clicking Table view should open or switch to a table representation associated with the clicked chart.
 
-Use the existing DegenView layout and component conventions.
+Use the existing FakingView layout and component conventions.
 
 ### Columns
 
@@ -860,7 +860,7 @@ The screenshot contains:
 
     Chart template >
 
-DegenView already has a chart appearance/template system.
+FakingView already has a chart appearance/template system.
 
 Reuse:
 
@@ -880,7 +880,7 @@ Do not confuse:
 3. Drawing style templates.
 4. Saved workspace layouts.
 
-For DegenView, the screenshot's Chart template submenu should integrate with the existing chart appearance templates unless reference testing establishes a different intended behavior.
+For FakingView, the screenshot's Chart template submenu should integrate with the existing chart appearance templates unless reference testing establishes a different intended behavior.
 
 If implementing TradingView-style indicator templates as well, expose them with clear naming rather than silently changing the meaning of existing appearance templates.
 
@@ -945,7 +945,7 @@ Examples:
 
 ### Confirmation
 
-For destructive bulk removal, use a polished confirmation flow consistent with DegenView's existing UX.
+For destructive bulk removal, use a polished confirmation flow consistent with FakingView's existing UX.
 
 Show the number of affected drawings.
 
@@ -953,7 +953,7 @@ Do not remove drawings from other charts unless the user explicitly selected a b
 
 ### Undo
 
-Reuse DegenView's existing drawing undo stack.
+Reuse FakingView's existing drawing undo stack.
 
 Bulk removal must be **one undoable operation**, not 17 separate undo steps.
 
@@ -977,7 +977,7 @@ Count the chart's actual active indicators.
 
 Research TradingView's treatment of built-in indicators versus applied Pine scripts in this action.
 
-Define and document DegenView's scope accordingly.
+Define and document FakingView's scope accordingly.
 
 ### Requirements
 
@@ -1033,7 +1033,7 @@ The sheet already contains:
 - Canvas
 - Templates
 
-Open the appropriate default tab consistent with TradingView behavior and DegenView's existing UX.
+Open the appropriate default tab consistent with TradingView behavior and FakingView's existing UX.
 
 Do not create another chart settings window.
 
@@ -1043,7 +1043,7 @@ In multi-chart layouts, Settings must open for the chart that was right-clicked,
 
 ### Keyboard shortcut
 
-Research TradingView's shortcut and check for conflicts with existing DegenView shortcuts.
+Research TradingView's shortcut and check for conflicts with existing FakingView shortcuts.
 
 ---
 
@@ -1146,7 +1146,7 @@ The screenshot shows shortcuts beside several actions.
 
 Research their current TradingView equivalents.
 
-Support platform-appropriate shortcuts where they do not conflict with existing DegenView commands.
+Support platform-appropriate shortcuts where they do not conflict with existing FakingView commands.
 
 Requirements:
 
@@ -1166,7 +1166,7 @@ Do not hardcode shortcut labels that are not actually implemented.
 
 ## 31. Target the clicked chart
 
-DegenView supports multiple charts per workspace.
+FakingView supports multiple charts per workspace.
 
 Every context-menu command must operate on the chart where the menu was opened.
 
@@ -1514,4 +1514,4 @@ Clearly distinguish fully implemented behavior from approximations or unsupporte
 
 Do not claim production readiness if actions target the wrong chart, copy the wrong price, submit unintended orders, lose drawings, delete Pine source files, or expose future replay data.
 
-**The final result must be a context-sensitive, fully functional TradingView-style chart command system that feels native to DegenView and reuses its existing Rust architecture.**
+**The final result must be a context-sensitive, fully functional TradingView-style chart command system that feels native to FakingView and reuses its existing Rust architecture.**

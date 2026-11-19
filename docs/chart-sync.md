@@ -23,7 +23,7 @@ whether bar spacing is synced; a release-notes line claiming "matching bar spaci
 found, so nothing here relies on it), behaviour with different intervals, less history, whitespace,
 replay, how a toggle takes effect, and whether position and zoom can be split.
 
-DegenView-specific:
+FakingView-specific:
 
 - Position and zoom are **two** switches, not one "date range" switch (the brief's request).
 - Different timeframes and different widths are first-class (see below).

@@ -4,7 +4,7 @@ Read for every task, plus the matching topic guides from the root `AGENTS.md` (U
 
 ## Project
 
-DegenView is a GPL-3.0-only Rust market dashboard on `eframe`/`egui`. A small `objc2` AppKit bridge handles native macOS windows, menus, Keychain and accessibility. Keep the coordinator/workspace architecture on other platforms; gate AppKit code with `#[cfg(target_os = "macos")]`.
+FakingView is a GPL-3.0-only Rust market dashboard on `eframe`/`egui`. A small `objc2` AppKit bridge handles native macOS windows, menus, Keychain and accessibility. Keep the coordinator/workspace architecture on other platforms; gate AppKit code with `#[cfg(target_os = "macos")]`.
 
 Store secrets only through `service::keychain::webhook_secrets::platform` (macOS Keychain, Linux Secret Service, Windows Credential Manager). Never in SQLite, files or logs.
 
@@ -53,14 +53,14 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo fmt --all -- --check
 ```
 
-Finder-launchable app: `./tools/bundle.sh`, then open `target/DegenView.app`. Binary: `degenview`.
+Finder-launchable app: `./tools/bundle.sh`, then open `target/FakingView.app`. Binary: `fakingview`.
 
 - CI runs `cargo test --locked`, `cargo fmt --check` and Clippy with `-D warnings` on macOS and Linux
   for every PR. Code used on one platform only is `cfg`-gated, not `allow(dead_code)`.
 - Unit tests cover engines, parsing, layout, storage and policy. Manually verify affected UI; outside Pine Studio no complete GUI pass has been done.
-- Tests disable Keychain. Launch dev builds with `DEGENVIEW_NO_KEYCHAIN=1` to avoid signing prompts. The MCP credential seal is always off in debug and ignores this variable in release.
-- Optional cache override: `DEGENVIEW_CACHE_DIR=<scratch-dir>`.
-- Live provider tests need `DEGENVIEW_ALPACA_KEY_ID`, `DEGENVIEW_ALPACA_SECRET_KEY`, or `DEGENVIEW_CMC_API_KEY`.
+- Tests disable Keychain. Launch dev builds with `FAKINGVIEW_NO_KEYCHAIN=1` to avoid signing prompts. The MCP credential seal is always off in debug and ignores this variable in release.
+- Optional cache override: `FAKINGVIEW_CACHE_DIR=<scratch-dir>`.
+- Live provider tests need `FAKINGVIEW_ALPACA_KEY_ID`, `FAKINGVIEW_ALPACA_SECRET_KEY`, or `FAKINGVIEW_CMC_API_KEY`.
 
 ## Naming
 

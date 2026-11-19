@@ -54,7 +54,7 @@ pub fn sync_installed_version() {}
 
 /// The folder next to the app where an update is downloaded, unpacked and kept until the new
 /// version has started.
-const STAGING_NAME: &str = ".DegenView-update";
+const STAGING_NAME: &str = ".FakingView-update";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Stage {
@@ -116,7 +116,7 @@ fn is_writable(dir: &Path) -> bool {
         .duration_since(std::time::UNIX_EPOCH)
         .map_or(0, |elapsed| elapsed.as_nanos());
     let probe = dir.join(format!(
-        ".DegenView-write-test-{}-{nanos}",
+        ".FakingView-write-test-{}-{nanos}",
         std::process::id()
     ));
     if std::fs::create_dir(&probe).is_err() {
@@ -172,7 +172,7 @@ fn keep_only_copy(staging: &Path, target: &Path) -> Result<(), String> {
     let old = staging.join("old");
     if std::fs::symlink_metadata(target).is_err() && std::fs::symlink_metadata(&old).is_ok() {
         return Err(format!(
-            "DegenView is missing from {} and the previous version is in {}. Move it back, then \
+            "FakingView is missing from {} and the previous version is in {}. Move it back, then \
              try the update again.",
             target.display(),
             old.display()
@@ -209,7 +209,7 @@ mod tests {
 
     pub(super) fn scratch(name: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "degenview-self-update-{name}-{}",
+            "fakingview-self-update-{name}-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&dir);
@@ -330,7 +330,7 @@ mod tests {
     #[test]
     fn the_write_probe_leaves_no_trace_and_touches_nothing_else() {
         let root = scratch("probe");
-        let bystander = root.join(".DegenView-write-test-keep");
+        let bystander = root.join(".FakingView-write-test-keep");
         fs::create_dir(&bystander).unwrap();
         assert!(is_writable(&root));
         assert!(bystander.is_dir());

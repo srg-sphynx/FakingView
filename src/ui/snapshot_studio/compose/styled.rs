@@ -1,5 +1,5 @@
 //! What the Styled look adds to a chart: the title block over its top (the market's logo, its
-//! name and where it trades), and the DegenView mark.
+//! name and where it trades), and the FakingView mark.
 //!
 //! Neither follows the app's theme: they sit on the chart's own canvas, so their colours are
 //! chosen against the canvas' fill (dark text on a light chart, light on a dark one) and the
@@ -93,7 +93,7 @@ fn paint_round_image(
     );
 }
 
-/// What the DegenView mark shows: the icon and the name, the icon alone, or nothing.
+/// What the FakingView mark shows: the icon and the name, the icon alone, or nothing.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Mark {
     Full,
@@ -102,7 +102,7 @@ enum Mark {
 }
 
 /// The title block, in `strip`, the chart's top: the market's logo (a monogram until it has one),
-/// its name in bold and `EXCHANGE · timeframe` under it, and the DegenView mark at the strip's
+/// its name in bold and `EXCHANGE · timeframe` under it, and the FakingView mark at the strip's
 /// right end when `mark` (its place, as the layout reserved it) says there is one.
 ///
 /// The market's name always comes first: it is cut only when it alone is wider than the strip.
@@ -182,14 +182,14 @@ pub fn paint_header(
     }
 }
 
-/// The DegenView mark, right-aligned in `rect` (the strip's end), centred on its height: the icon
+/// The FakingView mark, right-aligned in `rect` (the strip's end), centred on its height: the icon
 /// in a circle and the name beside it, faint. `from` is the least x it may start at (where the
 /// title block ends): it is drawn in full, as its icon alone or not at all, whichever fits.
 fn paint_mark(painter: &Painter, rect: Rect, from: f32, style: &CanvasStyle) {
     let diameter = rect.height();
     let name = kit::galley_on(
         painter,
-        "DegenView",
+        "FakingView",
         diameter * WORDMARK_SHARE,
         SEMIBOLD,
         ink_on(style.fill).gamma_multiply(MARK_OPACITY),

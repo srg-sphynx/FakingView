@@ -152,11 +152,11 @@ fn bad_json_and_other_files_are_refused() {
         Err(ImportError::NotAThemeFile)
     );
     assert_eq!(
-        import(r#"{"format":"degenview-editor-theme"}"#),
+        import(r#"{"format":"fakingview-editor-theme"}"#),
         Err(ImportError::NotAThemeFile)
     );
     assert_eq!(
-        import(r#"{"format":"degenview-editor-theme","version":"1"}"#),
+        import(r#"{"format":"fakingview-editor-theme","version":"1"}"#),
         Err(ImportError::NotAThemeFile)
     );
 }
@@ -170,7 +170,7 @@ fn a_version_this_build_does_not_read_is_refused_with_advice() {
     );
     let error = import(&text).unwrap_err();
     assert_eq!(error, ImportError::UnsupportedVersion(2));
-    assert!(error.message().contains("Update DegenView"));
+    assert!(error.message().contains("Update FakingView"));
     let zero = replace_in(
         &export(&theme_with_everything()),
         "\"version\": 1",
@@ -183,7 +183,7 @@ fn a_version_this_build_does_not_read_is_refused_with_advice() {
 fn an_oversize_file_is_refused_unread() {
     let filler = "x".repeat(MAX_FILE_BYTES);
     let text = format!(
-        r#"{{"format":"degenview-editor-theme","version":1,"name":"{filler}","base":"builtin.dark"}}"#
+        r#"{{"format":"fakingview-editor-theme","version":1,"name":"{filler}","base":"builtin.dark"}}"#
     );
     assert_eq!(import(&text), Err(ImportError::TooLarge));
     assert!(import(&"{".repeat(MAX_FILE_BYTES + 1)).unwrap_err() == ImportError::TooLarge);
@@ -192,7 +192,7 @@ fn an_oversize_file_is_refused_unread() {
 #[test]
 fn names_and_bases_are_checked() {
     let file = |name: &str, base: &str| {
-        format!(r#"{{"format":"degenview-editor-theme","version":1,"name":{name},"base":{base}}}"#)
+        format!(r#"{{"format":"fakingview-editor-theme","version":1,"name":{name},"base":{base}}}"#)
     };
     assert_eq!(
         import(&file("\"Ok\"", "\"builtin.dark\""))
@@ -202,7 +202,7 @@ fn names_and_bases_are_checked() {
         "Ok"
     );
     assert_eq!(
-        import(r#"{"format":"degenview-editor-theme","version":1,"base":"builtin.dark"}"#),
+        import(r#"{"format":"fakingview-editor-theme","version":1,"base":"builtin.dark"}"#),
         Err(ImportError::MissingName)
     );
     for name in ["\"\"", "\"   \"", "7", "\"a\\u0007b\""] {
@@ -249,7 +249,7 @@ fn colours_that_cannot_be_read_are_skipped_and_said() {
 
 #[test]
 fn unknown_and_misplaced_colours_are_skipped() {
-    let text = r##"{"format":"degenview-editor-theme","version":1,"name":"T","base":"builtin.dark",
+    let text = r##"{"format":"fakingview-editor-theme","version":1,"name":"T","base":"builtin.dark",
         "syntax":{"keyword":"#010203","sparkle":"#040506","background":"#070809","number":5},
         "editor":{"selection":"#0A0B0C","keyword":"#0D0E0F"}}"##;
     let imported = import(text).unwrap();
@@ -262,7 +262,7 @@ fn unknown_and_misplaced_colours_are_skipped() {
 #[test]
 fn missing_sections_are_a_theme_that_is_its_base() {
     let imported = import(
-        r#"{"format":"degenview-editor-theme","version":1,"name":"Bare","base":"builtin.light"}"#,
+        r#"{"format":"fakingview-editor-theme","version":1,"name":"Bare","base":"builtin.light"}"#,
     )
     .unwrap();
     assert_eq!(imported.theme.base, BuiltInTheme::Light);
@@ -274,7 +274,7 @@ fn missing_sections_are_a_theme_that_is_its_base() {
 #[test]
 fn sections_of_the_wrong_shape_are_skipped_whole() {
     let imported = import(
-        r#"{"format":"degenview-editor-theme","version":1,"name":"T","base":"builtin.dark",
+        r#"{"format":"fakingview-editor-theme","version":1,"name":"T","base":"builtin.dark",
             "syntax":[1,2],"editor":"x","typography":7}"#,
     )
     .unwrap();
@@ -285,7 +285,7 @@ fn sections_of_the_wrong_shape_are_skipped_whole() {
 #[test]
 fn typography_is_validated_value_by_value() {
     let imported = import(
-        r#"{"format":"degenview-editor-theme","version":1,"name":"T","base":"builtin.dark",
+        r#"{"format":"fakingview-editor-theme","version":1,"name":"T","base":"builtin.dark",
             "typography":{"fontFamily":"Menlo","fontSize":500,"lineHeight":"huge"}}"#,
     )
     .unwrap();
@@ -300,7 +300,7 @@ fn typography_is_validated_value_by_value() {
     assert_eq!(imported.theme.typography.line_height, None);
     assert_eq!(imported.skipped.len(), 1);
     let imported = import(
-        r#"{"format":"degenview-editor-theme","version":1,"name":"T","base":"builtin.dark",
+        r#"{"format":"fakingview-editor-theme","version":1,"name":"T","base":"builtin.dark",
             "typography":{"fontFamily":"a\nb","fontSize":"big"}}"#,
     )
     .unwrap();
@@ -325,7 +325,7 @@ fn an_imported_theme_never_replaces_one_and_always_gets_a_new_id() {
 
 #[test]
 fn extra_fields_and_a_foreign_id_are_ignored() {
-    let text = r##"{"format":"degenview-editor-theme","version":1,"id":42,"name":"T",
+    let text = r##"{"format":"fakingview-editor-theme","version":1,"id":42,"name":"T",
         "base":"builtin.dark","createdAt":5,"extra":{"a":1},"overrides":{"keyword":"#010203"}}"##;
     let imported = import(text).unwrap();
     assert!(

@@ -319,7 +319,7 @@ mod tests {
     #[test]
     fn layout_index_sees_a_write_from_another_connection() {
         let path = std::env::temp_dir().join(format!(
-            "degenview-layout-index-{}.sqlite",
+            "fakingview-layout-index-{}.sqlite",
             std::process::id()
         ));
         let _ = std::fs::remove_file(&path);

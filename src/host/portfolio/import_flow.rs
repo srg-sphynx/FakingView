@@ -22,9 +22,9 @@ use eframe::egui;
 use std::sync::Arc;
 use std::sync::mpsc::{Receiver, TryRecvError, channel};
 
-pub const CSV_FILENAME: &str = "degenview-portfolio-transactions.csv";
-pub const HOLDINGS_FILENAME: &str = "degenview-portfolio-holdings.csv";
-pub const HISTORY_FILENAME: &str = "degenview-portfolio-history.csv";
+pub const CSV_FILENAME: &str = "fakingview-portfolio-transactions.csv";
+pub const HOLDINGS_FILENAME: &str = "fakingview-portfolio-holdings.csv";
+pub const HISTORY_FILENAME: &str = "fakingview-portfolio-history.csv";
 pub const NEEDS_DESTINATION: &str =
     "Select the destination portfolio before importing CoinMarketCap transactions.";
 

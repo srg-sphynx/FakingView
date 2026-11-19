@@ -484,7 +484,7 @@ fn room_before_counts_only_the_room_a_pointer_has_passed() {
 }
 
 /// Pictures of the swatches and the picker, for looking at by hand:
-/// `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_swatches -- --ignored`.
+/// `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_swatches -- --ignored`.
 #[test]
 #[ignore = "writes pictures"]
 fn gallery_of_the_swatches() {

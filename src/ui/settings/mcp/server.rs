@@ -23,7 +23,7 @@ pub(super) fn server_section(
             Icon::LockFill,
             "Enable MCP Server",
             Some(
-                "Lets AI assistants and automation on this Mac inspect DegenView, within the permissions below. Off until you turn it on.",
+                "Lets AI assistants and automation on this Mac inspect FakingView, within the permissions below. Off until you turn it on.",
             ),
             |ui| {
                 let mut enabled = input.settings.enabled;
@@ -38,7 +38,7 @@ pub(super) fn server_section(
             Icon::CheckCircle,
             "Ask before high-impact requests",
             Some(
-                "Deleting alerts, charts, drawings or watchlists, saving over a script, and every paper order wait for your approval in DegenView. On unless you turn it off. A credential with remote access is asked about every change, whatever this says.",
+                "Deleting alerts, charts, drawings or watchlists, saving over a script, and every paper order wait for your approval in FakingView. On unless you turn it off. A credential with remote access is asked about every change, whatever this says.",
             ),
             |ui| {
                 let mut required = input.settings.require_confirmation;

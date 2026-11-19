@@ -241,7 +241,7 @@ fn portion_goes_back_to_the_charts_and_the_next_selection_reopens_with_the_look(
     let mut rig = rig(&["BTCUSDT"]);
     remember(&mut rig, None);
     let mut rig = open_on(rig);
-    click(&mut rig, "DegenView mark, on");
+    click(&mut rig, "FakingView mark, on");
     click(&mut rig, "Radiant background");
     click(&mut rig, "Chart");
     let before = session(&rig).config;
@@ -330,7 +330,7 @@ fn changing_a_control_saves_the_look_and_a_frame_that_changes_nothing_saves_noth
     click(&mut rig, "Spectrum background");
     assert_eq!(saved_look(&store).background, Background::Spectrum);
     click(&mut rig, "9:16");
-    click(&mut rig, "DegenView mark, on");
+    click(&mut rig, "FakingView mark, on");
     let saved = saved_look(&store);
     assert_eq!(saved.size, AspectRatio::Portrait9x16);
     assert!(!saved.include.branding);
@@ -399,7 +399,7 @@ fn a_toggle_that_is_unavailable_does_not_overwrite_what_was_remembered() {
     click(&mut rig, "Indicators, off");
     click(&mut rig, "Drawings, off");
     assert_eq!(saved_look(&store), remembered, "dimmed toggles do nothing");
-    click(&mut rig, "DegenView mark, on");
+    click(&mut rig, "FakingView mark, on");
     let saved = saved_look(&store).include;
     assert_eq!(
         (saved.indicators, saved.drawings, saved.branding),
@@ -517,7 +517,7 @@ fn the_controls_set_the_look_and_size_waits_for_styled() {
         AspectRatio::Landscape3x2,
         "Styled opens at 3:2"
     );
-    click(&mut rig, "DegenView mark, on");
+    click(&mut rig, "FakingView mark, on");
     let include = session(&rig).config.include;
     assert!(!include.branding && include.indicators && include.drawings);
 }
@@ -680,7 +680,7 @@ fn download_writes_a_png_of_exactly_the_footers_size_named_for_the_chart() {
     assert_eq!(png_size(png), (expected.width, expected.height));
     let names = fake.names.lock().unwrap();
     assert!(
-        names[0].starts_with("DegenView_BTCUSDT_") && names[0].ends_with(".png"),
+        names[0].starts_with("FakingView_BTCUSDT_") && names[0].ends_with(".png"),
         "{names:?}"
     );
     assert_eq!(path, &PathBuf::from("/saved").join(&names[0]));
@@ -712,7 +712,7 @@ fn an_image_of_the_layout_is_named_for_the_layout() {
     click(&mut rig, "Download PNG");
     finished(&mut rig);
     let names = fake.names.lock().unwrap();
-    assert!(names[0].starts_with("DegenView_Layout_"), "{names:?}");
+    assert!(names[0].starts_with("FakingView_Layout_"), "{names:?}");
     // The same stamp as the helper makes, to the minute.
     let stamp = layout_file_name(now_ms(), timezone::local_utc_offset_secs(now_ms()));
     assert_eq!(names[0].len(), stamp.len());

@@ -11,7 +11,7 @@
 //! Unlike the macOS bundle, nothing here is checked against a code signature: neither the Windows
 //! nor the Linux build is signed. Trust comes from the signed release tag, the immutable release and
 //! the SHA-256 GitHub published for the archive (`docs/agent-guides/releases-updates.md`). Only the
-//! unpacking differs per OS: a zip holding `degenview.exe`, or a tarball holding `degenview`.
+//! unpacking differs per OS: a zip holding `fakingview.exe`, or a tarball holding `fakingview`.
 //!
 //! The logic is compiled on every platform so its tests run everywhere; only the process calls
 //! are per-OS.
@@ -45,9 +45,9 @@ impl Prepared {
     /// A stand-in for tests of code that only passes a `Prepared` along.
     pub(crate) fn for_test() -> Self {
         Self {
-            exe: PathBuf::from("/home/me/.local/bin/degenview"),
-            staging: PathBuf::from("/home/me/.local/bin/.DegenView-update"),
-            new_exe: PathBuf::from("/home/me/.local/bin/.DegenView-update/new/degenview"),
+            exe: PathBuf::from("/home/me/.local/bin/fakingview"),
+            staging: PathBuf::from("/home/me/.local/bin/.FakingView-update"),
+            new_exe: PathBuf::from("/home/me/.local/bin/.FakingView-update/new/fakingview"),
         }
     }
 }
@@ -90,9 +90,9 @@ fn target_for(exe: &Path, source_root: &Path) -> Result<PathBuf, String> {
             "{} is not writable. {}",
             parent.display(),
             if cfg!(windows) {
-                "Move DegenView to a folder you own, such as Documents."
+                "Move FakingView to a folder you own, such as Documents."
             } else {
-                "Install DegenView in a folder you own, such as ~/.local/bin."
+                "Install FakingView in a folder you own, such as ~/.local/bin."
             }
         ));
     }
@@ -153,7 +153,7 @@ fn prepare_in(
 }
 
 /// Unpacks the downloaded archive's one binary into `dest_dir` and checks it is an executable for
-/// this CPU: a zip holding `degenview.exe` on Windows, a tarball holding `degenview` elsewhere.
+/// this CPU: a zip holding `fakingview.exe` on Windows, a tarball holding `fakingview` elsewhere.
 /// Two definitions rather than a `cfg!` branch: each calls functions that only exist on its own OS.
 #[cfg(windows)]
 fn unpack(bytes: &[u8], dest_dir: &Path) -> Result<PathBuf, String> {
@@ -180,7 +180,7 @@ pub fn apply(prepared: &Prepared) -> Result<(), String> {
 /// exit is certain; the exe is already in place, so a failure only means nobody reopens the app.
 pub fn relaunch(prepared: &Prepared) -> Result<(), String> {
     spawn_relaunch(prepared)
-        .map_err(|error| format!("Updated, but could not restart: {error}. Reopen DegenView."))
+        .map_err(|error| format!("Updated, but could not restart: {error}. Reopen FakingView."))
 }
 
 fn swap(prepared: &Prepared) -> Result<(), String> {
@@ -198,7 +198,7 @@ fn swap(prepared: &Prepared) -> Result<(), String> {
 
 /// Environment the relaunched app gets (names compare case-insensitively on Windows). It is
 /// started clean, so these are what it needs to find its data and cache folders, plus the
-/// non-secret `DEGENVIEW_*` switches. Credentials (`DEGENVIEW_ALPACA_*`, `DEGENVIEW_CMC_API_KEY`, …)
+/// non-secret `FAKINGVIEW_*` switches. Credentials (`FAKINGVIEW_ALPACA_*`, `FAKINGVIEW_CMC_API_KEY`, …)
 /// must never be added: the relaunched app reads them from its own store again.
 #[cfg_attr(not(windows), allow(dead_code))]
 const FORWARDED_ENV: &[&str] = &[
@@ -228,9 +228,9 @@ const FORWARDED_ENV: &[&str] = &[
     "PROCESSOR_ARCHITECTURE",
     "NUMBER_OF_PROCESSORS",
     // Non-secret switches of ours.
-    "DEGENVIEW_CACHE_DIR",
-    "DEGENVIEW_NO_KEYCHAIN",
-    "DEGENVIEW_NO_NOTIFICATIONS",
+    "FAKINGVIEW_CACHE_DIR",
+    "FAKINGVIEW_NO_KEYCHAIN",
+    "FAKINGVIEW_NO_NOTIFICATIONS",
 ];
 
 /// What environment the relaunched process gets.
@@ -305,7 +305,7 @@ fn predecessor_pid(args: impl Iterator<Item = OsString>) -> Option<u32> {
 
 /// What the new process says when the one it replaces never exited.
 const PREDECESSOR_RUNNING: &str =
-    "The previous DegenView is still running. Close it, then open DegenView again.";
+    "The previous FakingView is still running. Close it, then open FakingView again.";
 
 /// Run first thing at startup: when an update started this process, waits (at most
 /// `RELAUNCH_WAIT_MS`) for the one it replaces to exit, so the database is not opened twice. Fails
@@ -343,7 +343,7 @@ fn wait_for_pid(pid: u32, millis: u32) -> Result<(), String> {
         WAIT_OBJECT_0 => Ok(()),
         WAIT_TIMEOUT => Err(PREDECESSOR_RUNNING.to_owned()),
         other => Err(format!(
-            "Could not wait for the previous DegenView to exit (wait returned {other:#x})."
+            "Could not wait for the previous FakingView to exit (wait returned {other:#x})."
         )),
     }
 }
@@ -448,11 +448,11 @@ mod tests {
     }
 
     fn prepared_in(root: &Path, old: &str, new: &str) -> Prepared {
-        let exe = root.join("degenview.exe");
+        let exe = root.join("fakingview.exe");
         fs::write(&exe, old).unwrap();
         let staging = root.join(STAGING_NAME);
         fs::create_dir_all(staging.join("new")).unwrap();
-        let new_exe = staging.join("new").join("degenview.exe");
+        let new_exe = staging.join("new").join("fakingview.exe");
         fs::write(&new_exe, new).unwrap();
         Prepared {
             exe,
@@ -468,7 +468,7 @@ mod tests {
         swap(&prepared).unwrap();
         assert_eq!(fs::read_to_string(&prepared.exe).unwrap(), "new");
         assert_eq!(
-            fs::read_to_string(prepared.staging.join("old").join("degenview.exe")).unwrap(),
+            fs::read_to_string(prepared.staging.join("old").join("fakingview.exe")).unwrap(),
             "old"
         );
         let _ = fs::remove_dir_all(root);
@@ -503,7 +503,7 @@ mod tests {
         assert_eq!(seen, "old", "the holder keeps the old file");
         assert_eq!(fs::read_to_string(&prepared.exe).unwrap(), "new");
         assert_eq!(
-            fs::read_to_string(prepared.staging.join("old").join("degenview.exe")).unwrap(),
+            fs::read_to_string(prepared.staging.join("old").join("fakingview.exe")).unwrap(),
             "old"
         );
         let _ = fs::remove_dir_all(root);
@@ -529,26 +529,38 @@ mod tests {
         let _ = child.wait();
         swapped.unwrap();
         assert_eq!(fs::read_to_string(&prepared.exe).unwrap(), "new");
-        assert!(prepared.staging.join("old").join("degenview.exe").is_file());
+        assert!(
+            prepared
+                .staging
+                .join("old")
+                .join("fakingview.exe")
+                .is_file()
+        );
         let _ = fs::remove_dir_all(root);
     }
 
     #[test]
     fn a_development_build_or_unwritable_folder_is_not_installable() {
         let root = scratch("exe-target");
-        let exe = root.join("degenview.exe");
+        let exe = root.join("fakingview.exe");
         assert_eq!(target_for(&exe, Path::new("/elsewhere")), Ok(exe.clone()));
         // Under the source tree: `cargo run`.
         assert!(target_for(&exe, &root).is_err());
-        assert!(target_for(&root.join("missing").join("degenview.exe"), Path::new("/x")).is_err());
+        assert!(
+            target_for(
+                &root.join("missing").join("fakingview.exe"),
+                Path::new("/x")
+            )
+            .is_err()
+        );
         let _ = fs::remove_dir_all(root);
     }
 
     #[test]
     fn the_verbatim_prefix_is_stripped_so_paths_compare() {
         assert_eq!(
-            plain(Path::new(r"\\?\C:\src\target\debug\degenview.exe")),
-            Path::new(r"C:\src\target\debug\degenview.exe")
+            plain(Path::new(r"\\?\C:\src\target\debug\fakingview.exe")),
+            Path::new(r"C:\src\target\debug\fakingview.exe")
         );
         assert_eq!(
             plain(Path::new(r"\\?\UNC\server\share\a.exe")),
@@ -571,10 +583,10 @@ mod tests {
             ("AppData", r"C:\Users\me\AppData\Roaming"),
             ("LOCALAPPDATA", r"C:\Users\me\AppData\Local"),
             ("SystemRoot", r"C:\Windows"),
-            ("DEGENVIEW_CACHE_DIR", r"C:\cache"),
-            ("DEGENVIEW_ALPACA_KEY_ID", "canary-id"),
-            ("DEGENVIEW_ALPACA_SECRET_KEY", "canary-secret"),
-            ("DEGENVIEW_CMC_API_KEY", "canary-cmc"),
+            ("FAKINGVIEW_CACHE_DIR", r"C:\cache"),
+            ("FAKINGVIEW_ALPACA_KEY_ID", "canary-id"),
+            ("FAKINGVIEW_ALPACA_SECRET_KEY", "canary-secret"),
+            ("FAKINGVIEW_CMC_API_KEY", "canary-cmc"),
             ("AWS_SECRET_ACCESS_KEY", "canary-aws"),
             ("GITHUB_TOKEN", "canary-token"),
             ("PYTHONPATH", "x"),
@@ -590,10 +602,10 @@ mod tests {
                 "AppData",
                 "LOCALAPPDATA",
                 "SystemRoot",
-                "DEGENVIEW_CACHE_DIR",
+                "FAKINGVIEW_CACHE_DIR",
             ]
         } else {
-            vec!["LOCALAPPDATA", "SystemRoot", "DEGENVIEW_CACHE_DIR"]
+            vec!["LOCALAPPDATA", "SystemRoot", "FAKINGVIEW_CACHE_DIR"]
         };
         assert_eq!(names, expected);
     }
@@ -601,7 +613,7 @@ mod tests {
     #[test]
     fn the_relaunch_carries_the_pid_and_no_secrets() {
         let command = relaunch_command(
-            Path::new(r"C:\Apps\degenview.exe"),
+            Path::new(r"C:\Apps\fakingview.exe"),
             4242,
             Environment::Only(env(&[("LOCALAPPDATA", r"C:\Users\me\AppData\Local")])),
         );
@@ -609,7 +621,7 @@ mod tests {
         assert_eq!(args, ["--relaunch-after", "4242"]);
         let envs: Vec<_> = command.get_envs().collect();
         assert_eq!(envs.len(), 1, "{envs:?}");
-        assert_eq!(command.get_program(), r"C:\Apps\degenview.exe");
+        assert_eq!(command.get_program(), r"C:\Apps\fakingview.exe");
     }
 
     /// The two environments, observed: a script prints `HOME`, which this process has (and which `sh`,
@@ -620,7 +632,7 @@ mod tests {
         use std::os::unix::fs::PermissionsExt;
 
         let root = scratch("relaunch-env");
-        let script = root.join("degenview");
+        let script = root.join("fakingview");
         fs::write(&script, "#!/bin/sh\nprintf %s \"${HOME-unset}\"\n").unwrap();
         fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).unwrap();
         let run = |inherit: bool| {
@@ -675,10 +687,10 @@ mod tests {
 
     #[test]
     fn a_process_that_has_exited_but_not_been_reaped_counts_as_gone() {
-        assert!(!is_dead("4242 (degenview) S 1 4242 4242 0 -1 4194560"));
-        assert!(!is_dead("4242 (degenview) R 1 4242 4242 0 -1 4194560"));
-        assert!(is_dead("4242 (degenview) Z 1 4242 4242 0 -1 4194560"));
-        assert!(is_dead("4242 (degenview) X 1 4242 4242 0 -1 4194560"));
+        assert!(!is_dead("4242 (fakingview) S 1 4242 4242 0 -1 4194560"));
+        assert!(!is_dead("4242 (fakingview) R 1 4242 4242 0 -1 4194560"));
+        assert!(is_dead("4242 (fakingview) Z 1 4242 4242 0 -1 4194560"));
+        assert!(is_dead("4242 (fakingview) X 1 4242 4242 0 -1 4194560"));
         // The command name may hold spaces and parentheses.
         assert!(is_dead("4242 (a b) c) Z 1 4242"));
         assert!(!is_dead("4242 (a b) c) S 1 4242"));
@@ -730,12 +742,12 @@ mod tests {
         let args = |list: &[&str]| list.iter().map(OsString::from).collect::<Vec<_>>();
         let pid = |list: &[&str]| predecessor_pid(args(list).into_iter());
         assert_eq!(
-            pid(&["degenview.exe", "--relaunch-after", "4242"]),
+            pid(&["fakingview.exe", "--relaunch-after", "4242"]),
             Some(4242)
         );
-        assert_eq!(pid(&["degenview.exe"]), None);
-        assert_eq!(pid(&["degenview.exe", "--relaunch-after"]), None);
-        assert_eq!(pid(&["degenview.exe", "--relaunch-after", "soon"]), None);
+        assert_eq!(pid(&["fakingview.exe"]), None);
+        assert_eq!(pid(&["fakingview.exe", "--relaunch-after"]), None);
+        assert_eq!(pid(&["fakingview.exe", "--relaunch-after", "soon"]), None);
         // The program name is never an argument.
         assert_eq!(pid(&["--relaunch-after", "4242"]), None);
     }

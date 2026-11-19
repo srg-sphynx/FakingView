@@ -1,5 +1,5 @@
 //! Pictures of a script that compiles and fails when it runs, in both themes, for a person to look
-//! at. Run by hand: `DEGENVIEW_GALLERY_DIR=… cargo test --lib pine_studio::problems_gallery -- --ignored`.
+//! at. Run by hand: `FAKINGVIEW_GALLERY_DIR=… cargo test --lib pine_studio::problems_gallery -- --ignored`.
 
 use std::time::{Duration, Instant};
 

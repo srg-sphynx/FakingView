@@ -2687,7 +2687,7 @@ mod tests {
     }
 
     /// The magnet at the sizes it is used, next to its neighbours, in both tints. Run by hand
-    /// with `DEGENVIEW_GALLERY_DIR` set.
+    /// with `FAKINGVIEW_GALLERY_DIR` set.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_the_magnet() {
@@ -2722,7 +2722,7 @@ mod tests {
     }
 
     /// The zoom icons at the sizes they are used, beside the ruler and magnifier they sit with, on
-    /// a dark and a light ground. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+    /// a dark and a light ground. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_the_zoom_icons() {

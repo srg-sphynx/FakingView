@@ -476,24 +476,134 @@ fn a_missing_alpaca_key_is_a_card_with_a_settings_button_not_a_hint() {
     let listing = rig.picker.listing(&ctx);
     let notice = rig
         .picker
-        .notice(&listing)
+        .notices(&listing)
+        .into_iter()
+        .next()
         .expect("stocks cannot be searched");
     assert_eq!(notice.title, "Stocks need an Alpaca key");
-    assert!(notice.settings);
+    assert_eq!(notice.settings, Some(SettingsTarget::Alpaca));
     // Another failure of the stock search has nothing to set up.
     let mut listing = rig.picker.listing(&ctx);
     listing.errors = vec![(
         DataSource::Alpaca,
         ProviderError::from(http::Error::Network("timed out".to_owned())),
     )];
-    let notice = rig.picker.notice(&listing).expect("a failure");
+    let notice = rig
+        .picker
+        .notices(&listing)
+        .into_iter()
+        .next()
+        .expect("a failure");
     assert_eq!(notice.title, "Stocks could not be searched");
-    assert!(!notice.settings);
+    assert!(notice.settings.is_none());
     // Nothing to say while stocks are not in the scope.
     rig.picker.set_scope(Scope::Crypto);
     rig.settle();
     let listing = rig.picker.listing(&ctx);
-    assert!(rig.picker.notice(&listing).is_none());
+    assert!(rig.picker.notices(&listing).is_empty());
+}
+
+#[test]
+fn kite_session_failures_open_kite_settings_without_hiding_alpaca() {
+    let mut rig = Rig::new(1100.0, "infy");
+    let ctx = rig.screen.ctx.clone();
+    let mut listing = rig.picker.listing(&ctx);
+    listing.errors = vec![
+        (DataSource::Alpaca, ProviderError::MissingKey),
+        (DataSource::Kite, ProviderError::KiteMissingKey),
+    ];
+    let targets = |picker: &SymbolPicker| {
+        picker
+            .notices(&listing)
+            .into_iter()
+            .map(|notice| notice.settings)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        targets(&rig.picker),
+        [Some(SettingsTarget::Alpaca), Some(SettingsTarget::Kite)]
+    );
+    rig.picker.set_scope(Scope::Stocks);
+    assert_eq!(
+        targets(&rig.picker),
+        [Some(SettingsTarget::Kite), Some(SettingsTarget::Alpaca)]
+    );
+    rig.picker.set_scope(Scope::All);
+    rig.picker.query = "NSE:INFY".into();
+    assert_eq!(
+        targets(&rig.picker),
+        [Some(SettingsTarget::Kite), Some(SettingsTarget::Alpaca)]
+    );
+    listing.errors = vec![(DataSource::Kite, ProviderError::KiteSessionExpired)];
+    let notice = rig
+        .picker
+        .notices(&listing)
+        .pop()
+        .expect("session renewal notice");
+    assert_eq!(notice.title, "Renew your Kite session");
+    assert_eq!(notice.settings, Some(SettingsTarget::Kite));
+    listing.errors = vec![(
+        DataSource::Kite,
+        ProviderError::other("network temporarily unavailable"),
+    )];
+    assert!(
+        rig.picker.notices(&listing)[0].settings.is_none(),
+        "a network failure is not a credential failure"
+    );
+}
+
+#[test]
+fn the_kite_notice_opens_settings_and_drops_the_failed_search() {
+    let mut rig = Rig::new(1100.0, "NSE:INFY");
+    rig.picker.settings_requested = Some(SettingsTarget::Kite);
+    assert!(matches!(
+        rig.frame(Vec::new()),
+        Some(Output::OpenKiteSettings)
+    ));
+    assert!(!rig.picker.is_open());
+    rig.picker.open("AAPL");
+    rig.picker.settings_requested = Some(SettingsTarget::Alpaca);
+    assert!(matches!(
+        rig.frame(Vec::new()),
+        Some(Output::OpenAlpacaSettings)
+    ));
+    assert!(rig.picker.is_open());
+}
+
+#[test]
+fn a_recent_kite_market_requires_only_a_configured_session_to_offer_setup() {
+    let mut rig = Rig::new(1100.0, "");
+    let market = SearchResult::new(DataSource::Kite, "INFY", "NSE:INFY");
+    let env = Env {
+        on_tab: &[],
+        quote: None,
+        replacing: None,
+        overlaid: &[],
+        can_overlay: false,
+        cards_on_tab: &[],
+        in_list: &[],
+    };
+    assert!(
+        !service::keychain::api_keys::kite_configured(),
+        "test session must start without Kite credentials"
+    );
+    assert!(
+        rig.picker
+            .commit(Pick::Market(market), PickKind::Add, &env)
+            .is_none()
+    );
+    assert!(rig.picker.needs_kite);
+    let ctx = rig.screen.ctx.clone();
+    let listing = rig.picker.listing(&ctx);
+    assert_eq!(
+        rig.picker.notices(&listing)[0].settings,
+        Some(SettingsTarget::Kite)
+    );
+    rig.picker.set_scope(Scope::Crypto);
+    assert!(
+        !rig.picker.needs_kite,
+        "a different scope clears the blocked pick"
+    );
 }
 
 fn lists() -> Vec<WatchlistGroup> {
@@ -1253,7 +1363,7 @@ fn a_venue_nothing_serves_is_named_and_the_symbol_searched_everywhere() {
     let shown = texts(&mut rig);
     assert!(
         shown.iter().any(|text| text
-            == "KUCOIN isn't supported. Searched: Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, DEXScreener, CoinGecko, Alpaca."),
+            == "KUCOIN isn't supported. Searched: Kite Connect, Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, DEXScreener, CoinGecko, Alpaca."),
         "{shown:?}"
     );
     assert!(
@@ -1270,7 +1380,7 @@ fn a_plain_miss_lists_the_venues_that_were_searched() {
     let shown = texts(&mut rig);
     assert!(
         shown.iter().any(|text| text
-            == "Nothing matches “zzz”. Searched: Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, DEXScreener, CoinGecko, Alpaca."),
+            == "Nothing matches “zzz”. Searched: Kite Connect, Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, DEXScreener, CoinGecko, Alpaca."),
         "{shown:?}"
     );
     rig.picker.set_venue(Some(DataSource::Coinbase));
@@ -1407,7 +1517,7 @@ fn the_tab_row_gives_up_room_in_order_and_never_asks_for_more_than_it_has() {
     assert!(used <= room, "{fit:?} uses {used} of {room}");
 }
 
-/// The picker as pictures. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+/// The picker as pictures. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_symbol_picker() {

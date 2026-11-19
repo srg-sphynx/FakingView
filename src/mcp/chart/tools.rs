@@ -9,7 +9,7 @@ use crate::mcp::chart::drawings::{
     StylePatch, TimeArg, parse_drawing_id, parse_time,
 };
 use crate::mcp::tools::{
-    Caller, DegenViewMcp, McpIndicator, McpSource, alpaca_configured, failure, invalid,
+    Caller, FakingViewMcp, McpIndicator, McpSource, alpaca_configured, failure, invalid,
     parse_chart_id, parse_workspace_id, unexpected,
 };
 use crate::mcp::types::{
@@ -37,10 +37,10 @@ pub struct IndicatorInputs {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct AddIndicatorParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts` in that workspace.
+    /// A `chart_id` from `fakingview_list_charts` in that workspace.
     #[schemars(length(max = 20))]
     pub chart_id: String,
     pub indicator: McpIndicator,
@@ -51,10 +51,10 @@ pub struct AddIndicatorParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ChartPineParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts`.
+    /// A `chart_id` from `fakingview_list_charts`.
     #[schemars(length(max = 20))]
     pub chart_id: String,
 }
@@ -62,10 +62,10 @@ pub struct ChartPineParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct GetCandlesParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts`.
+    /// A `chart_id` from `fakingview_list_charts`.
     #[schemars(length(max = 20))]
     pub chart_id: String,
     /// How many of the newest bars to return, 1 to 1000. Default 200.
@@ -79,7 +79,7 @@ pub struct GetCandlesParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ListChartsParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
 }
@@ -87,7 +87,7 @@ pub struct ListChartsParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct AddChartParams {
-    /// A `workspace_id` from `degenview_list_workspaces`. Must be a chart workspace.
+    /// A `workspace_id` from `fakingview_list_workspaces`. Must be a chart workspace.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
     /// The market data provider.
@@ -117,7 +117,7 @@ pub struct UpdateDrawingParams {
     pub workspace_id: String,
     #[schemars(length(max = 20))]
     pub chart_id: String,
-    /// A `drawing_id` from `degenview_list_drawings`.
+    /// A `drawing_id` from `fakingview_list_drawings`.
     #[schemars(length(max = 20))]
     pub drawing_id: String,
     /// Move the first point (a trend line's start, or one corner of a rectangle).
@@ -150,16 +150,16 @@ pub struct DeleteDrawingsParams {
     pub workspace_id: String,
     #[schemars(length(max = 20))]
     pub chart_id: String,
-    /// `drawing_id`s from `degenview_list_drawings`, up to 50.
+    /// `drawing_id`s from `fakingview_list_drawings`, up to 50.
     #[schemars(length(min = 1, max = 50))]
     pub drawing_ids: Vec<String>,
 }
 
 #[tool_router(router = chart_router, vis = "pub(in crate::mcp)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_list_workspaces",
-        description = "List DegenView chart workspaces (one per tab). Returns each workspace's stable id, title, chart count and timeframe, and which one is active. Use a workspace_id with the other chart tools.",
+        name = "fakingview_list_workspaces",
+        description = "List FakingView chart workspaces (one per tab). Returns each workspace's stable id, title, chart count and timeframe, and which one is active. Use a workspace_id with the other chart tools.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -188,7 +188,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_list_charts",
+        name = "fakingview_list_charts",
         description = "List the charts in one workspace: market, provider, timeframe, chart type, applied indicators and Pine scripts, and load state. Candle data is not returned.",
         annotations(
             read_only_hint = true,
@@ -220,8 +220,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_list_indicators",
-        description = "List the built-in chart indicators DegenView supports: id, where it draws, which chart types it works on, and its parameters with defaults and allowed values.",
+        name = "fakingview_list_indicators",
+        description = "List the built-in chart indicators FakingView supports: id, where it draws, which chart types it works on, and its parameters with defaults and allowed values.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -240,7 +240,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_add_indicator",
+        name = "fakingview_add_indicator",
         description = "Apply a built-in indicator to a chart, or update it if already applied (re-shows it; an EMA takes a period). Each indicator exists once per chart. Returns the chart's indicators afterwards.",
         annotations(
             read_only_hint = false,
@@ -292,7 +292,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_add_chart",
+        name = "fakingview_add_chart",
         description = "Add a chart for a market to an existing chart workspace. The chart uses the workspace's timeframe and is placed by the normal layout rules. If the workspace already charts that market, that chart is returned instead of adding a duplicate.",
         annotations(
             read_only_hint = false,
@@ -309,9 +309,15 @@ impl DegenViewMcp {
         let workspace_id = parse_workspace_id(&params.workspace_id)?;
         let source = params.source.data_source();
         let instrument = validate_market(source, &params.symbol).map_err(invalid)?;
+        if source == DataSource::Kite && !crate::mcp::tools::kite_configured().await {
+            return Err(failure(&McpError::Unsupported(
+                "Kite Connect needs a daily session: sign in in FakingView Settings > Kite Connect"
+                    .into(),
+            )));
+        }
         if source == DataSource::Alpaca && !alpaca_configured().await {
             return Err(failure(&McpError::Unsupported(
-                "Alpaca needs API credentials: add them in DegenView Settings > API Keys".into(),
+                "Alpaca needs API credentials: add them in FakingView Settings > API Keys".into(),
             )));
         }
         match self
@@ -334,8 +340,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_candles",
-        description = "Read a chart's price candles: the market's own bars (never Renko/Heikin Ashi bricks), cut at the replay position, oldest first. Returns rows under named `columns` (time, open, high, low, close, volume), a summary of the highest high and lowest low, and whether the newest bar is still forming. Times are ISO-8601 UTC; pass them back as a drawing's `time`. Returns what the chart has loaded (about 500 to 1500 bars): page back with `before`, and `has_older_loaded` says whether there is more. Use it to find swing highs and lows before drawing trend lines with degenview_add_drawings.",
+        name = "fakingview_get_candles",
+        description = "Read a chart's price candles: the market's own bars (never Renko/Heikin Ashi bricks), cut at the replay position, oldest first. Returns rows under named `columns` (time, open, high, low, close, volume), a summary of the highest high and lowest low, and whether the newest bar is still forming. Times are ISO-8601 UTC; pass them back as a drawing's `time`. Returns what the chart has loaded (about 500 to 1500 bars): page back with `before`, and `has_older_loaded` says whether there is more. Use it to find swing highs and lows before drawing trend lines with fakingview_add_drawings.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -384,8 +390,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_list_drawings",
-        description = "List the drawings on a chart, for the market it shows (each market keeps its own set, so changing the chart's symbol changes them), in stacking order: id, tool (trend_line, rectangle, fib_retracement, brush, …), points as ISO time + price, style, label, and whether it is locked, hidden or editable by this server (the tools degenview_add_drawings can draw, when not locked).",
+        name = "fakingview_list_drawings",
+        description = "List the drawings on a chart, for the market it shows (each market keeps its own set, so changing the chart's symbol changes them), in stacking order: id, tool (trend_line, rectangle, fib_retracement, brush, …), points as ISO time + price, style, label, and whether it is locked, hidden or editable by this server (the tools fakingview_add_drawings can draw, when not locked).",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -420,8 +426,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_add_drawings",
-        description = "Draw on a chart. Tools: trend_line, rectangle, ray, extended_line, arrow and fib_retracement (two points, `a` and `b`); horizontal_line, horizontal_ray, vertical_line, crossline and text (one point, `a`, no `b`; text needs `text`). Each point is a time and a price: copy the time from degenview_get_candles (it snaps to that bar), and give a price or `price_from` (open/high/low/close of the bar at that time, so a line can touch the wicks exactly). A time past the newest bar is allowed, so a line can run into the future; `extend_left` / `extend_right` prolong a trend line or rectangle to the chart edge (the others have their own reach). `fill_color` is for rectangles; `text` labels a rectangle or is the text of a `text` drawing; a style a tool does not have is refused. Other tools (circles, channels, pitchforks, brushes, …) are listed but not drawn. Up to 25 drawings per call, added as one undo step in the app, or none if any is invalid. Drawings are market-anchored: they stay put across timeframes. Returns the new ids and the drawings.",
+        name = "fakingview_add_drawings",
+        description = "Draw on a chart. Tools: trend_line, rectangle, ray, extended_line, arrow and fib_retracement (two points, `a` and `b`); horizontal_line, horizontal_ray, vertical_line, crossline and text (one point, `a`, no `b`; text needs `text`). Each point is a time and a price: copy the time from fakingview_get_candles (it snaps to that bar), and give a price or `price_from` (open/high/low/close of the bar at that time, so a line can touch the wicks exactly). A time past the newest bar is allowed, so a line can run into the future; `extend_left` / `extend_right` prolong a trend line or rectangle to the chart edge (the others have their own reach). `fill_color` is for rectangles; `text` labels a rectangle or is the text of a `text` drawing; a style a tool does not have is refused. Other tools (circles, channels, pitchforks, brushes, …) are listed but not drawn. Up to 25 drawings per call, added as one undo step in the app, or none if any is invalid. Drawings are market-anchored: they stay put across timeframes. Returns the new ids and the drawings.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -476,8 +482,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_update_drawing",
-        description = "Change a drawing degenview_add_drawings can draw: move its points (same time/price rules; a one-point drawing has only `a`), restyle it, relabel a rectangle or text, or hide/show it. Only what you give changes. Locked drawings are refused (CONFLICT): unlock them in DegenView first. The change is one undo step in the app.",
+        name = "fakingview_update_drawing",
+        description = "Change a drawing fakingview_add_drawings can draw: move its points (same time/price rules; a one-point drawing has only `a`), restyle it, relabel a rectangle or text, or hide/show it. Only what you give changes. Locked drawings are refused (CONFLICT): unlock them in FakingView first. The change is one undo step in the app.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -544,8 +550,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_delete_drawings",
-        description = "Remove drawings from a chart (up to 50). All or none: if any id is unknown or locked, nothing is removed. The user can undo the removal in the app. Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_delete_drawings",
+        description = "Remove drawings from a chart (up to 50). All or none: if any id is unknown or locked, nothing is removed. The user can undo the removal in the app. Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,

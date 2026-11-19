@@ -1,6 +1,6 @@
 //! The order sheet drawn against real venues: the paper account, and a broker against the crate's
 //! mock exchange. Always-run tests type orders and press the button; the pictures are written by
-//! hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib sheet_gallery`.
+//! hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib sheet_gallery`.
 
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};

@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Williams Fractals: a bar whose high (or low) is the highest (lowest) of the bars on each side.
 // A fractal is confirmed N bars after it forms, so the mark is placed back on the bar itself.
 indicator("Williams Fractals", overlay = true)

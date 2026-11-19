@@ -49,7 +49,7 @@ pub enum AccountChange {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ZoneEvent {
-    /// The user deleted DegenView's iCloud data (or the zone) elsewhere.
+    /// The user deleted FakingView's iCloud data (or the zone) elsewhere.
     Deleted,
     Purged,
     /// iCloud lost its encryption keys; every record must be uploaded again.

@@ -76,7 +76,7 @@ fn agent(url: &str) -> ureq::Agent {
         .max_redirects_will_error(false)
         .http_status_as_error(false)
         .https_only(true)
-        .user_agent("DegenView")
+        .user_agent("FakingView")
         .build();
     ureq::Agent::new_with_config(config)
 }

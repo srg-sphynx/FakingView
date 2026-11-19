@@ -2,21 +2,21 @@
 # Record the README hero GIF from the real app. macOS only, see README.md in this folder.
 #
 # usage: tools/readme-gif/record.sh [out.gif]       (default: ./hero.gif)
-# env:   DEGENVIEW_BIN  a release build made with `--features dev-unsealed-mcp`
-#                       (default: target-gif/release/degenview)
+# env:   FAKINGVIEW_BIN  a release build made with `--features dev-unsealed-mcp`
+#                       (default: target-gif/release/fakingview)
 #        KEEP=1         keep the work directory (frames, contact sheet) after the run
 set -euo pipefail
 
 here=$(cd "$(dirname "$0")" && pwd)
 root=$(cd "$here/../.." && pwd)
-bin=${DEGENVIEW_BIN:-$root/target-gif/release/degenview}
+bin=${FAKINGVIEW_BIN:-$root/target-gif/release/fakingview}
 [ -x "$bin" ] || { echo "no binary at $bin, build one first (see README.md)" >&2; exit 1; }
 
 work=$(mktemp -d)
 out=$(cd "$(dirname "${1:-hero.gif}")" && pwd)/$(basename "${1:-hero.gif}")
-export DEGENVIEW_RECORD_PORT=8791
-DEGENVIEW_RECORD_TOKEN="dvmcp_$(openssl rand -hex 32)"
-export DEGENVIEW_RECORD_TOKEN
+export FAKINGVIEW_RECORD_PORT=8791
+FAKINGVIEW_RECORD_TOKEN="dvmcp_$(openssl rand -hex 32)"
+export FAKINGVIEW_RECORD_TOKEN
 home="$work/home"
 mkdir -p "$home" "$work/cache" "$work/bin" "$work/take"
 
@@ -29,7 +29,7 @@ trap cleanup EXIT
 
 # A throwaway HOME and no Keychain or notifications: the real profile is never touched.
 launch() {
-    HOME="$home" DEGENVIEW_NO_KEYCHAIN=1 DEGENVIEW_NO_NOTIFICATIONS=1 DEGENVIEW_CACHE_DIR="$work/cache" \
+    HOME="$home" FAKINGVIEW_NO_KEYCHAIN=1 FAKINGVIEW_NO_NOTIFICATIONS=1 FAKINGVIEW_CACHE_DIR="$work/cache" \
         "$bin" >"$work/app.log" 2>&1 &
     app=$!
 }

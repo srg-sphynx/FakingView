@@ -1557,7 +1557,7 @@ fn the_band_over_the_listed_bars_draws_without_moving_the_view() {
     rig.frames(&[]);
 }
 
-/// The drag over bars, and the band it leaves, as pictures. Run by hand with `DEGENVIEW_GALLERY_DIR`.
+/// The drag over bars, and the band it leaves, as pictures. Run by hand with `FAKINGVIEW_GALLERY_DIR`.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_bar_range() {
@@ -2331,7 +2331,7 @@ mod zoom_in {
 }
 
 /// The Zoom In rectangle while it is dragged, and the chart after the zoom, as pictures. Run by
-/// hand with `DEGENVIEW_GALLERY_DIR`.
+/// hand with `FAKINGVIEW_GALLERY_DIR`.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_zoom_in() {

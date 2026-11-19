@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>es.nico.degenview</id>
-  <name>DegenView</name>
+  <id>local.fakingview.desktop</id>
+  <name>FakingView</name>
   <summary>Market dashboard with a local Pine Script engine</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-only</project_license>
   <developer id="es.nico">
-    <name>DegenView</name>
+    <name>FakingView</name>
   </developer>
   <description>
     <p>
-      DegenView watches crypto, stocks, prediction markets and CoinMarketCap indices in
+      FakingView watches crypto, stocks, prediction markets and CoinMarketCap indices in
       customizable, linked charts.
     </p>
     <p>
@@ -24,13 +24,13 @@
       <li>An optional local MCP server so AI assistants can inspect and drive the app</li>
     </ul>
   </description>
-  <launchable type="desktop-id">es.nico.degenview.desktop</launchable>
-  <url type="homepage">https://github.com/degenview/degenview</url>
-  <url type="bugtracker">https://github.com/degenview/degenview/issues</url>
+  <launchable type="desktop-id">local.fakingview.desktop.desktop</launchable>
+  <url type="homepage">https://github.com/srg-sphynx/FakingView</url>
+  <url type="bugtracker">https://github.com/srg-sphynx/FakingView/issues</url>
   <screenshots>
     <screenshot type="default">
-      <caption>A candlestick chart with volume, RSI, EMA, a Pine overlay and a MACD pane</caption>
-      <image>https://raw.githubusercontent.com/degenview/degenview/main/assets/screenshots/hero.png</image>
+      <caption>FakingView chart renderer with labeled sample data, volume, RSI, EMA and Bollinger Bands</caption>
+      <image>https://raw.githubusercontent.com/srg-sphynx/FakingView/main/assets/screenshots/fakingview-hero.png</image>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1"/>
@@ -39,7 +39,7 @@
     <category>Finance</category>
   </categories>
   <provides>
-    <binary>degenview</binary>
+    <binary>fakingview</binary>
   </provides>
   <!-- The release workflow replaces this placeholder with the version and date being released. -->
   <releases>

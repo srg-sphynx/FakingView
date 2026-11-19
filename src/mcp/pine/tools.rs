@@ -7,7 +7,7 @@ use crate::mcp::chart::tools::ChartPineParams;
 use crate::mcp::pine::{self, InputArgs, PineCommand, Target, Version};
 use crate::mcp::state::ClientIdentity;
 use crate::mcp::tools::{
-    Caller, DegenViewMcp, failure, invalid, parse_chart_id, parse_id, parse_workspace_id,
+    Caller, FakingViewMcp, failure, invalid, parse_chart_id, parse_id, parse_workspace_id,
     unexpected,
 };
 use crate::mcp::types::{
@@ -35,7 +35,7 @@ fn attach_compile(
         Err(_) => {
             result.compile = None;
             result.compile_warning = Some(
-                "The edit was applied, but its diagnostics could not be compiled right now (the script library was unreadable, too many script requests were running, or the request was interrupted). Call degenview_compile_pine_script to get them"
+                "The edit was applied, but its diagnostics could not be compiled right now (the script library was unreadable, too many script requests were running, or the request was interrupted). Call fakingview_compile_pine_script to get them"
                     .into(),
             );
         }
@@ -62,7 +62,7 @@ impl McpScriptVersion {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct GetPineScriptParams {
-    /// A `script_id` from `degenview_list_pine_scripts`.
+    /// A `script_id` from `fakingview_list_pine_scripts`.
     #[schemars(length(min = 1, max = 64))]
     pub script_id: String,
     /// `saved` or `draft`. Asking for a draft that does not exist is an error, never the saved text.
@@ -85,7 +85,7 @@ pub struct CompilePineParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct UpdatePineParams {
-    /// A `script_id` from `degenview_list_pine_scripts`.
+    /// A `script_id` from `fakingview_list_pine_scripts`.
     #[schemars(length(min = 1, max = 64))]
     pub script_id: String,
     /// The complete new source text.
@@ -132,7 +132,7 @@ fn clean_script_id(raw: &str) -> Result<String, CallToolResult> {
         Ok(id.to_owned())
     } else {
         Err(invalid(
-            "script_id must be an id returned by degenview_list_pine_scripts",
+            "script_id must be an id returned by fakingview_list_pine_scripts",
         ))
     }
 }
@@ -144,7 +144,7 @@ pub struct PineInstanceParams {
     pub workspace_id: String,
     #[schemars(length(max = 20))]
     pub chart_id: String,
-    /// An `instance_id` from `degenview_list_chart_pine_instances`. The same script can be applied
+    /// An `instance_id` from `fakingview_list_chart_pine_instances`. The same script can be applied
     /// to a chart more than once; each application is its own instance.
     #[schemars(length(max = 20))]
     pub instance_id: String,
@@ -172,17 +172,17 @@ pub struct PineReportParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct AddPineToChartParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts`.
+    /// A `chart_id` from `fakingview_list_charts`.
     #[schemars(length(max = 20))]
     pub chart_id: String,
-    /// A `script_id` from `degenview_list_pine_scripts`: an indicator or strategy. Its last
+    /// A `script_id` from `fakingview_list_pine_scripts`: an indicator or strategy. Its last
     /// *saved* source is applied, never an unsaved draft.
     #[schemars(length(min = 1, max = 64))]
     pub script_id: String,
-    /// Input overrides by input id (see `degenview_get_pine_inputs`): numbers, booleans, or text
+    /// Input overrides by input id (see `fakingview_get_pine_inputs`): numbers, booleans, or text
     /// (an option's value, a source name such as `close`, a colour as `#RRGGBB` or `#RRGGBBAA`).
     /// Inputs left out run at their defaults.
     pub inputs: Option<InputArgs>,
@@ -197,10 +197,10 @@ pub struct UpdatePineInstanceParams {
     pub workspace_id: String,
     #[schemars(length(max = 20))]
     pub chart_id: String,
-    /// An `instance_id` from `degenview_list_chart_pine_instances`.
+    /// An `instance_id` from `fakingview_list_chart_pine_instances`.
     #[schemars(length(max = 20))]
     pub instance_id: String,
-    /// Input overrides to change, by input id, as for `degenview_add_pine_script_to_chart`.
+    /// Input overrides to change, by input id, as for `fakingview_add_pine_script_to_chart`.
     /// `null` puts an input back to its default; inputs not named keep their current value.
     pub inputs: Option<InputArgs>,
     /// Show or hide the script. A hidden script does not run.
@@ -208,14 +208,14 @@ pub struct UpdatePineInstanceParams {
 }
 
 fn parse_instance_id(raw: &str) -> Result<u64, CallToolResult> {
-    parse_id(raw, "instance_id", "degenview_list_chart_pine_instances")
+    parse_id(raw, "instance_id", "fakingview_list_chart_pine_instances")
 }
 
 #[tool_router(router = pine_router, vis = "pub(in crate::mcp)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_list_pine_scripts",
-        description = "List the Pine scripts in DegenView's Pine Studio: id, name, type (indicator, strategy, library), whether an unsaved draft exists, and the last compile status. No file paths are returned.",
+        name = "fakingview_list_pine_scripts",
+        description = "List the Pine scripts in FakingView's Pine Studio: id, name, type (indicator, strategy, library), whether an unsaved draft exists, and the last compile status. No file paths are returned.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -235,7 +235,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_pine_script",
+        name = "fakingview_get_pine_script",
         description = "Read a Pine script's source: the saved text or the unsaved draft (never one in place of the other), with its SHA-256 source_hash and revision id.",
         annotations(
             read_only_hint = true,
@@ -259,8 +259,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_update_pine_script",
-        description = "Replace a Pine script's DRAFT with new source text. Only the draft changes: the saved source, charts using the script and alert subscriptions are untouched, and nothing is run. The edit is checked against what the user sees now (their open editor, else the draft, else the saved source) using expected_revision; if that moved, it is refused with CONFLICT. The open Pine Studio editor shows the new text. Returns the new revision and the draft's compile diagnostics. Use degenview_save_pine_script to make it the saved source.",
+        name = "fakingview_update_pine_script",
+        description = "Replace a Pine script's DRAFT with new source text. Only the draft changes: the saved source, charts using the script and alert subscriptions are untouched, and nothing is run. The edit is checked against what the user sees now (their open editor, else the draft, else the saved source) using expected_revision; if that moved, it is refused with CONFLICT. The open Pine Studio editor shows the new text. Returns the new revision and the draft's compile diagnostics. Use fakingview_save_pine_script to make it the saved source.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -276,7 +276,7 @@ impl DegenViewMcp {
         let id = clean_script_id(&params.script_id)?;
         if !pine::is_revision(&params.expected_revision) {
             return Err(invalid(
-                "expected_revision must be the 64-character source_hash from degenview_get_pine_script",
+                "expected_revision must be the 64-character source_hash from fakingview_get_pine_script",
             ));
         }
         if params.source.chars().count() > pine::MAX_EDIT_CHARS {
@@ -319,8 +319,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_save_pine_script",
-        description = "Save a Pine script's current draft over its saved source, as the editor's Save does (records a revision, keeps history). Needs expected_revision to match the draft you reviewed, and the draft must compile without errors (COMPILATION_FAILED otherwise; the draft is kept). Charts keep running the source they were applied with; alert subscriptions to this script will show 'script changed'. Saving cannot be undone from here (revision history stays in the Pine Studio). Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_save_pine_script",
+        description = "Save a Pine script's current draft over its saved source, as the editor's Save does (records a revision, keeps history). Needs expected_revision to match the draft you reviewed, and the draft must compile without errors (COMPILATION_FAILED otherwise; the draft is kept). Charts keep running the source they were applied with; alert subscriptions to this script will show 'script changed'. Saving cannot be undone from here (revision history stays in the Pine Studio). Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -336,7 +336,7 @@ impl DegenViewMcp {
         let id = clean_script_id(&params.script_id)?;
         if !pine::is_revision(&params.expected_revision) {
             return Err(invalid(
-                "expected_revision must be the 64-character source_hash from degenview_get_pine_script",
+                "expected_revision must be the 64-character source_hash from fakingview_get_pine_script",
             ));
         }
         let mut result = match self
@@ -367,8 +367,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_compile_pine_script",
-        description = "Compile a Pine script (saved or draft) or a source string with DegenView's own compiler and return its errors and warnings with codes and line/column positions. Compiling does not run the script: no trades, alerts, webhooks, saves or chart changes. A name nothing defines is reported as an error (PINE3050 variable, PINE3051 function). The check is lenient (a name declared anywhere counts, and members of builtin namespaces such as ta.* are judged only at run time), so a clean compile does not prove the script runs; apply it to a chart (degenview_add_pine_script_to_chart) and read its last-run error with degenview_get_pine_instance.",
+        name = "fakingview_compile_pine_script",
+        description = "Compile a Pine script (saved or draft) or a source string with FakingView's own compiler and return its errors and warnings with codes and line/column positions. Compiling does not run the script: no trades, alerts, webhooks, saves or chart changes. A name nothing defines is reported as an error (PINE3050 variable, PINE3051 function). The check is lenient (a name declared anywhere counts, and members of builtin namespaces such as ta.* are judged only at run time), so a clean compile does not prove the script runs; apply it to a chart (fakingview_add_pine_script_to_chart) and read its last-run error with fakingview_get_pine_instance.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -410,7 +410,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_pine_inputs",
+        name = "fakingview_get_pine_inputs",
         description = "List a Pine script's input definitions (id, title, type, default, min/max/step, options, group, tooltip) as the compiler declares them.",
         annotations(
             read_only_hint = true,
@@ -436,7 +436,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_list_chart_pine_instances",
+        name = "fakingview_list_chart_pine_instances",
         description = "List the Pine scripts applied to one chart: instance id, the script it came from, visibility, the source hash it runs, and whether its last run was ok, failed, or has not happened yet (scripts run only while their chart is drawn). The same script can appear more than once.",
         annotations(
             read_only_hint = true,
@@ -472,8 +472,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_pine_instance",
-        description = "Inspect one applied Pine script: its input overrides, style overrides, visibility, last-run status and error, and whether its source still matches the saved script it came from. Source text is not included (see degenview_get_pine_script).",
+        name = "fakingview_get_pine_instance",
+        description = "Inspect one applied Pine script: its input overrides, style overrides, visibility, last-run status and error, and whether its source still matches the saved script it came from. Source text is not included (see fakingview_get_pine_script).",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -519,7 +519,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_pine_styles",
+        name = "fakingview_get_pine_styles",
         description = "List the style options of an applied Pine script (each plot, line, fill, marker...) with the script's own default color and width and any overrides set on this instance. Options exist only once the script has run on its chart.",
         annotations(
             read_only_hint = true,
@@ -557,7 +557,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_pine_report",
+        name = "fakingview_get_pine_report",
         description = "Read the strategy backtest report a chart computed for an applied Pine strategy: metrics, settings, a page of closed trades, open trades and optionally the equity curve, with the instrument, timeframe, bar count, inputs and source hash it was produced with. If there is no report (not a strategy, not run yet, failed) the result says so; an old report is never passed off as current. Nothing is run by this call.",
         annotations(
             read_only_hint = true,
@@ -617,8 +617,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_list_pine_alerts",
-        description = "List the alert subscriptions of Pine scripts: script, market, timeframe, state (active, paused, script_changed, script_deleted) and note. DegenView keeps no log of fired script alerts, so no history is returned (event_history_available is false); reading never runs a script or sends anything.",
+        name = "fakingview_list_pine_alerts",
+        description = "List the alert subscriptions of Pine scripts: script, market, timeframe, state (active, paused, script_changed, script_deleted) and note. FakingView keeps no log of fired script alerts, so no history is returned (event_history_available is false); reading never runs a script or sends anything.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -647,8 +647,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_add_pine_script_to_chart",
-        description = "Apply a saved Pine indicator or strategy to a chart, as the app's Add to Chart does, optionally with input overrides. Uses the script's last saved source (save a draft first with degenview_save_pine_script). Refuses libraries and scripts that do not compile. The same script can be applied more than once. The script runs once its chart draws it, so check degenview_list_chart_pine_instances for run_status. The user can undo it in the app.",
+        name = "fakingview_add_pine_script_to_chart",
+        description = "Apply a saved Pine indicator or strategy to a chart, as the app's Add to Chart does, optionally with input overrides. Uses the script's last saved source (save a draft first with fakingview_save_pine_script). Refuses libraries and scripts that do not compile. The same script can be applied more than once. The script runs once its chart draws it, so check fakingview_list_chart_pine_instances for run_status. The user can undo it in the app.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -694,7 +694,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_update_pine_instance",
+        name = "fakingview_update_pine_instance",
         description = "Change a script applied to a chart: set or reset input overrides (null resets an input) and/or show or hide it. Inputs are checked against the source the instance was applied with. Give inputs, visible, or both. Refused with CONFLICT while a script alert is armed on the instance and the inputs would change (the alert follows the instance's inputs); showing or hiding is always allowed. To run a newer saved version of the script, remove the instance and apply it again.",
         annotations(
             read_only_hint = false,
@@ -738,8 +738,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_remove_pine_instance",
-        description = "Take a script off a chart. The saved script is left alone, and the user can undo the removal in the app. Refused with CONFLICT while a script alert is armed on the instance, because removing it would silence that alert. Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_remove_pine_instance",
+        description = "Take a script off a chart. The saved script is left alone, and the user can undo the removal in the app. Refused with CONFLICT while a script alert is armed on the instance, because removing it would silence that alert. Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -785,7 +785,7 @@ impl Drop for AbortOnDrop {
     }
 }
 
-impl DegenViewMcp {
+impl FakingViewMcp {
     /// Runs a script-library read or compile off the async workers and off the app thread, at
     /// most `PINE_JOBS` at a time. The permission is checked again once the work is done: a
     /// credential revoked meanwhile gets nothing.

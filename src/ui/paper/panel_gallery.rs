@@ -1,5 +1,5 @@
 //! The Paper Trading panel as pictures, composed the way `PaperPanel::ui` composes it. Run by
-//! hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib paper_panel_gallery -- --ignored`.
+//! hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib paper_panel_gallery -- --ignored`.
 
 use crate::model::DataSource;
 use crate::model::paper::{

@@ -249,7 +249,7 @@ fn include(ui: &mut Ui, input: &Input<'_>, output: &mut Output) {
         },
         Toggle {
             icon: Icon::Branding,
-            name: "DegenView mark",
+            name: "FakingView mark",
             on: include.branding,
             unavailable: (config.style != Style::Styled)
                 .then_some("The mark belongs to the Styled look"),

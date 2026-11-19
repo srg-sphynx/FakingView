@@ -530,7 +530,7 @@ impl ChartWorkspace {
                 .note()
                 .map_or_else(String::new, |note| format!(" {note}"));
             let message = format!(
-                "To share this chart, DegenView uploads its image to {}. {}{note} Saving or \
+                "To share this chart, FakingView uploads its image to {}. {}{note} Saving or \
                  copying an image never uploads anything.",
                 waiting.destination.label(),
                 waiting.destination.notice()

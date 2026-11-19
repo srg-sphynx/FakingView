@@ -1,11 +1,11 @@
 # Bundled fonts
 
-Two fonts are compiled into DegenView (`include_bytes!` in `src/ui/theme.rs`), both under the
+Two fonts are compiled into FakingView (`include_bytes!` in `src/ui/theme.rs`), both under the
 **SIL Open Font License 1.1** and neither with a Reserved Font Name. The licence texts are
 `OFL-JetBrainsMono.txt` and `OFL-NotoSansSymbols2.txt`. They are copied into the macOS app
-(`Contents/Resources/Licenses/`), the Flatpak (`/app/share/licenses/es.nico.degenview/`) and the Linux
+(`Contents/Resources/Licenses/`), the Flatpak (`/app/share/licenses/local.fakingview.desktop/`) and the Linux
 and Windows downloads, because the licence requires its text and the copyright notice to accompany
-every copy of the font, a program that embeds it included. DegenView itself is GPL-3.0-only; the fonts keep
+every copy of the font, a program that embeds it included. FakingView itself is GPL-3.0-only; the fonts keep
 their own licence.
 
 | File | Font | Used for | Licence file |
@@ -23,7 +23,7 @@ Typeface by JetBrains; <https://www.jetbrains.com/lp/mono/>.
 It is the default font of the Pine editor (Settings ▸ Pine Studio ▸ Typography). Only the **NL**
 (no ligatures) **Regular** build is bundled, and the file is **unmodified**: the same bytes as the
 release's `fonts/ttf/JetBrainsMonoNL-Regular.ttf` (208,576 bytes). NL has the same glyphs and metrics as the
-regular build, minus the code ligatures: DegenView draws each syntax colour as its own run of text and cannot
+regular build, minus the code ligatures: FakingView draws each syntax colour as its own run of text and cannot
 switch ligatures on or off, so ligatures would form in some runs and not in others. The editor draws one
 style, so Bold and Italic are not bundled.
 

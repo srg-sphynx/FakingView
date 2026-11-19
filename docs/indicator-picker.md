@@ -34,7 +34,7 @@ a portfolio card is not a target) through `apply_indicator_action`, so undo is o
   `indicatorPicker.favorites` setting (portable, last writer wins, see `sync::record::policy`); a key this
   build no longer knows is dropped on load. Not verified against real CloudKit.
 
-Pictures: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib indicator_picker::tests::gallery -- --ignored`
+Pictures: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib indicator_picker::tests::gallery -- --ignored`
 (a minute or two: it gives the preview worker time to finish).
 
 ## The catalog

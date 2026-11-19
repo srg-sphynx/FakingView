@@ -18,6 +18,9 @@ pub const US_EXCHANGES: [&str; 7] = [
     "NYSEAMERICAN",
 ];
 
+/// Exchange prefixes are part of Kite's instrument identity, including for indices.
+pub const INDIAN_EXCHANGES: [&str; 8] = ["NSE", "BSE", "NFO", "BFO", "CDS", "BCD", "MCX", "NSEIX"];
+
 /// What `PREFIX:SYMBOL` says.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct VenueQuery {
@@ -33,6 +36,12 @@ pub struct VenueQuery {
 /// US stock exchange (Alpaca).
 pub fn source_for_prefix(prefix: &str) -> Option<DataSource> {
     let prefix = prefix.trim();
+    if INDIAN_EXCHANGES
+        .iter()
+        .any(|exchange| exchange.eq_ignore_ascii_case(prefix))
+    {
+        return Some(DataSource::Kite);
+    }
     if US_EXCHANGES
         .iter()
         .any(|exchange| exchange.eq_ignore_ascii_case(prefix))
@@ -45,16 +54,34 @@ pub fn source_for_prefix(prefix: &str) -> Option<DataSource> {
 /// Splits `text` at its first colon into a venue and a symbol. `None` when there is no colon.
 pub fn parse(text: &str) -> Option<VenueQuery> {
     let (prefix, symbol) = text.split_once(':')?;
+    let prefix = prefix.trim().to_uppercase();
+    let symbol = symbol.trim();
+    let symbol = if INDIAN_EXCHANGES.contains(&prefix.as_str()) && !symbol.is_empty() {
+        format!("{prefix}:{}", symbol.to_uppercase())
+    } else {
+        symbol.to_owned()
+    };
     Some(VenueQuery {
-        source: source_for_prefix(prefix),
-        prefix: prefix.trim().to_uppercase(),
-        symbol: symbol.trim().to_owned(),
+        source: source_for_prefix(&prefix),
+        prefix,
+        symbol,
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn indian_exchanges_keep_their_exchange_qualified_identity() {
+        for venue in INDIAN_EXCHANGES {
+            let query = parse(&format!("{venue}:infy")).unwrap();
+            assert_eq!(query.source, Some(DataSource::Kite));
+            assert_eq!(query.symbol, format!("{venue}:INFY"));
+        }
+        assert_eq!(parse("NSE:NIFTY 50").unwrap().symbol, "NSE:NIFTY 50");
+        assert_eq!(parse("KITE:BSE:INFY").unwrap().symbol, "BSE:INFY");
+    }
 
     fn source(text: &str) -> Option<DataSource> {
         parse(text).and_then(|query| query.source)

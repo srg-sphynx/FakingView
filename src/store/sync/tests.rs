@@ -105,7 +105,7 @@ fn device_identity_is_stable_and_never_overwritten() {
     assert_eq!(first.device_id, again.device_id);
     assert_eq!(again.device_name, "Mac A");
     assert_eq!(first.device_id.len(), 32);
-    assert_eq!(first.zone_name, "DegenViewZone");
+    assert_eq!(first.zone_name, "FakingViewZone");
 }
 
 #[test]

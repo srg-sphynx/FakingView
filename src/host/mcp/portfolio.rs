@@ -62,7 +62,7 @@ fn portfolio_scope(
                 .find(|portfolio| portfolio.id == id)
                 .ok_or_else(|| {
                     McpError::NotFound(
-                        "No such portfolio: use a portfolio_id from degenview_list_portfolios"
+                        "No such portfolio: use a portfolio_id from fakingview_list_portfolios"
                             .into(),
                     )
                 })?;

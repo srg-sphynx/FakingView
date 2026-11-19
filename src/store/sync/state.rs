@@ -234,7 +234,7 @@ impl Store {
     }
 
     /// Writes a consistent copy of the whole database to `path`. The copy opens as an ordinary
-    /// DegenView database, so a stashed dataset is always recoverable.
+    /// FakingView database, so a stashed dataset is always recoverable.
     pub fn backup_to(&self, path: &std::path::Path) -> rusqlite::Result<()> {
         let target = path.to_string_lossy().replace('\'', "''");
         self.connection

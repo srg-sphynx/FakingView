@@ -305,7 +305,7 @@ mod tests {
 
     #[test]
     fn a_lease_is_exclusive_and_released_on_drop() {
-        let directory = std::env::temp_dir().join(format!("degenview-lease-{}", new_id()));
+        let directory = std::env::temp_dir().join(format!("fakingview-lease-{}", new_id()));
         let first = AlertRuntimeLease::try_acquire(&directory)
             .unwrap()
             .expect("first owner");

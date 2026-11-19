@@ -29,7 +29,7 @@ fn a_successful_call_leaves_one_row_with_who_what_and_how_long() {
     let result = call(
         &url,
         "tok",
-        "degenview_list_charts",
+        "fakingview_list_charts",
         json!({"workspace_id": "1"}),
     );
     assert_eq!(result["isError"], json!(false));
@@ -38,7 +38,7 @@ fn a_successful_call_leaves_one_row_with_who_what_and_how_long() {
     let row = &rows[0];
     assert_eq!(row.kind, McpAuditKind::Call);
     assert_eq!(row.outcome, McpAuditOutcome::Succeeded);
-    assert_eq!(row.tool, "degenview_list_charts");
+    assert_eq!(row.tool, "fakingview_list_charts");
     assert_eq!(
         (row.client_id.as_str(), row.client_name.as_str()),
         ("c1", "client c1")
@@ -72,11 +72,11 @@ fn listing_tools_and_initializing_are_not_calls() {
 fn a_refused_call_is_recorded_as_denied_with_the_permission_code() {
     let harness = Harness::start(&[("c1", "tok", READ)]);
     let url = harness.url();
-    // `degenview_add_chart` needs charts.create, which this client lacks.
+    // `fakingview_add_chart` needs charts.create, which this client lacks.
     let result = call(
         &url,
         "tok",
-        "degenview_add_chart",
+        "fakingview_add_chart",
         json!({"workspace_id": "1", "source": "binance", "symbol": "ETHUSDT"}),
     );
     assert_eq!(error_code(&result), "PERMISSION_DENIED");
@@ -84,7 +84,7 @@ fn a_refused_call_is_recorded_as_denied_with_the_permission_code() {
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].outcome, McpAuditOutcome::Denied);
     assert_eq!(rows[0].code, "PERMISSION_DENIED");
-    assert_eq!(rows[0].tool, "degenview_add_chart");
+    assert_eq!(rows[0].tool, "fakingview_add_chart");
     assert!(harness.added.lock().unwrap().is_empty());
 }
 
@@ -95,7 +95,7 @@ fn a_call_that_fails_is_recorded_with_its_error_code() {
     let result = call(
         &url,
         "tok",
-        "degenview_list_charts",
+        "fakingview_list_charts",
         json!({"workspace_id": "99999"}),
     );
     assert_eq!(error_code(&result), "NOT_FOUND");
@@ -112,7 +112,7 @@ fn a_tool_that_does_not_exist_is_recorded_as_denied() {
         &url,
         Some("tok"),
         "tools/call",
-        json!({"name": "degenview_no_such_tool\n\"quoted\"", "arguments": {}}),
+        json!({"name": "fakingview_no_such_tool\n\"quoted\"", "arguments": {}}),
     );
     assert_eq!(reply.status, 200, "{}", reply.body);
     let rows = rows(&harness, 1);
@@ -120,7 +120,7 @@ fn a_tool_that_does_not_exist_is_recorded_as_denied() {
     assert_eq!(rows[0].outcome, McpAuditOutcome::Denied);
     assert_eq!(rows[0].code, "UNKNOWN_TOOL");
     // The name a client invented is kept only as id-like characters.
-    assert_eq!(rows[0].tool, "degenview_no_such_toolquoted");
+    assert_eq!(rows[0].tool, "fakingview_no_such_toolquoted");
 }
 
 #[test]
@@ -165,7 +165,7 @@ fn a_call_cancelled_by_notification_is_recorded_as_cancelled() {
     let rows = rows(&harness, 1);
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].outcome, McpAuditOutcome::Cancelled);
-    assert_eq!(rows[0].tool, "degenview_add_chart");
+    assert_eq!(rows[0].tool, "fakingview_add_chart");
 }
 
 #[test]
@@ -211,20 +211,20 @@ fn no_row_holds_a_token_a_script_or_an_argument_value() {
     let leaked = "dvmcp_leaked_token_in_an_argument_9876543210";
     let calls = [
         (
-            "degenview_compile_pine_script",
+            "fakingview_compile_pine_script",
             json!({"source": pine, "script_id": leaked}),
         ),
         (
-            "degenview_create_price_alert",
+            "fakingview_create_price_alert",
             json!({"source": "binance", "symbol": "BTCUSDT", "condition": "crosses_above",
                    "target_price": "1", "note": note, "workspace_id": leaked}),
         ),
         (
-            "degenview_add_chart",
+            "fakingview_add_chart",
             json!({"workspace_id": "1", "source": "binance", "symbol": leaked}),
         ),
         (
-            "degenview_list_charts",
+            "fakingview_list_charts",
             json!({"workspace_id": 1, "chart_id": note}),
         ),
     ];
@@ -271,7 +271,7 @@ fn rows_keep_the_order_the_calls_ended_in() {
         let _ = call(
             &url,
             "tok",
-            "degenview_list_charts",
+            "fakingview_list_charts",
             json!({"workspace_id": workspace}),
         );
     }

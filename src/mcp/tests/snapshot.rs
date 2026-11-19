@@ -16,9 +16,9 @@ fn chart() -> Value {
 fn a_picture_comes_back_as_an_image_block_with_its_size() {
     let harness = Harness::start(&[("s", "tok", SNAPSHOT)]);
     let url = harness.url();
-    assert_eq!(tool_names(&url, "tok"), ["degenview_get_chart_snapshot"]);
+    assert_eq!(tool_names(&url, "tok"), ["fakingview_get_chart_snapshot"]);
 
-    let result = call(&url, "tok", "degenview_get_chart_snapshot", chart());
+    let result = call(&url, "tok", "fakingview_get_chart_snapshot", chart());
     assert_eq!(result["isError"], json!(false), "{result}");
     let content = result["content"].as_array().unwrap();
     assert_eq!(content.len(), 2, "{result}");
@@ -36,7 +36,7 @@ fn a_picture_comes_back_as_an_image_block_with_its_size() {
     let sharp = call(
         &url,
         "tok",
-        "degenview_get_chart_snapshot",
+        "fakingview_get_chart_snapshot",
         json!({"workspace_id": "1", "chart_id": "2", "scale": "2x"}),
     );
     assert_eq!(sharp["isError"], json!(false), "{sharp}");
@@ -54,12 +54,12 @@ fn a_picture_needs_its_own_permission_and_a_known_chart() {
         ),
     ]);
     let url = harness.url();
-    let denied = call(&url, "c-tok", "degenview_get_chart_snapshot", chart());
+    let denied = call(&url, "c-tok", "fakingview_get_chart_snapshot", chart());
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
     let missing = call(
         &url,
         "tok",
-        "degenview_get_chart_snapshot",
+        "fakingview_get_chart_snapshot",
         json!({"workspace_id": "1", "chart_id": "99"}),
     );
     assert_eq!(error_code(&missing), "NOT_FOUND");
@@ -85,7 +85,7 @@ fn bad_picture_arguments_never_reach_the_app() {
             &url,
             Some("tok"),
             "tools/call",
-            json!({"name": "degenview_get_chart_snapshot", "arguments": arguments}),
+            json!({"name": "fakingview_get_chart_snapshot", "arguments": arguments}),
         );
         let json = reply.json();
         let rejected = json.get("error").is_some() || json["result"]["isError"] == json!(true);

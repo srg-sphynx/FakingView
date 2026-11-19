@@ -1,5 +1,5 @@
 //@version=6
-// Example script bundled with DegenView. Edit it freely.
+// Example script bundled with FakingView. Edit it freely.
 // Volume columns, orange when a bar trades several times the recent average.
 // On a live chart, "Create Alert…" in the chart's Scripts tab turns the alert()
 // below into a notification. History never notifies.

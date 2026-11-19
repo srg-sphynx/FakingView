@@ -14,12 +14,12 @@ use crate::model::drawings::style::MAX_STROKE_WIDTH;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-/// Drawings one `degenview_add_drawings` call may create (one undo step in the app).
+/// Drawings one `fakingview_add_drawings` call may create (one undo step in the app).
 pub const MAX_DRAWINGS_PER_CALL: usize = 25;
 /// Drawings a chart may hold once a client has added to it. The app itself has no cap; this keeps
 /// a looping client from burying a chart.
 pub const MAX_DRAWINGS_PER_CHART: usize = 500;
-/// Drawings one `degenview_delete_drawings` call may remove.
+/// Drawings one `fakingview_delete_drawings` call may remove.
 pub const MAX_DELETES_PER_CALL: usize = 50;
 /// Latest time accepted: the end of year 9999.
 const MAX_TIME_MS: i64 = 253_402_300_799_000;
@@ -171,7 +171,7 @@ impl McpDrawingTool {
     }
 }
 
-/// A moment: ISO-8601 UTC text as `degenview_get_candles` writes it, or epoch milliseconds.
+/// A moment: ISO-8601 UTC text as `fakingview_get_candles` writes it, or epoch milliseconds.
 #[derive(Debug, Clone, PartialEq, Deserialize, JsonSchema)]
 #[serde(untagged)]
 pub enum TimeArg {
@@ -212,7 +212,7 @@ impl McpDash {
 #[derive(Debug, Clone, PartialEq, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct AnchorArg {
-    /// When: a `time` copied from `degenview_get_candles` (e.g. `2026-10-20T00:00:00Z`) or epoch
+    /// When: a `time` copied from `fakingview_get_candles` (e.g. `2026-10-20T00:00:00Z`) or epoch
     /// milliseconds. Inside the loaded candles it snaps to the start of the bar it falls in;
     /// before or after them it is kept as given, so a line can run into the future.
     pub time: TimeArg,
@@ -509,13 +509,13 @@ impl NewDrawingArg {
     }
 }
 
-/// A drawing id from `degenview_list_drawings`.
+/// A drawing id from `fakingview_list_drawings`.
 pub fn parse_drawing_id(raw: &str) -> Result<u64, McpError> {
     raw.trim()
         .parse::<u64>()
         .ok()
         .filter(|id| *id != 0)
-        .ok_or_else(|| invalid("drawing_id must be an id returned by degenview_list_drawings"))
+        .ok_or_else(|| invalid("drawing_id must be an id returned by fakingview_list_drawings"))
 }
 
 #[cfg(test)]

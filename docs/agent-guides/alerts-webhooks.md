@@ -20,7 +20,7 @@
   (`send_section` without message for a script alert, `endpoint_picker` alone), hairline,
   summary + Cancel/Create footer. Neutral controls only (`kit::sheet_button`, gray badges). "Add in
   Settings" is an outcome (`OpenWebhookSettings`) the host acts on; the sheet stays open. Pictures:
-  `cargo test --lib gallery_of_the_script_alert -- --ignored` with `DEGENVIEW_GALLERY_DIR` set.
+  `cargo test --lib gallery_of_the_script_alert -- --ignored` with `FAKINGVIEW_GALLERY_DIR` set.
 
 ## Webhooks
 

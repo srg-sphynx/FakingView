@@ -83,7 +83,7 @@ fn click_at(position: egui::Pos2) -> Vec<Event> {
 #[test]
 fn the_page_is_in_the_sidebar_after_appearance() {
     use crate::ui::settings::window::SettingsSection as S;
-    assert_eq!(S::ALL.len(), 14);
+    assert_eq!(S::ALL.len(), 15);
     let visible: Vec<_> = S::visible().collect();
     assert_eq!(visible[1], S::PineStudio);
     assert_eq!(S::PineStudio.title(), "Pine Studio");
@@ -424,7 +424,7 @@ fn an_export_says_where_it_went() {
     let mut state = PineStudioState::default();
     let (sender, receiver) = channel();
     sender
-        .send(Ok(Some(PathBuf::from("/tmp/Night.degenview-theme.json"))))
+        .send(Ok(Some(PathBuf::from("/tmp/Night.fakingview-theme.json"))))
         .unwrap();
     state.flow = Some(Flow::Export(
         Pending::from_receiver(receiver),
@@ -433,7 +433,7 @@ fn an_export_says_where_it_went() {
     poll(&mut state, &host);
     assert_eq!(
         state.status,
-        Some(("Exported “Night.degenview-theme.json”.".to_owned(), false))
+        Some(("Exported “Night.fakingview-theme.json”.".to_owned(), false))
     );
 }
 
@@ -560,7 +560,7 @@ fn drawing_the_page_never_changes_the_theme_or_the_script() {
 }
 
 #[test]
-#[ignore = "writes images for a person to look at: DEGENVIEW_GALLERY_DIR=… cargo test --lib settings_pine_studio -- --ignored"]
+#[ignore = "writes images for a person to look at: FAKINGVIEW_GALLERY_DIR=… cargo test --lib settings_pine_studio -- --ignored"]
 fn gallery() {
     if gallery_dir().is_none() {
         return;

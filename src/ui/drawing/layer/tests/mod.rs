@@ -2229,7 +2229,7 @@ fn the_edit_ends_when_the_line_is_deleted_under_it() {
 }
 
 /// The selected line with its toolbar and invitation, the same with its text being edited, and
-/// a selected pitchfork, as pictures. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+/// a selected pitchfork, as pictures. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_selection_and_the_editor() {

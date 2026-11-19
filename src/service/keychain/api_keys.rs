@@ -1,22 +1,27 @@
-//! API keys for the data providers that need one: Alpaca (key id + secret) and CoinMarketCap
-//! (one key). Ports of `AlpacaCredentialsStore` and `CoinMarketCapCredentialStore`, on the same
-//! Security-framework layer as the webhook secrets.
+//! Secure credentials for Alpaca, CoinMarketCap and personal Kite Connect sessions, on the same
+//! platform secure-storage layer as the webhook secrets.
 //!
 //! Reading a key can raise a Keychain prompt, so `is_configured` asks only for the item's
 //! attributes and the secret is read lazily on the first request that needs it. Under
-//! `keychain::webhook_secrets::is_disabled` (tests, `DEGENVIEW_NO_KEYCHAIN=1`) nothing touches
+//! `keychain::webhook_secrets::is_disabled` (tests, `FAKINGVIEW_NO_KEYCHAIN=1`) nothing touches
 //! the Keychain: keys live in memory for the session.
 
 use crate::lock::lock;
+use crate::service::keychain::cached_secret::CachedSecret;
 use crate::service::keychain::webhook_secrets::{Scope, is_disabled, platform};
 use crate::service::webhook::delivery::SecretStoreError;
 use serde::{Deserialize, Serialize};
 use std::sync::{Mutex, OnceLock};
 
-const ALPACA_SERVICE: &str = "es.nico.degenview.alpaca";
+const ALPACA_SERVICE: &str = "local.fakingview.desktop.alpaca";
 const ALPACA_ACCOUNT: &str = "credentials-v1";
-const CMC_SERVICE: &str = "es.nico.degenview.coinmarketcap";
+const CMC_SERVICE: &str = "local.fakingview.desktop.coinmarketcap";
 const CMC_ACCOUNT: &str = "api-key-v1";
+const KITE_SCOPE: Scope = Scope {
+    service: "local.fakingview.desktop.kite",
+    shared_group: false,
+};
+const KITE_ACCOUNT: &str = "credentials-v1";
 
 // MARK: Backend
 
@@ -304,12 +309,103 @@ impl CoinMarketCapKeyStore {
     }
 }
 
+// MARK: Kite Connect
+
+/// The daily Kite session. The API secret and login request token are never persisted.
+#[derive(Clone, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct KiteCredentials {
+    pub api_key: String,
+    pub access_token: String,
+}
+
+impl std::fmt::Debug for KiteCredentials {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("KiteCredentials")
+            .field("configured", &self.is_configured())
+            .finish_non_exhaustive()
+    }
+}
+
+impl KiteCredentials {
+    pub fn is_configured(&self) -> bool {
+        [&self.api_key, &self.access_token]
+            .into_iter()
+            .all(|value| {
+                let value = value.trim();
+                !value.is_empty()
+                    && !value.chars().any(char::is_whitespace)
+                    && !value.chars().any(char::is_control)
+            })
+    }
+
+    fn trimmed(&self) -> Self {
+        Self {
+            api_key: self.api_key.trim().to_owned(),
+            access_token: self.access_token.trim().to_owned(),
+        }
+    }
+}
+
+pub struct KiteCredentialsStore {
+    backend: Box<dyn KeyBackend>,
+    secret: CachedSecret,
+}
+
+impl KiteCredentialsStore {
+    pub fn with_backend(backend: Box<dyn KeyBackend>) -> Self {
+        Self {
+            backend,
+            secret: CachedSecret::new(KITE_SCOPE, KITE_ACCOUNT),
+        }
+    }
+
+    pub fn shared() -> &'static Self {
+        static STORE: OnceLock<KiteCredentialsStore> = OnceLock::new();
+        STORE.get_or_init(|| Self::with_backend(default_backend()))
+    }
+
+    /// May prompt for secure-storage access; call on a worker, never from a frame.
+    pub fn credentials(&self) -> KiteCredentials {
+        self.secret
+            .read(&*self.backend)
+            .and_then(|text| serde_json::from_str::<KiteCredentials>(&text).ok())
+            .filter(KiteCredentials::is_configured)
+            .unwrap_or_default()
+    }
+
+    /// Reads only attributes and never waits for a worker's secure-storage prompt.
+    pub fn is_configured(&self) -> bool {
+        self.secret.is_saved(&*self.backend)
+    }
+
+    /// Incomplete edits never erase a working session. Removal is an explicit operation.
+    /// A secure-storage failure keeps the new pair available for this process only.
+    pub fn save(&self, credentials: &KiteCredentials) -> Result<(), SecretStoreError> {
+        let credentials = credentials.trimmed();
+        if !credentials.is_configured() {
+            return Err(SecretStoreError(
+                "Enter both an API key and an access token without whitespace.".into(),
+            ));
+        }
+        let text = serde_json::to_string(&credentials)
+            .map_err(|_| SecretStoreError("Could not encode the Kite session.".into()))?;
+        self.secret.save(&*self.backend, &text)
+    }
+
+    pub fn remove(&self) -> Result<(), SecretStoreError> {
+        self.secret.remove(&*self.backend)
+    }
+}
+
 // MARK: Lookup for the providers
 
 /// Environment names, kept as a developer convenience when nothing is saved in the app.
-pub const ALPACA_KEY_ID_ENV: &str = "DEGENVIEW_ALPACA_KEY_ID";
-pub const ALPACA_SECRET_KEY_ENV: &str = "DEGENVIEW_ALPACA_SECRET_KEY";
-pub const CMC_API_KEY_ENV: &str = "DEGENVIEW_CMC_API_KEY";
+pub const ALPACA_KEY_ID_ENV: &str = "FAKINGVIEW_ALPACA_KEY_ID";
+pub const ALPACA_SECRET_KEY_ENV: &str = "FAKINGVIEW_ALPACA_SECRET_KEY";
+pub const CMC_API_KEY_ENV: &str = "FAKINGVIEW_CMC_API_KEY";
+pub const KITE_API_KEY_ENV: &str = "FAKINGVIEW_KITE_API_KEY";
+pub const KITE_ACCESS_TOKEN_ENV: &str = "FAKINGVIEW_KITE_ACCESS_TOKEN";
 
 fn non_empty(value: Option<String>) -> Option<String> {
     value
@@ -363,6 +459,38 @@ pub fn cmc_api_key_with(
 
 pub fn cmc_api_key() -> Option<String> {
     cmc_api_key_with(CoinMarketCapKeyStore::shared(), &|name| {
+        std::env::var(name).ok()
+    })
+}
+
+/// Whether a Kite session is available, without reading a saved secret or prompting.
+pub fn kite_configured() -> bool {
+    KiteCredentialsStore::shared().is_configured()
+        || (non_empty(std::env::var(KITE_API_KEY_ENV).ok()).is_some()
+            && non_empty(std::env::var(KITE_ACCESS_TOKEN_ENV).ok()).is_some())
+}
+
+pub fn kite_credentials_with(
+    store: &KiteCredentialsStore,
+    env: &dyn Fn(&str) -> Option<String>,
+) -> Option<(String, String)> {
+    if store.is_configured() {
+        let saved = store.credentials();
+        if saved.is_configured() {
+            return Some((saved.api_key, saved.access_token));
+        }
+    }
+    let credentials = KiteCredentials {
+        api_key: non_empty(env(KITE_API_KEY_ENV))?,
+        access_token: non_empty(env(KITE_ACCESS_TOKEN_ENV))?,
+    };
+    credentials
+        .is_configured()
+        .then_some((credentials.api_key, credentials.access_token))
+}
+
+pub fn kite_credentials() -> Option<(String, String)> {
+    kite_credentials_with(KiteCredentialsStore::shared(), &|name| {
         std::env::var(name).ok()
     })
 }
@@ -559,5 +687,117 @@ mod tests {
         cmc.remove().unwrap();
         assert_eq!(cmc_api_key_with(&cmc, &|_| None), None);
         assert_eq!(cmc_api_key_with(&cmc, &|_| Some("  ".to_owned())), None);
+    }
+
+    fn kite_pair(api_key: &str, access_token: &str) -> KiteCredentials {
+        KiteCredentials {
+            api_key: api_key.into(),
+            access_token: access_token.into(),
+        }
+    }
+
+    #[test]
+    fn kite_credentials_are_trimmed_and_partial_edits_preserve_the_session() {
+        let memory = Arc::new(MemoryBackend::default());
+        let reads = Arc::new(AtomicU64::new(0));
+        let store =
+            KiteCredentialsStore::with_backend(Box::new(Shared(memory.clone(), reads.clone())));
+        store.save(&kite_pair(" key ", " token\n")).unwrap();
+        assert_eq!(store.credentials(), kite_pair("key", "token"));
+        assert!(store.save(&kite_pair("new-key", "")).is_err());
+        assert!(store.save(&kite_pair("key\r\ninjected", "token")).is_err());
+        assert_eq!(store.credentials(), kite_pair("key", "token"));
+        let fresh =
+            KiteCredentialsStore::with_backend(Box::new(Shared(memory.clone(), reads.clone())));
+        assert!(fresh.is_configured());
+        assert_eq!(
+            reads.load(Ordering::SeqCst),
+            0,
+            "existence never reads the secret"
+        );
+        assert_eq!(fresh.credentials(), kite_pair("key", "token"));
+        assert_eq!(fresh.credentials(), kite_pair("key", "token"));
+        assert_eq!(
+            reads.load(Ordering::SeqCst),
+            1,
+            "one secure read per session"
+        );
+        fresh.remove().unwrap();
+        assert!(!fresh.is_configured());
+        assert_eq!(fresh.credentials(), KiteCredentials::default());
+        assert!(!memory.exists(KITE_SCOPE, KITE_ACCOUNT));
+    }
+
+    #[test]
+    fn kite_lookup_uses_saved_credentials_then_a_complete_environment_pair() {
+        let store = KiteCredentialsStore::with_backend(Box::new(MemoryBackend::default()));
+        let environment = |name: &str| match name {
+            KITE_API_KEY_ENV => Some(" environment-key ".into()),
+            KITE_ACCESS_TOKEN_ENV => Some("environment-token".into()),
+            _ => None,
+        };
+        assert_eq!(
+            kite_credentials_with(&store, &environment),
+            Some(("environment-key".into(), "environment-token".into()))
+        );
+        store.save(&kite_pair("saved-key", "saved-token")).unwrap();
+        assert_eq!(
+            kite_credentials_with(&store, &environment),
+            Some(("saved-key".into(), "saved-token".into()))
+        );
+        store.remove().unwrap();
+        assert_eq!(
+            kite_credentials_with(&store, &|name| (name == KITE_API_KEY_ENV)
+                .then(|| "key".into())),
+            None
+        );
+        assert_eq!(
+            kite_credentials_with(&store, &|_| Some("bad token".into())),
+            None
+        );
+    }
+
+    #[test]
+    fn malformed_kite_storage_is_not_used_and_debug_never_exposes_credentials() {
+        let memory = Arc::new(MemoryBackend::default());
+        memory
+            .write(KITE_SCOPE, KITE_ACCOUNT, "broken json")
+            .unwrap();
+        let store = KiteCredentialsStore::with_backend(Box::new(Shared(
+            memory,
+            Arc::new(AtomicU64::new(0)),
+        )));
+        assert_eq!(store.credentials(), KiteCredentials::default());
+        let debug = format!(
+            "{:?}",
+            kite_pair("private-key-value", "private-token-value")
+        );
+        assert!(!debug.contains("private-key-value") && !debug.contains("private-token-value"));
+    }
+
+    #[test]
+    fn a_refused_kite_write_is_session_only_and_never_claims_persistence() {
+        struct Refused;
+        impl KeyBackend for Refused {
+            fn read(&self, _: Scope, _: &str) -> Option<String> {
+                None
+            }
+            fn exists(&self, _: Scope, _: &str) -> bool {
+                false
+            }
+            fn write(&self, _: Scope, _: &str, _: &str) -> Result<(), SecretStoreError> {
+                Err(SecretStoreError("Storage unavailable".into()))
+            }
+            fn delete(&self, _: Scope, _: &str) -> Result<(), SecretStoreError> {
+                Err(SecretStoreError("Storage unavailable".into()))
+            }
+        }
+        let store = KiteCredentialsStore::with_backend(Box::new(Refused));
+        assert!(store.save(&kite_pair("key", "token")).is_err());
+        assert_eq!(store.credentials(), kite_pair("key", "token"));
+        assert!(store.remove().is_err());
+        assert_eq!(store.credentials(), KiteCredentials::default());
+        let fresh = KiteCredentialsStore::with_backend(Box::new(Refused));
+        assert_eq!(fresh.credentials(), KiteCredentials::default());
     }
 }

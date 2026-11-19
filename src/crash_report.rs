@@ -48,7 +48,7 @@ pub fn begin_startup_log() {
     };
     let _ = std::fs::create_dir_all(&dir);
     let header = format!(
-        "DegenView {} ({}) on {} {}, started at unix {}\n",
+        "FakingView {} ({}) on {} {}, started at unix {}\n",
         env!("CARGO_PKG_VERSION"),
         crate::host::update::BUILD_ID,
         std::env::consts::OS,
@@ -148,7 +148,7 @@ fn format_report(
     at: u64,
 ) -> String {
     format!(
-        "--- DegenView {} ({}) on {} {}, unix {at}\nthread: {thread}\npanic: {message}\nat: {}\n{backtrace}\n\n",
+        "--- FakingView {} ({}) on {} {}, unix {at}\nthread: {thread}\npanic: {message}\nat: {}\n{backtrace}\n\n",
         env!("CARGO_PKG_VERSION"),
         crate::host::update::BUILD_ID,
         std::env::consts::OS,
@@ -178,10 +178,10 @@ fn write_report(dir: &Path, report: &str) -> bool {
 fn notice(message: &str, dir: Option<&Path>) -> String {
     match dir {
         Some(dir) => format!(
-            "DegenView hit an unexpected error and has to close.\n\n{message}\n\nDetails were saved to {}",
+            "FakingView hit an unexpected error and has to close.\n\n{message}\n\nDetails were saved to {}",
             dir.join(CRASH_LOG).display()
         ),
-        None => format!("DegenView hit an unexpected error and has to close.\n\n{message}"),
+        None => format!("FakingView hit an unexpected error and has to close.\n\n{message}"),
     }
 }
 

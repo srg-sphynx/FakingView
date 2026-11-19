@@ -26,7 +26,7 @@ own API key**. This page records what exists, why it is shaped this way, and wha
 - OpenRouter offers an OAuth PKCE flow that returns a key. That could be a later "one-click" option;
   it needs a loopback listener, which only the MCP server has today.
 - A hosted proxy would be the smoothest UX but means running a backend and billing. Out of scope.
-- There is no DegenView server in the path: requests go from the user's Mac to the provider.
+- There is no FakingView server in the path: requests go from the user's Mac to the provider.
 
 ## Providers
 
@@ -45,10 +45,10 @@ completions API: OpenRouter, Ollama, LM Studio, Groq, ...).
 
 ## Rules
 
-- **Keys are Keychain-only** (`AiKeyStore`, service `es.nico.degenview.ai`, one account per
+- **Keys are Keychain-only** (`AiKeyStore`, service `local.fakingview.desktop.ai`, one account per
   provider). Never put one in `ai.prefs`, a saved layout, a log, or an error message.
   `HttpProvider` replaces the key with `[key]` in every error it returns.
-- `DEGENVIEW_OPENAI_KEY`, `DEGENVIEW_ANTHROPIC_KEY` and `DEGENVIEW_LLM_KEY` stand in when nothing is
+- `FAKINGVIEW_OPENAI_KEY`, `FAKINGVIEW_ANTHROPIC_KEY` and `FAKINGVIEW_LLM_KEY` stand in when nothing is
   saved (developer convenience, like the other providers' variables).
 - **Off macOS** the key is in the Secret Service on Linux ([Flatpak](flatpak.md)) and in Windows
   Credential Manager on Windows ([Windows secret storage](flatpak.md#windows-secret-storage)). Where
@@ -199,7 +199,7 @@ the editor's Profile column or tab and a profile the user made is not disturbed.
 - Enter sends and Shift-Enter adds a line; Enter is left alone while an input method is composing.
 - The panel says what it sends ("Sent to OpenAI: this script and your message") above the Send
   button, and a missing key shows a setup card with Open Settings.
-- Pictures for a person to look at: `DEGENVIEW_GALLERY_DIR=… cargo test --lib
+- Pictures for a person to look at: `FAKINGVIEW_GALLERY_DIR=… cargo test --lib
   pine_studio::ai::gallery -- --ignored` (both themes, wide and narrow).
 
 ## Manual and Auto

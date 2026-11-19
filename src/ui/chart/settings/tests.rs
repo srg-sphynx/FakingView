@@ -398,7 +398,7 @@ fn the_preview_sits_between_the_style_picker_and_the_settings() {
     assert!(style < preview && preview < body, "{text}");
 }
 
-/// The Scripts page as a picture. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+/// The Scripts page as a picture. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_scripts_page() {
@@ -522,7 +522,7 @@ fn card_with_overlays(count: usize) -> ChartCard {
     card
 }
 
-/// The Compare page as a picture. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+/// The Compare page as a picture. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_compare_page() {

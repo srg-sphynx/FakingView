@@ -11,12 +11,12 @@ pub enum NativeCommand {
     OpenPineStudio,
     /// View ▸ Portfolio.
     OpenPortfolio,
-    /// Help ▸ DegenView Documentation.
+    /// Help ▸ FakingView Documentation.
     OpenDocs,
-    /// Help ▸ DegenView on GitHub.
+    /// Help ▸ FakingView on GitHub.
     OpenGitHub,
-    /// Help ▸ Buy Me a Coffee.
-    OpenCoffee,
+    /// Help ▸ Report an Issue.
+    OpenSupport,
     SaveCurrentLayout,
     /// File ▸ Close Tab.
     CloseTab,
@@ -189,8 +189,8 @@ mod platform {
         push(NativeCommand::OpenGitHub);
     }
 
-    extern "C-unwind" fn open_coffee(_d: &AnyObject, _s: Sel, _sender: Option<&AnyObject>) {
-        push(NativeCommand::OpenCoffee);
+    extern "C-unwind" fn open_support(_d: &AnyObject, _s: Sel, _sender: Option<&AnyObject>) {
+        push(NativeCommand::OpenSupport);
     }
 
     extern "C-unwind" fn save_current_layout(
@@ -439,7 +439,7 @@ mod platform {
         install_action(delegate_class, sel!(openPortfolio:), open_portfolio);
         install_action(delegate_class, sel!(openDocs:), open_docs);
         install_action(delegate_class, sel!(openGitHub:), open_github);
-        install_action(delegate_class, sel!(openCoffee:), open_coffee);
+        install_action(delegate_class, sel!(openSupport:), open_support);
         install_action(
             delegate_class,
             sel!(saveCurrentLayout:),
@@ -521,13 +521,13 @@ mod platform {
         let menubar = app.mainMenu().unwrap_or_else(|| NSMenu::new(mtm));
 
         // winit creates the standard application menu. Add Settings there instead of appending
-        // another top-level DegenView menu next to it.
+        // another top-level FakingView menu next to it.
         let app_menu =
             if let Some(existing) = menubar.itemAtIndex(0).and_then(|item| item.submenu()) {
                 existing
             } else {
                 let item = NSMenuItem::new(mtm);
-                let menu = NSMenu::initWithTitle(mtm.alloc(), ns_string!("DegenView"));
+                let menu = NSMenu::initWithTitle(mtm.alloc(), ns_string!("FakingView"));
                 item.setSubmenu(Some(&menu));
                 menubar.insertItem_atIndex(&item, 0);
                 menu
@@ -685,17 +685,13 @@ mod platform {
         menubar.addItem(&window_item);
         app.setWindowsMenu(Some(&window_menu));
 
-        // Help: the user guide, the project's GitHub organisation and the maintainer's Buy Me a
-        // Coffee page.
+        // Help: FakingView documentation, source code and issue reporting.
         let help_item = NSMenuItem::new(mtm);
         let help_menu = NSMenu::initWithTitle(mtm.alloc(), ns_string!("Help"));
         for (title, selector) in [
-            (ns_string!("DegenView Documentation"), sel!(openDocs:)),
-            (ns_string!("DegenView on GitHub"), sel!(openGitHub:)),
-            (
-                ns_string!("Help supporting this project"),
-                sel!(openCoffee:),
-            ),
+            (ns_string!("FakingView Documentation"), sel!(openDocs:)),
+            (ns_string!("FakingView on GitHub"), sel!(openGitHub:)),
+            (ns_string!("Report an Issue"), sel!(openSupport:)),
         ] {
             let item = menu_item(mtm, title, Some(selector), ns_string!(""));
             unsafe { item.setTarget(Some(delegate)) };
@@ -707,7 +703,7 @@ mod platform {
         app.setMainMenu(Some(&menubar));
     }
 
-    /// Drops winit's "About DegenView": the stock panel has nothing to show, About lives in
+    /// Drops winit's "About FakingView": the stock panel has nothing to show, About lives in
     /// Settings.
     fn remove_about_item(menu: &NSMenu) {
         let about = (0..menu.numberOfItems()).find(|index| {

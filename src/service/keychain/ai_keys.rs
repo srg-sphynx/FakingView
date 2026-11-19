@@ -1,6 +1,6 @@
 //! The API key for each AI provider, kept in the Keychain beside the data providers' keys. A key
 //! is read only when a request needs it, so a user who never opens the assistant is never
-//! prompted. Under `DEGENVIEW_NO_KEYCHAIN` the keys live in memory for the session. On a platform
+//! prompted. Under `FAKINGVIEW_NO_KEYCHAIN` the keys live in memory for the session. On a platform
 //! with no Keychain a save reports the failure, but the key is still kept for the session so the
 //! assistant works until the app quits.
 
@@ -13,7 +13,7 @@ use crate::service::webhook::delivery::SecretStoreError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, OnceLock};
 
-const SERVICE: &str = "es.nico.degenview.ai";
+const SERVICE: &str = "local.fakingview.desktop.ai";
 const SCOPE: Scope = Scope {
     service: SERVICE,
     shared_group: false,

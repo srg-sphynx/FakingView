@@ -59,7 +59,7 @@ pub trait McpTabs {
 /// Whether the credential seal is off. Tests and debug builds run without it: every rebuild
 /// has a new code identity, so the Keychain would ask for the seal key's password on each launch.
 /// A `--release` build with `dev-unsealed-mcp` (a developer's scratch HOME) also needs
-/// `DEGENVIEW_NO_KEYCHAIN`. A distributed build ignores the variable, because any process that
+/// `FAKINGVIEW_NO_KEYCHAIN`. A distributed build ignores the variable, because any process that
 /// can write the database could otherwise launch the app with it set, plant a credential, and
 /// skip the seal.
 fn sealing_disabled(test: bool, debug_build: bool, dev_feature: bool, env_set: bool) -> bool {
@@ -118,7 +118,7 @@ impl McpHost {
     /// Loads persisted state and, only if the user previously enabled the server, starts it.
     /// `wake` runs a UI frame when a request is queued.
     pub fn load(store: SharedStore, wake: Arc<dyn Fn() + Send + Sync>) -> Self {
-        let env_set = std::env::var_os("DEGENVIEW_NO_KEYCHAIN").is_some();
+        let env_set = std::env::var_os("FAKINGVIEW_NO_KEYCHAIN").is_some();
         let keys = (!sealing_disabled(
             cfg!(test),
             cfg!(debug_assertions),
@@ -241,9 +241,9 @@ impl McpHost {
         clients: &[McpClient],
         stored: Option<&str>,
     ) -> Result<(), String> {
-        const CHANGED: &str = "The saved MCP credentials do not match the seal kept in the Keychain, so they were changed outside DegenView. The server stays off.";
+        const CHANGED: &str = "The saved MCP credentials do not match the seal kept in the Keychain, so they were changed outside FakingView. The server stays off.";
         const KEY_LOST: &str = "The Keychain key that protects the saved MCP credentials is missing, so they cannot be trusted. The server stays off.";
-        const KEY_UNREADABLE: &str = "The Keychain key that protects the saved MCP credentials could not be read, so the server stays off. Restart DegenView to try again.";
+        const KEY_UNREADABLE: &str = "The Keychain key that protects the saved MCP credentials could not be read, so the server stays off. Restart FakingView to try again.";
 
         let Some(keys) = &self.keys else {
             return Ok(());
@@ -324,7 +324,7 @@ impl McpHost {
             && let Err(error) = keys.rotate()
         {
             self.notice = Some(format!(
-                "Could not replace the Keychain key, so nothing was changed ({}). Delete the “{}” item in Keychain Access or your keyring, then restart DegenView.",
+                "Could not replace the Keychain key, so nothing was changed ({}). Delete the “{}” item in Keychain Access or your keyring, then restart FakingView.",
                 error.0,
                 SealKeyStore::SERVICE
             ));

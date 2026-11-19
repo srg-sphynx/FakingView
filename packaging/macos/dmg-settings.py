@@ -1,8 +1,8 @@
 # dmgbuild settings for the macOS disk image. tools/make-dmg.sh runs
 #
-#   dmgbuild -s packaging/macos/dmg-settings.py -D app=... -D background=... -D icon=... DegenView out.dmg
+#   dmgbuild -s packaging/macos/dmg-settings.py -D app=... -D background=... -D icon=... FakingView out.dmg
 #
-# The window shows DegenView.app and an Applications shortcut for the user to drag it onto. The icon
+# The window shows FakingView.app and an Applications shortcut for the user to drag it onto. The icon
 # positions are the centres of the icons, in the same points tools/make-dmg-background.py draws its
 # arrow between; change them together.
 
@@ -13,7 +13,7 @@ app = defines["app"]
 format = "UDZO"
 filesystem = "HFS+"
 
-# The volume (and so the window title) is `DegenView`; the volume icon is the app icon.
+# The volume (and so the window title) is `FakingView`; the volume icon is the app icon.
 files = [app]
 symlinks = {"Applications": "/Applications"}
 icon = defines["icon"]
@@ -34,6 +34,6 @@ text_size = 13
 arrange_by = None
 label_pos = "bottom"
 icon_locations = {
-    "DegenView.app": (180, 125),
+    "FakingView.app": (180, 125),
     "Applications": (480, 125),
 }

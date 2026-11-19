@@ -229,11 +229,11 @@ mod tests {
         let outcome = run(
             SnapshotAction::Download,
             &scene(),
-            "DegenView_BTC.png",
+            "FakingView_BTC.png",
             &fake,
         );
         assert!(matches!(&outcome, Outcome::Saved(path) if path == Path::new("/x/chart.png")));
-        assert_eq!(*fake.asked_for.lock().unwrap(), ["DegenView_BTC.png"]);
+        assert_eq!(*fake.asked_for.lock().unwrap(), ["FakingView_BTC.png"]);
         let written = fake.written.lock().unwrap();
         let decoded = image::load_from_memory(&written[0].1)
             .expect("a png")

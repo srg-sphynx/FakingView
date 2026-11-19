@@ -57,7 +57,7 @@ the crosshair reads "—". Only the bars in view are aligned, so the cost follow
   logarithmic axis works unchanged, and a coin at 0.2 and one at 100,000 compare. Adding the first such
   overlay to a chart on the Regular axis switches it to Percent (TradingView does the same); taking
   the last compared market off (one at a time, Remove all, or Remove indicators) puts a Percent or
-  Indexed axis back to Regular, a Logarithmic one stays (a choice of its own; DegenView's decision, not
+  Indexed axis back to Regular, a Logarithmic one stays (a choice of its own; FakingView's decision, not
   checked against TradingView). On Regular or Logarithmic the card and tags read real prices.
 * *Its own scale* (TradingView's "New price scale" without the axis column): the group's visible values
   fill the plot height with an 8% margin. There is no second axis; the value is in the tag at the
@@ -197,7 +197,7 @@ Verified against TradingView's support article and charting-library documentatio
 placements (same % scale, new price scale, new pane); that the percent axis starts every series at 0% on
 the first visible bar and so changes with a pan; that Indexed to 100 sets the first value to 100.
 
-DegenView's own decisions, not verified against TradingView: lines under the main series; the picker
+FakingView's own decisions, not verified against TradingView: lines under the main series; the picker
 staying open after a compare pick; ⌥↵; the baseline when an overlay starts after the first visible
 bar (its own first visible value); the colour palette; hide and order controls; the 8% margin of an
 own scale; switching Regular to Percent only for the first line on the chart's scale.

@@ -242,6 +242,7 @@ static COINGECKO_LANE: WorkQueue = WorkQueue::new(1);
 static SEARCHES: WorkQueue = WorkQueue::new(4);
 static GECKOTERMINAL_LANE: WorkQueue = WorkQueue::new(1);
 static KRAKEN_LANE: WorkQueue = WorkQueue::new(1);
+static KITE_LANE: WorkQueue = WorkQueue::new(1);
 
 pub fn submit(job: impl FnOnce() + Send + 'static) {
     QUEUE.submit(job);
@@ -262,6 +263,7 @@ fn lane(source: crate::model::DataSource) -> &'static WorkQueue {
         DataSource::CoinGecko => &COINGECKO_LANE,
         DataSource::DexScreener => &GECKOTERMINAL_LANE,
         DataSource::Kraken => &KRAKEN_LANE,
+        DataSource::Kite => &KITE_LANE,
         _ => &QUEUE,
     }
 }

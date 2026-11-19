@@ -1,6 +1,6 @@
 //! Indicator tools: read RSI, EMA, Bollinger and trend-flip values for a chart, and take a
-//! built-in indicator off it. Adding one is `degenview_add_indicator`; what a chart has applied
-//! is in `degenview_list_charts`.
+//! built-in indicator off it. Adding one is `fakingview_add_indicator`; what a chart has applied
+//! is in `fakingview_list_charts`.
 
 use crate::mcp::bridge::{McpReply, REQUEST_TIMEOUT};
 use crate::mcp::chart::ChartCommand;
@@ -9,7 +9,7 @@ use crate::mcp::indicator::{
     IndicatorValuesResult, MAX_EMA_PERIOD, MIN_EMA_PERIOD, Reading, ReadingRequest,
 };
 use crate::mcp::tools::{
-    Caller, DegenViewMcp, McpIndicator, failure, invalid, parse_chart_id, parse_workspace_id,
+    Caller, FakingViewMcp, McpIndicator, failure, invalid, parse_chart_id, parse_workspace_id,
     unexpected,
 };
 use crate::mcp::types::AddIndicatorResult;
@@ -20,14 +20,14 @@ use rmcp::{tool, tool_router};
 use schemars::JsonSchema;
 use serde::Deserialize;
 
-pub const GET_INDICATOR_VALUES: &str = "degenview_get_indicator_values";
-pub const REMOVE_INDICATOR: &str = "degenview_remove_indicator";
+pub const GET_INDICATOR_VALUES: &str = "fakingview_get_indicator_values";
+pub const REMOVE_INDICATOR: &str = "fakingview_remove_indicator";
 
 const DEFAULT_BARS: usize = 100;
 const MAX_BARS: usize = crate::mcp::chart::data::MAX_CANDLES;
 const DEFAULT_EMA_PERIOD: usize = crate::model::EMA_DEFAULT_PERIOD;
 
-/// The indicators whose values can be read (volume is a column of `degenview_get_candles`).
+/// The indicators whose values can be read (volume is a column of `fakingview_get_candles`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ReadableIndicator {
@@ -51,10 +51,10 @@ impl ReadableIndicator {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct IndicatorValuesParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts`.
+    /// A `chart_id` from `fakingview_list_charts`.
     #[schemars(length(max = 20))]
     pub chart_id: String,
     /// Which to read. Default: all four. The indicator does not have to be applied to the chart.
@@ -74,10 +74,10 @@ pub struct IndicatorValuesParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RemoveIndicatorParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts` in that workspace.
+    /// A `chart_id` from `fakingview_list_charts` in that workspace.
     #[schemars(length(max = 20))]
     pub chart_id: String,
     pub indicator: McpIndicator,
@@ -122,10 +122,10 @@ fn reading_request(params: &IndicatorValuesParams) -> Result<ReadingRequest, Cal
 }
 
 #[tool_router(router = indicator_router, vis = "pub(in crate::mcp)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_get_indicator_values",
-        description = "Read built-in indicator values for a chart: RSI (14), an EMA of any length (default 20), Bollinger Bands (20, 2 deviations) and Supertrend trend flips, aligned with the bars the chart draws (its own candles, or the built bars of a Heikin Ashi, Renko, Kagi, Line Break, Point & Figure or Range chart: see `chart_type`) and computed with the same code the chart draws. Returns `times` (oldest first), the `closes`, and one named series per indicator with a value per bar (null while warming up). Computed over every bar the chart holds, so values are warm; page back with `before`. The indicator need not be applied to the chart. Use it instead of recomputing from degenview_get_candles.",
+        name = "fakingview_get_indicator_values",
+        description = "Read built-in indicator values for a chart: RSI (14), an EMA of any length (default 20), Bollinger Bands (20, 2 deviations) and Supertrend trend flips, aligned with the bars the chart draws (its own candles, or the built bars of a Heikin Ashi, Renko, Kagi, Line Break, Point & Figure or Range chart: see `chart_type`) and computed with the same code the chart draws. Returns `times` (oldest first), the `closes`, and one named series per indicator with a value per bar (null while warming up). Computed over every bar the chart holds, so values are warm; page back with `before`. The indicator need not be applied to the chart. Use it instead of recomputing from fakingview_get_candles.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -162,8 +162,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_remove_indicator",
-        description = "Take a built-in indicator off a chart (a hidden one counts as applied). Returns `removed`, or `not_applied` when the chart did not have it, so a retry is harmless, plus the chart's indicators afterwards. The inverse of degenview_add_indicator.",
+        name = "fakingview_remove_indicator",
+        description = "Take a built-in indicator off a chart (a hidden one counts as applied). Returns `removed`, or `not_applied` when the chart did not have it, so a retry is harmless, plus the chart's indicators afterwards. The inverse of fakingview_add_indicator.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,

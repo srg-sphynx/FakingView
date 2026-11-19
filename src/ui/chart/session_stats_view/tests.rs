@@ -260,9 +260,9 @@ fn stock_hours() -> Vec<Kline> {
 }
 
 /// Pictures of the panel for a person to look at. Run by hand:
-/// `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib session_stats_gallery -- --ignored`.
+/// `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib session_stats_gallery -- --ignored`.
 #[test]
-#[ignore = "writes pictures; run by hand with DEGENVIEW_GALLERY_DIR"]
+#[ignore = "writes pictures; run by hand with FAKINGVIEW_GALLERY_DIR"]
 fn session_stats_gallery() {
     use crate::ui::render_tests::Screen;
 

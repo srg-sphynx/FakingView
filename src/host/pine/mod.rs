@@ -169,6 +169,7 @@ fn source_for_slug(slug: &str) -> Option<DataSource> {
         "COINGECKO" => Some(DataSource::CoinGecko),
         "DEXSCREENER" => Some(DataSource::DexScreener),
         "ALPACA" => Some(DataSource::Alpaca),
+        "KITE" => Some(DataSource::Kite),
         "POLYMARKET" => Some(DataSource::Polymarket),
         "KALSHI" => Some(DataSource::Kalshi),
         "CMC" => Some(DataSource::CoinMarketCap),
@@ -376,6 +377,14 @@ mod tests {
             Some((DataSource::Coinbase, "BTC-USD".to_owned()))
         );
         assert_eq!(resolve_symbol("NOPE:ETHUSDT"), None);
+        assert_eq!(
+            resolve_symbol("KITE:NSE:INFY"),
+            Some((DataSource::Kite, "NSE:INFY".to_owned()))
+        );
+        assert_eq!(
+            resolve_symbol("kite:BSE:INFY"),
+            Some((DataSource::Kite, "BSE:INFY".to_owned()))
+        );
     }
 }
 

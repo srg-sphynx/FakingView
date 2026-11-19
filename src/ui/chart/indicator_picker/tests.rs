@@ -362,7 +362,7 @@ fn the_grid_has_fewer_columns_as_it_narrows() {
     assert_eq!(columns_for(300.0), 1);
 }
 
-/// The picker as pictures. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+/// The picker as pictures. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_picker() {

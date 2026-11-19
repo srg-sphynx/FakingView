@@ -210,7 +210,7 @@ fn the_endpoint_answers_over_tls_to_a_client_that_pins_the_certificate() {
 
     let listed = tls_request(port, config.clone(), &mcp_request(&head(port, "tok"))).unwrap();
     assert!(listed.starts_with("HTTP/1.1 200"), "{listed}");
-    assert!(listed.contains("degenview_list_charts"), "{listed}");
+    assert!(listed.contains("fakingview_list_charts"), "{listed}");
 
     // The bearer check and the Host check sit behind TLS exactly as they do without it.
     let no_token = tls_request(
@@ -254,7 +254,7 @@ fn plain_http_to_a_tls_port_is_dropped_without_an_answer() {
     let text = String::from_utf8_lossy(&response);
     // What may come back is a TLS alert, never an HTTP response: the token was not honoured.
     assert!(!text.contains("HTTP/1."), "{text}");
-    assert!(!text.contains("degenview_"), "{text}");
+    assert!(!text.contains("fakingview_"), "{text}");
 }
 
 #[test]

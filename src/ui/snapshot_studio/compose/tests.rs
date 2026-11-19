@@ -282,11 +282,11 @@ fn indicators_drawings_and_branding_are_each_left_out_when_switched_off() {
         "the trend line is gone"
     );
 
-    assert!(words(&all).contains(&"DegenView".to_owned()));
+    assert!(words(&all).contains(&"FakingView".to_owned()));
     let mut no_branding = everything;
     no_branding.include.branding = false;
     let unbranded = words(&shapes(&no_branding));
-    assert!(!unbranded.contains(&"DegenView".to_owned()));
+    assert!(!unbranded.contains(&"FakingView".to_owned()));
     assert_eq!(
         flatten(&shapes(&no_branding)).len() + 2,
         flatten(&all).len(),
@@ -329,7 +329,7 @@ fn the_styled_look_names_the_market_and_the_chart_look_does_not() {
     assert!(styled_words.contains(&"BINANCE · 1h".to_owned()));
     let chart_words = texts(&painted(&capture, &cards, &plain(), 1.0));
     assert!(!chart_words.contains(&"BTC/USDT".to_owned()));
-    assert!(!chart_words.contains(&"DegenView".to_owned()));
+    assert!(!chart_words.contains(&"FakingView".to_owned()));
     // The header is inside the strip the layout gave it.
     let config = styled(AspectRatio::Original, Background::None);
     let header = composition::layout(capture.size(), &config)
@@ -366,7 +366,7 @@ fn the_mark_is_in_the_title_strip_beside_the_title_and_never_over_the_chart() {
         };
         // The market's name is whole in every size, and the mark never pushes it.
         let title = at("BTC/USDT").expect("the whole title");
-        if let Some(mark) = at("DegenView") {
+        if let Some(mark) = at("FakingView") {
             assert!(header.contains(mark), "{size:?}: {mark:?} in {header:?}");
             assert!(mark.x > reserved.min.x, "{size:?}: right of the icon");
             assert!(mark.x > title.x, "{size:?}: beside the title");
@@ -393,14 +393,14 @@ fn the_mark_gives_way_to_the_title_first_as_its_icon_and_then_altogether() {
         (words, shapes.len())
     };
     let (short, with_icon) = with_title("BTC");
-    assert!(short.contains(&"BTC".to_owned()) && short.contains(&"DegenView".to_owned()));
+    assert!(short.contains(&"BTC".to_owned()) && short.contains(&"FakingView".to_owned()));
     // A name that leaves room for the icon only: no wordmark, the icon is still drawn.
     let (middling, icon_alone) = with_title("BTC/USDT Perp");
     assert!(
         middling.contains(&"BTC/USDT Perp".to_owned()),
         "{middling:?}"
     );
-    assert!(!middling.contains(&"DegenView".to_owned()));
+    assert!(!middling.contains(&"FakingView".to_owned()));
     assert_eq!(
         icon_alone + 1,
         with_icon,
@@ -409,7 +409,7 @@ fn the_mark_gives_way_to_the_title_first_as_its_icon_and_then_altogether() {
     // A name wider than the strip alone (it is cut there) leaves no room: the mark is gone.
     let long = "A market whose name is far longer than any title strip".repeat(2);
     let (cut, nothing) = with_title(&long);
-    assert!(!cut.contains(&"DegenView".to_owned()));
+    assert!(!cut.contains(&"FakingView".to_owned()));
     assert_eq!(nothing + 1, icon_alone, "no icon either");
 }
 

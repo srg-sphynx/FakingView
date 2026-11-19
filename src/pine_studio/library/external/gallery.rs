@@ -1,6 +1,6 @@
 //! Pictures of a script edited outside the app: the note after a reload, and the question over
 //! unsaved typing. Run by hand:
-//! `DEGENVIEW_GALLERY_DIR=… cargo test --lib pine_studio::external_gallery -- --ignored`.
+//! `FAKINGVIEW_GALLERY_DIR=… cargo test --lib pine_studio::external_gallery -- --ignored`.
 
 use std::time::{Duration, Instant};
 

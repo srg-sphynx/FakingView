@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 fn temp_store(tag: &str) -> (ScriptStore, PathBuf) {
-    let root = std::env::temp_dir().join(format!("degenview-mcp-pine-{tag}-{}", new_id()));
+    let root = std::env::temp_dir().join(format!("fakingview-mcp-pine-{tag}-{}", new_id()));
     let store = ScriptStore::new(root.join("Scripts"), root.join("ScriptMetadata"));
     (store, root)
 }

@@ -191,7 +191,7 @@ cursor between sessions (ours does).
   (Charting Library 3.0) OHLC and change that follow the pointer; the **0.5 s**, the position, what
   else it lists and the dismissal on release are ours. The menu label "Values tooltip on long
   press" was not found in any source read.
-- DegenView has no drawing groups, so there is nothing to erase together. Ctrl/Cmd+click on one
+- FakingView has no drawing groups, so there is nothing to erase together. Ctrl/Cmd+click on one
   Fibonacci level is not implemented.
-- The inverted price scale does not exist in DegenView, so no cursor handles one.
+- The inverted price scale does not exist in FakingView, so no cursor handles one.
 - Not driven by touch, and not seen on Windows or Linux.

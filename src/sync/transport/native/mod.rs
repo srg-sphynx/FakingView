@@ -1,7 +1,7 @@
 //! The wire format and plumbing between the Rust core and the Swift CloudKit bridge.
 //!
 //! Commands and events are JSON with base64 for binary fields. The C functions themselves are
-//! declared in the `degenview` binary and handed to `NativeApi` as function pointers, so the
+//! declared in the `fakingview` binary and handed to `NativeApi` as function pointers, so the
 //! library (and the background alert agent that shares it) never links Swift. Everything here is
 //! plain Rust and is tested against a fake bridge.
 

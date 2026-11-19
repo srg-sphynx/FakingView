@@ -1,5 +1,5 @@
 //@version=6
-// Example script bundled with DegenView. Edit it freely.
+// Example script bundled with FakingView. Edit it freely.
 // Draws a horizontal line from every confirmed swing high (resistance) and swing
 // low (support), and keeps only the most recent few of each. A pivot is confirmed
 // "right bars" after it happens, so levels appear with that delay.

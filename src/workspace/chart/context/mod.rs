@@ -80,7 +80,7 @@ pub(in crate::workspace) struct ContextState {
 
 /// Where the copied drawings wait: shared by every tab and window of the app.
 fn clip_id() -> Id {
-    Id::new("degenview-drawing-clip")
+    Id::new("fakingview-drawing-clip")
 }
 
 fn stored_clip(ctx: &Context) -> Option<DrawingClip> {
@@ -709,13 +709,13 @@ impl ChartWorkspace {
         );
     }
 
-    /// A paste from the keyboard: DegenView's own copy lands under the pointer on the chart it
+    /// A paste from the keyboard: FakingView's own copy lands under the pointer on the chart it
     /// was last over; anything else on the clipboard is not ours and is ignored.
     fn paste_text(&mut self, ctx: &Context, text: &str) {
         use crate::model::chart::clipboard::ClipError;
         let clip = match DrawingClip::decode(text) {
             Ok(clip) => clip,
-            // Not DegenView's own copy: a link to an X post becomes a card;
+            // Not FakingView's own copy: a link to an X post becomes a card;
             // anything else on the clipboard is not ours.
             Err(ClipError::NotDrawings) => {
                 if let Ok(link) = crate::model::annotation::link_card::Link::parse(text) {

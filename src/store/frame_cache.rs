@@ -269,7 +269,7 @@ mod tests {
     #[test]
     fn a_write_from_another_connection_is_seen() {
         let path = std::env::temp_dir().join(format!(
-            "degenview-frame-cache-{}.sqlite",
+            "fakingview-frame-cache-{}.sqlite",
             std::process::id()
         ));
         let _ = std::fs::remove_file(&path);

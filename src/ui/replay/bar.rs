@@ -1526,7 +1526,7 @@ mod tests {
         assert_eq!(preferred_height(ReplayStatus::Paused, 1200.0, true), 78.0);
     }
 
-    /// Written by hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib replay_bar::tests::gallery -- --ignored`.
+    /// Written by hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib replay_bar::tests::gallery -- --ignored`.
     #[test]
     #[ignore = "writes pictures"]
     fn gallery_of_the_bar() {

@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Average True Range: the typical size of a bar including gaps, in price units (or, optionally,
 // as a percent of the close). It measures volatility, not direction.
 indicator("ATR", overlay = false)

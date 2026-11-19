@@ -20,7 +20,7 @@ mod trading;
 mod ui;
 mod workspace;
 
-use app::DegenViewApp;
+use app::FakingViewApp;
 use eframe::egui;
 
 pub use crash_report::{install_panic_hook, note as note_startup};
@@ -54,13 +54,13 @@ pub fn run_gui_with(
     // drawn as it is, so it comes with its corners (`tools/round-icon.py`).
     #[cfg(target_os = "macos")]
     let icon = inset_macos_icon(eframe::icon_data::from_png_bytes(include_bytes!(
-        "../assets/brand/DegenView-512.png"
+        "../assets/brand/FakingView-512.png"
     ))?);
     #[cfg(not(target_os = "macos"))]
     let icon = ui::window::chrome::app_icon();
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_title("DegenView")
+            .with_title("FakingView")
             .with_app_id(ui::window::chrome::APP_ID)
             // The surface is shared by every window, and eframe reads whether it may be
             // transparent from this first one (`ui::window::corners`).
@@ -73,7 +73,7 @@ pub fn run_gui_with(
 
     crash_report::note("creating the window and graphics");
     Ok(eframe::run_native(
-        "DegenView",
+        "FakingView",
         options,
         Box::new(move |creation| {
             // Which adapter and backend was chosen is the first thing to ask about a start that
@@ -82,7 +82,7 @@ pub fn run_gui_with(
                 Some(state) => format!("graphics ready: {:?}", state.adapter.get_info()),
                 None => "graphics ready".to_owned(),
             });
-            Ok(Box::new(DegenViewApp::new(
+            Ok(Box::new(FakingViewApp::new(
                 creation,
                 store.clone(),
                 sync.clone(),
@@ -200,7 +200,7 @@ mod rounded_icon_tests {
     #[test]
     fn the_rounded_icon_has_clear_corners_and_a_solid_middle() {
         let icon = eframe::icon_data::from_png_bytes(include_bytes!(
-            "../assets/brand/DegenView-512-rounded.png"
+            "../assets/brand/FakingView-512-rounded.png"
         ))
         .unwrap();
         let (w, h) = (icon.width as usize, icon.height as usize);
@@ -233,7 +233,7 @@ mod icon_tests {
     #[test]
     fn dock_icon_keeps_standard_margin_and_rounded_corners() {
         let icon =
-            eframe::icon_data::from_png_bytes(include_bytes!("../assets/brand/DegenView-512.png"))
+            eframe::icon_data::from_png_bytes(include_bytes!("../assets/brand/FakingView-512.png"))
                 .unwrap();
         let (w, h) = (icon.width as usize, icon.height as usize);
         let icon = inset_macos_icon(icon);

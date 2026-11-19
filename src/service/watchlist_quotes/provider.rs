@@ -60,6 +60,7 @@ pub fn chunk_size(source: DataSource) -> usize {
     match source {
         DataSource::Binance => 100,
         DataSource::Alpaca => 200,
+        DataSource::Kite => 500,
         DataSource::CoinGecko => 250,
         DataSource::Coinbase => 20,
         // One call answers every spot market, so a round is one request however many rows.
@@ -106,6 +107,21 @@ impl QuoteProvider for LiveProvider {
             DataSource::CoinGecko => coingecko(requests).map(Outcome::from_quotes),
             DataSource::DexScreener => Ok(dexscreener(requests)),
             DataSource::Alpaca => alpaca(requests).map(Outcome::from_quotes),
+            DataSource::Kite => {
+                let symbols = requests
+                    .iter()
+                    .map(|request| request.symbol.clone())
+                    .collect::<Vec<_>>();
+                crate::service::market::kite::quotes(&symbols)
+                    .map(Outcome::from_quotes)
+                    .map_err(|error| {
+                        if error.is_rate_limited() {
+                            QuoteFailure::RateLimited
+                        } else {
+                            QuoteFailure::Failed(error.to_string())
+                        }
+                    })
+            }
             DataSource::Polymarket | DataSource::Kalshi => Ok(prediction(source, requests)),
             DataSource::CoinMarketCap => Ok(Outcome::default()),
         }

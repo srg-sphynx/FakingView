@@ -49,7 +49,7 @@ macro_rules! indicator {
             description: $description,
             aliases: &[$($alias),*],
             overlay: $overlay,
-            author: "DegenView",
+            author: "FakingView",
             license: "GPL-3.0-only",
             source: include_str!(concat!($id, ".pine")),
         }

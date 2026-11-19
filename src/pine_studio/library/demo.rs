@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn demos_add_once_and_types_follow_declarations() {
-        let root = std::env::temp_dir().join(format!("degenview-demo-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("fakingview-demo-{}", std::process::id()));
         let mut store = ScriptStore::new(root.join("Scripts"), root.join("ScriptMetadata"));
         assert_eq!(add_missing(&mut store).unwrap(), 9);
         assert_eq!(add_missing(&mut store).unwrap(), 0);

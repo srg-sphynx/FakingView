@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Ichimoku Kinko Hyo: two midpoint lines and the cloud between two leading spans. Each bar shows
 // the spans as they were `displacement` bars earlier, which is how the cloud is shifted forward.
 // The part that would run past the last bar is not drawn, and the lagging span is left out,

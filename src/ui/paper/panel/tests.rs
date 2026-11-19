@@ -77,7 +77,7 @@ fn an_info_notice_fades_but_an_error_stays_until_dismissed() {
     assert!(!error.expired());
 }
 
-/// The notice line, as pictures: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib ui::paper::panel::tests::gallery -- --ignored`.
+/// The notice line, as pictures: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib ui::paper::panel::tests::gallery -- --ignored`.
 #[test]
 #[ignore = "writes pictures"]
 fn gallery_of_the_notice() {

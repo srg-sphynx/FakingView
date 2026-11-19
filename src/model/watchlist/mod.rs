@@ -392,7 +392,7 @@ impl WatchlistInstrument {
             (symbol.to_owned(), String::new(), Some(symbol.to_owned()))
         } else {
             match source {
-                DataSource::Alpaca => {
+                DataSource::Alpaca | DataSource::Kite => {
                     let parts: Vec<&str> = symbol.split(" — ").collect();
                     let name = if parts.len() > 1 {
                         parts[1..].join(" — ")

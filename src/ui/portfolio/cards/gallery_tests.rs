@@ -1,5 +1,5 @@
 //! Pictures of the four portfolio cards on the chart grid, for a person to look at. Run by hand:
-//! `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib portfolio_cards_gallery -- --ignored`.
+//! `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib portfolio_cards_gallery -- --ignored`.
 //! Each picture is a sheet of cards at several sizes drawn with the grid's own card frame, in
 //! both themes, with and without a pointer over the card.
 

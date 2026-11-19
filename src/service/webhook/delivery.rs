@@ -36,7 +36,7 @@ pub enum Mode {
 pub struct TransportRequest {
     pub method: WebhookHttpMethod,
     pub url: String,
-    /// Custom headers, then `Content-Type` last: the body's type is DegenView's to decide.
+    /// Custom headers, then `Content-Type` last: the body's type is FakingView's to decide.
     pub headers: Vec<(String, String)>,
     pub body: Vec<u8>,
     pub timeout: Duration,
@@ -507,7 +507,7 @@ mod tests {
         let result = deliver(
             &UreqTransport::default(),
             &InMemoryWebhookSecretStore::default(),
-            r#"{"event":"DegenView webhook test"}"#,
+            r#"{"event":"FakingView webhook test"}"#,
             &hook,
             Mode::Test,
         );
@@ -519,7 +519,7 @@ mod tests {
         assert!(lower.contains("content-type: application/json; charset=utf-8"));
         assert!(lower.contains("x-key: abc"));
         assert!(
-            raw.ends_with(r#"{"event":"DegenView webhook test"}"#),
+            raw.ends_with(r#"{"event":"FakingView webhook test"}"#),
             "no newline added: {raw:?}"
         );
     }

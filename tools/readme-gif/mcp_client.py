@@ -1,11 +1,11 @@
-"""A minimal client for DegenView's local MCP server: one JSON-RPC `tools/call` per request."""
+"""A minimal client for FakingView's local MCP server: one JSON-RPC `tools/call` per request."""
 
 import json
 import os
 import urllib.request
 
-PORT = int(os.environ.get("DEGENVIEW_RECORD_PORT", "8791"))
-TOKEN = os.environ["DEGENVIEW_RECORD_TOKEN"]
+PORT = int(os.environ.get("FAKINGVIEW_RECORD_PORT", "8791"))
+TOKEN = os.environ["FAKINGVIEW_RECORD_TOKEN"]
 URL = f"http://127.0.0.1:{PORT}/mcp"
 _next_id = 0
 

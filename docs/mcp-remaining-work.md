@@ -35,9 +35,9 @@ Ranked by how soon someone would ask. Not started unless listed under "Done so f
 
 - Chart control still missing: change a chart's symbol (remove and add instead), price scale mode,
   scroll to a time, focus a chart, layouts. Timeframe, chart type and removal are done.
-- Indicators: hide and show one without removing it (`degenview_remove_indicator` and
-  `degenview_get_indicator_values` are done); the chart's EMA period is changed through
-  `degenview_add_indicator`.
+- Indicators: hide and show one without removing it (`fakingview_remove_indicator` and
+  `fakingview_get_indicator_values` are done); the chart's EMA period is changed through
+  `fakingview_add_indicator`.
 - Paper trading: reverse a position, close at a limit, edit an account's settings, create or reset
   accounts. Orders and closes are done, behind three off-by-default permissions and the approval
   step (item 3). No real-broker order tool: Alpaca is data only.
@@ -126,10 +126,10 @@ Reading candles and drawing are done (phase 7, widened by the drawing-tools PR).
   angles, content). The retracement uses the app's default levels, which cannot be set. A picture's
   bytes and a card's preview are not exposed; a table's cells and a pinned table's place are not in
   `anchors` (it has none).
-- `degenview_get_candles` returns what the chart holds (about 500 bars, 1500 after one older page).
-  DegenView fetches older history only as the chart is scrolled back, so an agent cannot ask for
+- `fakingview_get_candles` returns what the chart holds (about 500 bars, 1500 after one older page).
+  FakingView fetches older history only as the chart is scrolled back, so an agent cannot ask for
   more; `has_older_loaded` and `older_history_available` say what is possible.
-- Indicator values come from `degenview_get_indicator_values` (phase 9); there is no swing/pivot
+- Indicator values come from `fakingview_get_indicator_values` (phase 9); there is no swing/pivot
   helper, so the agent works those out from the bars.
 - The caller's drawing defaults (templates) are not used: new drawings take the tool's built-in
   default, so a result does not depend on the person's settings.
@@ -138,8 +138,8 @@ Reading candles and drawing are done (phase 7, widened by the drawing-tools PR).
 
 ## 5. Script alert subscriptions and a log of what they fired
 
-- DegenView stores no history of fired script alerts (`pine_alert_event` keeps only a dedupe key), so
-  `degenview_list_pine_alerts` returns subscriptions only. Persisting fired events (script, time,
+- FakingView stores no history of fired script alerts (`pine_alert_event` keeps only a dedupe key), so
+  `fakingview_list_pine_alerts` returns subscriptions only. Persisting fired events (script, time,
   message, delivery state) is an app feature first; then expose it read-only.
 - Creating, pausing or deleting subscriptions over MCP has no tool yet; add them behind the
   confirmation step (item 3).
@@ -165,8 +165,8 @@ frequency edits.
 
 ## 8. MCP resources
 
-Read-only resources mirroring the read tools (`degenview://workspaces`, `.../charts`,
-`degenview://pine/scripts/{id}` with `/diagnostics`, `/inputs`), with stable URIs and MIME types and
+Read-only resources mirroring the read tools (`fakingview://workspaces`, `.../charts`,
+`fakingview://pine/scripts/{id}` with `/diagnostics`, `/inputs`), with stable URIs and MIME types and
 the same permission checks as the equivalent tools. Resources must not become an authorization
 bypass.
 
@@ -227,7 +227,7 @@ cancellation on disconnect (see [architecture/mcp.md](architecture/mcp.md)). Lef
   Studio opens.
 - Creating a price alert goes through the sheet's Save path, which may prompt for notification
   permission.
-- Alerts, script alerts and strategies run only while DegenView does.
+- Alerts, script alerts and strategies run only while FakingView does.
 - A debug build is far too slow to use (about 5x the CPU of release); use `--release` for manual checks.
 
 ## 12. Cleanup

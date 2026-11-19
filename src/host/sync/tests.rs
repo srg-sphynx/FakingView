@@ -48,7 +48,7 @@ struct Rig {
 
 fn scratch(tag: &str) -> PathBuf {
     std::env::temp_dir().join(format!(
-        "degenview-synchost-{tag}-{}-{}",
+        "fakingview-synchost-{tag}-{}-{}",
         std::process::id(),
         crate::store::sync::new_device_id()
     ))
@@ -158,7 +158,7 @@ fn an_unsigned_build_reports_why_icloud_cannot_work() {
     let factory: Arc<dyn TransportFactory> = Arc::new(MockFactory {
         cloud,
         device: "A".into(),
-        environment: Err("This copy of DegenView is not signed for iCloud.".into()),
+        environment: Err("This copy of FakingView is not signed for iCloud.".into()),
     });
     let host = SyncHost::new(
         store.clone(),
@@ -169,7 +169,7 @@ fn an_unsigned_build_reports_why_icloud_cannot_work() {
     );
     assert_eq!(
         host.view().unavailable.as_deref(),
-        Some("This copy of DegenView is not signed for iCloud.")
+        Some("This copy of FakingView is not signed for iCloud.")
     );
     host.act(SyncAction::Enable);
     host.tick();

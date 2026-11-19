@@ -30,7 +30,7 @@ use crate::pine::{
 
 pub const UNDEFINED_VARIABLE: &str = "PINE3050";
 pub const UNDEFINED_FUNCTION: &str = "PINE3051";
-/// A call to a function DegenView does not run, in a namespace whose functions are all known.
+/// A call to a function FakingView does not run, in a namespace whose functions are all known.
 pub const UNKNOWN_MEMBER: &str = "PINE3053";
 
 /// Reports each variable read and function call whose name nothing defines. `import_aliases` are
@@ -107,7 +107,7 @@ fn unknown_member(name: &str, declared: &HashSet<String>) -> Option<String> {
     {
         return None;
     }
-    let mut message = format!("'{name}' is not a function DegenView runs.");
+    let mut message = format!("'{name}' is not a function FakingView runs.");
     if let Some(close) = closest(name, registry::members(namespace)) {
         message.push_str(&format!(" Did you mean '{close}'?"));
     }
@@ -204,7 +204,7 @@ fn head_is_defined(name: &str, declared: &HashSet<String>) -> bool {
         || OTHER_BUILTIN_HEADS.contains(&head)
 }
 
-/// Pine namespaces and object types DegenView has no table for, or whose members are only named
+/// Pine namespaces and object types FakingView has no table for, or whose members are only named
 /// constants (`size.small`, `display.none`). Scripts using the unsupported ones are reported
 /// elsewhere (`PINE9003`, `PINE7001`–`PINE7006`), so this pass leaves their members alone.
 const OTHER_BUILTIN_HEADS: &[&str] = &[

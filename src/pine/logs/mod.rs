@@ -6,7 +6,7 @@
 //! discards the bar's variables but never its messages.
 //!
 //! TradingView keeps the last 10,000 messages of the historical bars and appends realtime messages
-//! after them; the realtime and per-message limits are DegenView's own safety bounds.
+//! after them; the realtime and per-message limits are FakingView's own safety bounds.
 
 pub mod call;
 #[cfg(test)]

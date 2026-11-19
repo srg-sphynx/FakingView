@@ -31,7 +31,7 @@ const ENDPOINT: &str = "https://api.imgbb.com/1/upload";
 const CONSENT_KEY: &str = "api.imgbb.com";
 
 /// Where a developer or a machine with no secure storage gives the key.
-pub const KEY_ENV: &str = "DEGENVIEW_IMGBB_KEY";
+pub const KEY_ENV: &str = "FAKINGVIEW_IMGBB_KEY";
 
 /// The shortest time ImgBB keeps an image that is to be deleted.
 const TEST_SECONDS: u64 = 60;

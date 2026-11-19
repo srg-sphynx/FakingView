@@ -19,7 +19,7 @@
 //!   the user to answer an unlock prompt.
 //!
 //! The Keychain's access groups do not exist here, so `Scope::shared_group` is ignored: an item is
-//! identified by its service and account alone. Under `DEGENVIEW_NO_KEYCHAIN` the callers never
+//! identified by its service and account alone. Under `FAKINGVIEW_NO_KEYCHAIN` the callers never
 //! reach this module (`keychain::webhook_secrets::is_disabled`).
 
 // Off Linux nothing but the tests reaches the worker.
@@ -37,7 +37,7 @@ use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
 
 /// Attribute that marks every item as this app's.
 #[cfg(target_os = "linux")]
-const APPLICATION: &str = "es.nico.degenview";
+const APPLICATION: &str = "local.fakingview.desktop";
 /// How long `exists` and `delete` wait: neither may prompt.
 const QUICK: Duration = Duration::from_secs(10);
 /// How long `read` and `write` wait: the keyring may be locked and ask the user to unlock it.
@@ -315,7 +315,7 @@ impl Vault for Oo7Vault {
         self.unlock().await?;
         self.keyring
             .create_item(
-                "DegenView",
+                "FakingView",
                 &Self::attributes(id),
                 oo7::Secret::text(value),
                 true,
@@ -400,7 +400,7 @@ mod tests {
 
     fn id(account: &str) -> ItemId {
         ItemId {
-            service: "es.nico.degenview.test",
+            service: "local.fakingview.desktop.test",
             account: account.to_owned(),
         }
     }

@@ -60,9 +60,9 @@ impl ProviderKind {
     /// Where a developer gives the key when nothing is saved in the app.
     pub fn env_var(self) -> &'static str {
         match self {
-            Self::OpenAi => "DEGENVIEW_OPENAI_KEY",
-            Self::Anthropic => "DEGENVIEW_ANTHROPIC_KEY",
-            Self::Compatible => "DEGENVIEW_LLM_KEY",
+            Self::OpenAi => "FAKINGVIEW_OPENAI_KEY",
+            Self::Anthropic => "FAKINGVIEW_ANTHROPIC_KEY",
+            Self::Compatible => "FAKINGVIEW_LLM_KEY",
         }
     }
 

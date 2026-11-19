@@ -66,20 +66,20 @@ fn a_chart_without_a_size_has_no_snapshot() {
 fn the_file_is_named_for_the_chart_and_the_local_time() {
     assert_eq!(
         file_name("BTCUSD", "1H", NOON, 0),
-        "DegenView_BTCUSD_1H_2026-10-19_1242.png"
+        "FakingView_BTCUSD_1H_2026-10-19_1242.png"
     );
     // Two hours east of UTC: the local clock and, across midnight, the local date.
     assert_eq!(
         file_name("BTCUSD", "1H", NOON, 2 * 3_600),
-        "DegenView_BTCUSD_1H_2026-10-19_1442.png"
+        "FakingView_BTCUSD_1H_2026-10-19_1442.png"
     );
     assert_eq!(
         file_name("BTCUSD", "1H", NOON + 12 * 3_600_000, 0),
-        "DegenView_BTCUSD_1H_2026-10-20_0042.png"
+        "FakingView_BTCUSD_1H_2026-10-20_0042.png"
     );
     assert_eq!(
         file_name("BTCUSD", "1H", NOON, -13 * 3_600),
-        "DegenView_BTCUSD_1H_2026-10-18_2342.png"
+        "FakingView_BTCUSD_1H_2026-10-18_2342.png"
     );
 }
 
@@ -87,19 +87,19 @@ fn the_file_is_named_for_the_chart_and_the_local_time() {
 fn an_image_of_the_layout_is_named_for_the_layout_and_the_local_time() {
     assert_eq!(
         layout_file_name(NOON, 0),
-        "DegenView_Layout_2026-10-19_1242.png"
+        "FakingView_Layout_2026-10-19_1242.png"
     );
     assert_eq!(
         layout_file_name(NOON, 2 * 3_600),
-        "DegenView_Layout_2026-10-19_1442.png"
+        "FakingView_Layout_2026-10-19_1442.png"
     );
     assert_eq!(
         layout_file_name(NOON + 12 * 3_600_000, 0),
-        "DegenView_Layout_2026-10-20_0042.png"
+        "FakingView_Layout_2026-10-20_0042.png"
     );
     // Whatever the clock, the name has nothing a file system refuses.
     let name = layout_file_name(NOON, -13 * 3_600);
-    assert_eq!(name, "DegenView_Layout_2026-10-18_2342.png");
+    assert_eq!(name, "FakingView_Layout_2026-10-18_2342.png");
     assert!(
         name.chars()
             .all(|c| c.is_ascii_alphanumeric() || "-_.".contains(c))
@@ -110,19 +110,19 @@ fn an_image_of_the_layout_is_named_for_the_layout_and_the_local_time() {
 fn a_name_keeps_to_what_every_file_system_takes() {
     assert_eq!(
         file_name("BTC/USDT", "1M", NOON, 0),
-        "DegenView_BTCUSDT_1M_2026-10-19_1242.png"
+        "FakingView_BTCUSDT_1M_2026-10-19_1242.png"
     );
     assert_eq!(
         file_name("a:b*c?d\"e<f>g|h\\i j", "1D", NOON, 0),
-        "DegenView_abcdefghij_1D_2026-10-19_1242.png"
+        "FakingView_abcdefghij_1D_2026-10-19_1242.png"
     );
     assert_eq!(
         file_name("../../etc/passwd\0", "1D", NOON, 0),
-        "DegenView_etcpasswd_1D_2026-10-19_1242.png"
+        "FakingView_etcpasswd_1D_2026-10-19_1242.png"
     );
     assert_eq!(
         file_name("日本語", "", NOON, 0),
-        "DegenView_Chart_Chart_2026-10-19_1242.png"
+        "FakingView_Chart_Chart_2026-10-19_1242.png"
     );
     let long = "X".repeat(200);
     let name = file_name(&long, "1D", NOON, 0);
@@ -143,13 +143,13 @@ fn a_name_gets_its_extension_and_a_free_number() {
 
 #[test]
 fn the_post_names_the_chart_and_carries_the_link() {
-    assert_eq!(share_text("BTC/USD", "1H"), "BTC/USD 1H chart — DegenView");
+    assert_eq!(share_text("BTC/USD", "1H"), "BTC/USD 1H chart — FakingView");
     assert_eq!(
         x_compose_url(
-            "BTC/USD 1H chart — DegenView",
+            "BTC/USD 1H chart — FakingView",
             "https://s.example/a?b=1&c=2"
         ),
-        "https://x.com/intent/post?text=BTC%2FUSD%201H%20chart%20%E2%80%94%20DegenView\
+        "https://x.com/intent/post?text=BTC%2FUSD%201H%20chart%20%E2%80%94%20FakingView\
          &url=https%3A%2F%2Fs.example%2Fa%3Fb%3D1%26c%3D2"
     );
 }

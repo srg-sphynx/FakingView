@@ -12,7 +12,7 @@
 //!
 //! The baseline follows the first *visible* value of the overlay, so it moves with a pan. When an
 //! overlay has no value at the first visible bar, its own first visible value is the baseline
-//! (a DegenView decision; TradingView's behaviour there was not verified).
+//! (a FakingView decision; TradingView's behaviour there was not verified).
 
 use crate::model::chart::price_scale::{PriceScaleMode, display};
 use crate::model::overlay::{OverlayId, OverlayScale};

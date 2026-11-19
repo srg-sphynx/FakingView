@@ -1,4 +1,4 @@
-//! The app's one view of "is there a newer DegenView": checks GitHub on a schedule, downloads and
+//! The app's one view of "is there a newer FakingView": checks GitHub on a schedule, downloads and
 //! verifies a release when asked, and hands the result to the tab bar and Settings ▸ About.
 //!
 //! The network and install work is `service::update::check` / `service::update::install`; this is the
@@ -19,7 +19,7 @@ use std::time::{Duration, Instant};
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// The commit this build came from (`-dirty` when it had uncommitted changes), set by `build.rs`.
 /// Shown in Settings ▸ About for bug reports; nothing reads it.
-pub const BUILD_ID: &str = env!("DEGENVIEW_BUILD_ID");
+pub const BUILD_ID: &str = env!("FAKINGVIEW_BUILD_ID");
 /// The `setting` key holding the chosen update channel. Local to this Mac: not in `sync::record::policy`.
 pub const CHANNEL_KEY: &str = "update.channel";
 
@@ -175,7 +175,7 @@ impl UpdateHost {
     #[cfg(test)]
     pub(crate) fn at_phase(phase: &Phase) -> Self {
         let host = Self::with_target(
-            Ok(PathBuf::from("/Applications/DegenView.app")),
+            Ok(PathBuf::from("/Applications/FakingView.app")),
             Channel::Stable,
         );
         let release = |installable: bool| Release {
@@ -183,7 +183,7 @@ impl UpdateHost {
             version: "9.9.9".to_owned(),
             url: "https://example.test/release".to_owned(),
             asset: installable.then(|| check::ReleaseAsset {
-                name: "DegenView-9.9.9-macos-arm64.zip".to_owned(),
+                name: "FakingView-9.9.9-macos-arm64.zip".to_owned(),
                 url: "https://example.test/a.zip".to_owned(),
                 size: 10,
                 sha256: "00".repeat(32),
@@ -594,7 +594,7 @@ mod tests {
             version: "9.9.9".to_owned(),
             url: "https://example.test/release".to_owned(),
             asset: with_asset.then(|| ReleaseAsset {
-                name: "DegenView-9.9.9-macos-arm64.zip".to_owned(),
+                name: "FakingView-9.9.9-macos-arm64.zip".to_owned(),
                 url: "https://example.test/a.zip".to_owned(),
                 size: 10,
                 sha256: "00".repeat(32),
@@ -605,7 +605,7 @@ mod tests {
 
     fn host() -> UpdateHost {
         UpdateHost::with_target(
-            Ok(PathBuf::from("/Applications/DegenView.app")),
+            Ok(PathBuf::from("/Applications/FakingView.app")),
             Channel::Stable,
         )
     }
@@ -685,7 +685,7 @@ mod tests {
         assert_eq!(note.as_deref(), Some("Download it from the release page."));
 
         let blocked = UpdateHost::with_target(
-            Err("Move DegenView to Applications.".to_owned()),
+            Err("Move FakingView to Applications.".to_owned()),
             Channel::Stable,
         );
         blocked.finish_check(
@@ -699,7 +699,7 @@ mod tests {
             panic!("available");
         };
         assert!(!installable);
-        assert_eq!(note.as_deref(), Some("Move DegenView to Applications."));
+        assert_eq!(note.as_deref(), Some("Move FakingView to Applications."));
         // Nothing starts for a build that cannot install.
         blocked.install(&ctx());
         assert!(matches!(blocked.view().phase, Phase::Available { .. }));

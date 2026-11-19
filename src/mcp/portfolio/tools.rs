@@ -8,7 +8,7 @@ use crate::mcp::portfolio::{
     PortfolioCommand, PortfoliosResult, TransactionsResult, value_holdings,
 };
 use crate::mcp::state::ClientIdentity;
-use crate::mcp::tools::{Caller, DegenViewMcp, failure, invalid, parse_id, unexpected};
+use crate::mcp::tools::{Caller, FakingViewMcp, failure, invalid, parse_id, unexpected};
 use crate::model::InstrumentId;
 use crate::model::mcp::Permission;
 use rmcp::handler::server::wrapper::{Json, Parameters};
@@ -18,14 +18,14 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 use std::collections::HashMap;
 
-pub const LIST_PORTFOLIOS: &str = "degenview_list_portfolios";
-pub const GET_PORTFOLIO_HOLDINGS: &str = "degenview_get_portfolio_holdings";
-pub const LIST_PORTFOLIO_TRANSACTIONS: &str = "degenview_list_portfolio_transactions";
+pub const LIST_PORTFOLIOS: &str = "fakingview_list_portfolios";
+pub const GET_PORTFOLIO_HOLDINGS: &str = "fakingview_get_portfolio_holdings";
+pub const LIST_PORTFOLIO_TRANSACTIONS: &str = "fakingview_list_portfolio_transactions";
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct HoldingsParams {
-    /// A `portfolio_id` from `degenview_list_portfolios`. Omit for every unarchived portfolio
+    /// A `portfolio_id` from `fakingview_list_portfolios`. Omit for every unarchived portfolio
     /// together.
     #[schemars(length(min = 1, max = 20))]
     pub portfolio_id: Option<String>,
@@ -40,10 +40,10 @@ pub struct HoldingsParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct TransactionsParams {
-    /// A `portfolio_id` from `degenview_list_portfolios`. Omit for every unarchived portfolio.
+    /// A `portfolio_id` from `fakingview_list_portfolios`. Omit for every unarchived portfolio.
     #[schemars(length(min = 1, max = 20))]
     pub portfolio_id: Option<String>,
-    /// Only this asset, as `degenview_get_portfolio_holdings` names it (`BINANCE:BTCUSDT`).
+    /// Only this asset, as `fakingview_get_portfolio_holdings` names it (`BINANCE:BTCUSDT`).
     #[schemars(length(min = 1, max = 150))]
     pub asset: Option<String>,
     /// Rows to skip, newest first. Default 0.
@@ -54,14 +54,14 @@ pub struct TransactionsParams {
 }
 
 fn portfolio_id(raw: Option<&str>) -> Result<Option<u64>, CallToolResult> {
-    raw.map(|raw| parse_id(raw, "portfolio_id", "degenview_list_portfolios"))
+    raw.map(|raw| parse_id(raw, "portfolio_id", "fakingview_list_portfolios"))
         .transpose()
 }
 
 #[tool_router(router = portfolio_router, vis = "pub(in crate::mcp)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_list_portfolios",
+        name = "fakingview_list_portfolios",
         description = "List the user's portfolios: id, name, base currency, whether archived, how many transactions, and which one the app has selected. `privacy_mode` says whether the app hides amounts on screen; the figures returned are real. Read-only.",
         annotations(
             read_only_hint = true,
@@ -91,7 +91,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_portfolio_holdings",
+        name = "fakingview_get_portfolio_holdings",
         description = "What a portfolio holds, from its transactions by weighted-average cost: per asset the quantity, cost basis, average cost and realized profit, and (with `include_prices`, default) the live price, value, unrealized profit and return, day change and allocation. Totals are per currency, never added across currencies. A holding bought in a different currency than its market quotes in gets price and value but no profit figure (`currency_mismatch`), since converting needs an exchange rate this read does not use; the Portfolio tab converts. `closed_positions_realized_pnl` is profit on positions sold down to nothing. Omit `portfolio_id` for all unarchived portfolios together. Read-only.",
         annotations(
             read_only_hint = true,
@@ -157,8 +157,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_list_portfolio_transactions",
-        description = "A portfolio's ledger, newest first: kind (buy, sell, transfer, reward, fee, …), asset, quantity, price and its currency, fee, time, notes and where it came from. Filter to one asset by its name from degenview_get_portfolio_holdings. Pages of up to 200 (`offset`, `limit`). Read-only.",
+        name = "fakingview_list_portfolio_transactions",
+        description = "A portfolio's ledger, newest first: kind (buy, sell, transfer, reward, fee, …), asset, quantity, price and its currency, fee, time, notes and where it came from. Filter to one asset by its name from fakingview_get_portfolio_holdings. Pages of up to 200 (`offset`, `limit`). Read-only.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -207,7 +207,7 @@ impl DegenViewMcp {
     }
 }
 
-impl DegenViewMcp {
+impl FakingViewMcp {
     /// Fails when `client` lost `permission` while the call was waiting.
     pub(in crate::mcp) fn still_allowed(
         &self,

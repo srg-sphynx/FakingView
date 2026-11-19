@@ -278,11 +278,14 @@ pub fn symbol_info(symbol_key: &str) -> SymbolInfo {
         .split_once(':')
         .map(|(_, symbol)| symbol)
         .unwrap_or(symbol_key);
+    let kite = symbol_key
+        .split_once(':')
+        .is_some_and(|(source, _)| source.eq_ignore_ascii_case("KITE"));
     SymbolInfo {
         ticker: ticker.to_owned(),
         ticker_id: symbol_key.to_owned(),
-        currency: "USD".to_owned(),
-        kind: "crypto".to_owned(),
+        currency: if kite { "INR" } else { "USD" }.to_owned(),
+        kind: if kite { "unknown" } else { "crypto" }.to_owned(),
         base_currency: None,
         ..SymbolInfo::default()
     }
@@ -291,6 +294,14 @@ pub fn symbol_info(symbol_key: &str) -> SymbolInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn kite_subscriptions_keep_inr_and_the_exchange_qualified_ticker() {
+        let info = symbol_info("KITE:NSE:INFY");
+        assert_eq!(info.currency, "INR");
+        assert_eq!(info.ticker, "NSE:INFY");
+        assert_eq!(info.kind, "unknown");
+    }
     use crate::model::alert::pine::PineAlertState;
 
     fn bars() -> Vec<Kline> {

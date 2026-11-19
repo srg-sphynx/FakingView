@@ -67,7 +67,7 @@ fn fetch(
             .get(&url)
             .header(
                 "User-Agent",
-                concat!("DegenView/", env!("CARGO_PKG_VERSION")),
+                concat!("FakingView/", env!("CARGO_PKG_VERSION")),
             )
             .call()
             .map_err(|error| DownloadError::Network(error.to_string()))?;

@@ -11,7 +11,7 @@
 //! ```
 //!
 //! A single line of comma-separated entries, as TradingView exports, is read too.
-//! TradingView compatibility is best effort: exchange prefixes DegenView has no
+//! TradingView compatibility is best effort: exchange prefixes FakingView has no
 //! provider for are reported as skipped, never guessed at.
 
 use crate::model::market::venue::{self, VenueQuery};
@@ -301,6 +301,21 @@ fn instrument_from(token: &str) -> Result<WatchlistInstrument, String> {
             Ok(item(source, &symbol, &symbol, &symbol))
         }
         DataSource::Alpaca => stock(&rest),
+        DataSource::Kite => {
+            let symbol = rest.to_uppercase();
+            let valid = symbol.split_once(':').is_some_and(|(exchange, ticker)| {
+                crate::model::market::venue::INDIAN_EXCHANGES.contains(&exchange)
+                    && !ticker.is_empty()
+                    && ticker.len() <= 100
+                    && ticker
+                        .chars()
+                        .all(|c| c.is_ascii_alphanumeric() || matches!(c, ' ' | '-' | '&' | '.'))
+            });
+            if !valid {
+                return Err("Kite markets are written NSE:INFY or BSE:INFY".to_owned());
+            }
+            Ok(item(source, &symbol, &symbol, &symbol))
+        }
         DataSource::CoinGecko => {
             let id = rest.to_lowercase();
             let name = id
@@ -438,6 +453,27 @@ pub fn import_into(list: &mut Watchlist, parsed: &Parsed) -> Result<ImportReport
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn indian_markets_import_with_the_exchange_and_round_trip() {
+        for (text, expected) in [
+            ("NSE:INFY", "NSE:INFY"),
+            ("KITE:BSE:INFY", "BSE:INFY"),
+            ("NSE:NIFTY 50", "NSE:NIFTY 50"),
+            ("NSEIX:NIFTY26NOVFUT", "NSEIX:NIFTY26NOVFUT"),
+            ("KITE:NSEIX:NIFTY26NOVFUT", "NSEIX:NIFTY26NOVFUT"),
+        ] {
+            let item = instrument_from(text).unwrap();
+            assert_eq!(item.instrument.source, DataSource::Kite);
+            assert_eq!(item.instrument.symbol, expected);
+            let exported = line_for(&item);
+            assert_eq!(
+                instrument_from(&exported).unwrap().instrument.key(),
+                item.instrument.key()
+            );
+        }
+        assert!(validate_market(DataSource::Kite, "INFY").is_err());
+    }
 
     #[test]
     fn a_portfolio_card_is_left_out_of_the_text_export() {

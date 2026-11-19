@@ -210,10 +210,10 @@ mod tests {
         assert_eq!(draw(&popover, &list), Outcome::Open);
     }
 
-    /// A picture of the popover, to look at: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib
+    /// A picture of the popover, to look at: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib
     /// gallery_of_the_overlay_popover -- --ignored`.
     #[test]
-    #[ignore = "writes a picture when DEGENVIEW_GALLERY_DIR names a folder"]
+    #[ignore = "writes a picture when FAKINGVIEW_GALLERY_DIR names a folder"]
     fn gallery_of_the_overlay_popover() {
         use crate::ui::render_tests::Screen;
         let list = list();

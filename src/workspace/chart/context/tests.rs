@@ -488,7 +488,7 @@ fn paste_adds_new_drawings_at_the_click_as_one_undoable_step() {
     rig.workspace.tools.select(source, vec![1, 2]);
     rig.workspace.copy_selection(&rig.ctx);
     assert_eq!(rig.copied().len(), 1);
-    assert!(rig.copied()[0].starts_with("degenview-clipboard/v1\n"));
+    assert!(rig.copied()[0].starts_with("fakingview-clipboard/v1\n"));
 
     let context = rig.open(target, 200.0);
     rig.run(context, Command::Paste);
@@ -536,7 +536,7 @@ fn pasting_foreign_clipboard_text_is_ignored_and_damaged_text_reported() {
     assert!(rig.message().is_none());
     assert!(rig.drawing_ids(chart).is_empty());
     rig.workspace
-        .paste_text(&rig.ctx, "degenview-clipboard/v1\n{broken");
+        .paste_text(&rig.ctx, "fakingview-clipboard/v1\n{broken");
     assert!(rig.message().is_some_and(|(_, error)| error));
     assert!(rig.drawing_ids(chart).is_empty());
 }
@@ -1456,7 +1456,7 @@ fn card_of(rig: &mut Rig, chart: u64, id: u64) -> crate::model::annotation::link
 fn fetched_meta(title: &str) -> crate::model::annotation::link_card::LinkMeta {
     crate::model::annotation::link_card::LinkMeta {
         title: title.into(),
-        author: "@degenview".into(),
+        author: "@fakingview".into(),
         excerpt: "words".into(),
         fetched_at_ms: 5,
         ..Default::default()

@@ -2132,7 +2132,7 @@ mod tests {
     }
 
     /// The strip around Zoom in: resting, hovered, armed, and with Zoom out offered, in both
-    /// themes. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+    /// themes. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_zoom_in() {
@@ -2179,7 +2179,7 @@ mod tests {
         }
     }
 
-    /// Both menus as a picture. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+    /// Both menus as a picture. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_the_menus() {

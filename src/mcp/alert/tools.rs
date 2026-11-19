@@ -5,7 +5,7 @@
 use crate::mcp::alert::{AlertCommand, AlertCommandOutcome, AlertUpdate, NewAlert};
 use crate::mcp::bridge::{McpError, McpReply, REQUEST_TIMEOUT};
 use crate::mcp::state::ClientIdentity;
-use crate::mcp::tools::{Caller, DegenViewMcp, McpSource, failure, invalid, parse_id, unexpected};
+use crate::mcp::tools::{Caller, FakingViewMcp, McpSource, failure, invalid, parse_id, unexpected};
 use crate::mcp::types::{
     AlertChangeResult, AlertChangeStatus, AlertInfo, AlertStatus, AlertsResult, CreateAlertResult,
     CreateAlertStatus, UpdateAlertResult, UpdateAlertStatus,
@@ -63,7 +63,7 @@ pub enum McpFrequency {
 pub struct CreateAlertParams {
     /// The market data provider.
     pub source: McpSource,
-    /// The provider's own symbol, as for `degenview_add_chart`.
+    /// The provider's own symbol, as for `fakingview_add_chart`.
     #[schemars(length(min = 1, max = 128))]
     pub symbol: String,
     pub condition: McpCondition,
@@ -82,12 +82,12 @@ pub struct CreateAlertParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct UpdateAlertParams {
-    /// An `alert_id` from `degenview_list_price_alerts`.
+    /// An `alert_id` from `fakingview_list_price_alerts`.
     #[schemars(length(max = 20))]
     pub alert_id: String,
     /// Only the settings given change. At least one is required.
     pub condition: Option<McpCondition>,
-    /// The new trigger price, as for `degenview_create_price_alert`.
+    /// The new trigger price, as for `fakingview_create_price_alert`.
     #[schemars(length(min = 1, max = 32))]
     pub target_price: Option<String>,
     pub currency: Option<McpCurrency>,
@@ -100,7 +100,7 @@ pub struct UpdateAlertParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct AlertIdParams {
-    /// An `alert_id` from `degenview_list_price_alerts`.
+    /// An `alert_id` from `fakingview_list_price_alerts`.
     #[schemars(length(max = 20))]
     pub alert_id: String,
 }
@@ -149,17 +149,17 @@ fn same_settings(a: &AlertInfo, b: &AlertInfo) -> bool {
 }
 
 fn parse_alert_id(raw: &str) -> Result<u64, CallToolResult> {
-    parse_id(raw, "alert_id", "degenview_list_price_alerts")
+    parse_id(raw, "alert_id", "fakingview_list_price_alerts")
 }
 
 const SETTLE_POLLS: usize = 20;
 const SETTLE_INTERVAL: Duration = Duration::from_millis(100);
 
 #[tool_router(router = alert_router, vis = "pub(in crate::mcp)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_list_price_alerts",
-        description = "List DegenView price alerts: market, condition, target price, currency, frequency, status (active, paused, triggered), note and timestamps. Webhook endpoints and their secrets are never included. Alerts only evaluate while DegenView is running.",
+        name = "fakingview_list_price_alerts",
+        description = "List FakingView price alerts: market, condition, target price, currency, frequency, status (active, paused, triggered), note and timestamps. Webhook endpoints and their secrets are never included. Alerts only evaluate while FakingView is running.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -188,8 +188,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_create_price_alert",
-        description = "Create a price alert that fires when a market crosses a price. Uses the same rules as the app's alert sheet; an identical existing alert is returned instead of a duplicate. The alert only evaluates while DegenView is running. Creating one may ask the user to allow notifications.",
+        name = "fakingview_create_price_alert",
+        description = "Create a price alert that fires when a market crosses a price. Uses the same rules as the app's alert sheet; an identical existing alert is returned instead of a duplicate. The alert only evaluates while FakingView is running. Creating one may ask the user to allow notifications.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -260,7 +260,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_update_price_alert",
+        name = "fakingview_update_price_alert",
         description = "Edit an existing price alert: its direction, trigger price, currency, frequency or note (only the settings you give change; the market cannot). A paused alert stays paused. Webhook settings are untouched. Percentage alerts only take a new frequency or note.",
         annotations(
             read_only_hint = false,
@@ -351,7 +351,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_pause_price_alert",
+        name = "fakingview_pause_price_alert",
         description = "Pause a price alert so it stops evaluating; its settings are kept. Pausing a paused alert changes nothing.",
         annotations(
             read_only_hint = false,
@@ -369,7 +369,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_resume_price_alert",
+        name = "fakingview_resume_price_alert",
         description = "Resume a paused or fired price alert; it judges the price afresh and fires on the next crossing. Resuming an active alert changes nothing.",
         annotations(
             read_only_hint = false,
@@ -388,8 +388,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_delete_price_alert",
-        description = "Permanently delete a price alert. This cannot be undone. Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_delete_price_alert",
+        description = "Permanently delete a price alert. This cannot be undone. Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -434,7 +434,7 @@ impl DegenViewMcp {
     }
 }
 
-impl DegenViewMcp {
+impl FakingViewMcp {
     /// The alert runtime applies queued changes on its own schedule. Looks for the change to
     /// show up (briefly), so a reply can say what is true now rather than only "queued".
     /// Returns the alert's entry (empty once deleted) as soon as `done` holds, `Ok(None)` if it

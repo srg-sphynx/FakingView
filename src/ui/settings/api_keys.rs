@@ -43,6 +43,7 @@ pub struct CmcForm {
 pub struct ApiKeysState {
     pub alpaca: AlpacaForm,
     pub cmc: CmcForm,
+    pub kite: crate::ui::settings::kite::KiteForm,
 }
 
 // MARK: Alpaca rules
@@ -238,7 +239,7 @@ fn take_test_answer(
 // MARK: Views
 
 /// A numbered instruction line.
-fn step(ui: &mut egui::Ui, number: usize, text: &str) {
+pub(crate) fn step(ui: &mut egui::Ui, number: usize, text: &str) {
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 10.0;
         let (badge, _) = ui.allocate_exact_size(egui::Vec2::splat(20.0), egui::Sense::hover());
@@ -412,7 +413,7 @@ pub fn coinmarketcap_body(
         theme::text_secondary(),
         "A key is optional",
         Some(
-            "CoinMarketCap works without an API key. Adding one gives DegenView higher API rate limits.",
+            "CoinMarketCap works without an API key. Adding one gives FakingView higher API rate limits.",
         ),
         None,
     );

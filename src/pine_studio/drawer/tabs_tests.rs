@@ -1,6 +1,6 @@
 //! The drawer's tabs at the sizes a person can leave it at: none of them draws past the room it is
 //! given (the body scrolls instead), at a quarter of the width and at a hundredth of the height.
-//! With `DEGENVIEW_GALLERY_DIR` set, each frame is also written as a picture to look at.
+//! With `FAKINGVIEW_GALLERY_DIR` set, each frame is also written as a picture to look at.
 
 use std::time::Instant;
 

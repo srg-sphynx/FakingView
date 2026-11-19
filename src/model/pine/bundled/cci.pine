@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Commodity Channel Index: how far the typical price is from its average, in units of the
 // average deviation. Readings beyond +100 or -100 mark an unusually strong move.
 indicator("CCI", overlay = false)

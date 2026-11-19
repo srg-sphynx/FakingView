@@ -89,7 +89,7 @@ impl PreviewState {
             picked_bar: None,
             picking_range: false,
             picked_range: None,
-            pending_settings: false,
+            pending_settings: None,
         }
     }
 

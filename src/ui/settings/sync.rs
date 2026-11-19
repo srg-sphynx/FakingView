@@ -49,7 +49,7 @@ pub fn phase_label(phase: Phase) -> (String, Tone) {
 fn error_label(kind: ErrorKind) -> &'static str {
     match kind {
         ErrorKind::Quota => "iCloud storage is full",
-        ErrorKind::Permission => "DegenView is not allowed to use iCloud",
+        ErrorKind::Permission => "FakingView is not allowed to use iCloud",
         ErrorKind::AccountUnavailable => "iCloud is unavailable",
         ErrorKind::Storage => "This Mac could not save sync data",
         _ => "Something went wrong syncing",
@@ -145,7 +145,7 @@ const NOT_SYNCED: &str = "Never synced: market data caches, portfolio value hist
 webhook endpoints and their secrets, API keys, MCP access, and which windows and tabs are open. \
 Alerts you sync arrive switched off on your other Macs, so each one notifies from one Mac only.";
 
-const PRIVACY: &str = "Your data is stored in your private iCloud storage for DegenView, tied to \
+const PRIVACY: &str = "Your data is stored in your private iCloud storage for FakingView, tied to \
 your Apple Account. Pine scripts are synced as written, so remove any secrets you pasted into them.";
 
 pub fn body(ui: &mut egui::Ui, sync: &SyncHost, now_ms: i64) {
@@ -171,7 +171,7 @@ fn show(ui: &mut egui::Ui, sync: &SyncHost, view: &SyncView, now_ms: i64) {
         card::card(
             ui,
             Icon::Cycle,
-            "Sync DegenView data with iCloud",
+            "Sync FakingView data with iCloud",
             Some(
                 "Keeps your watchlists, layouts, drawings, templates, scripts, portfolios and paper-trading accounts the same on every Mac signed in to your Apple Account. Everything also stays on this Mac.",
             ),
@@ -216,7 +216,7 @@ fn notice(ui: &mut egui::Ui, sync: &SyncHost, view: &SyncView) {
         ui,
         Icon::CheckCircleFill,
         kit::GREEN,
-        "DegenView's data was deleted from iCloud",
+        "FakingView's data was deleted from iCloud",
         Some(
             "Sync is off. Everything on this Mac is still here, and your other Macs will ask what to do with their copies.",
         ),
@@ -267,7 +267,7 @@ pub fn delete_offer(view: &SyncView) -> DeleteOffer {
     }
 }
 
-const DELETE_CARD_HINT: &str = "Removes everything DegenView stored in your iCloud and turns sync off. Your data on this Mac is kept.";
+const DELETE_CARD_HINT: &str = "Removes everything FakingView stored in your iCloud and turns sync off. Your data on this Mac is kept.";
 
 /// A separate, red-edged card at the foot of the page. Deleting iCloud data is a different thing
 /// from turning sync off, and the card says so before anything is asked.
@@ -386,8 +386,8 @@ fn delete_dialog(ctx: &egui::Context) -> Option<DialogOutcome> {
     let mut spec = Dialog::new(
         Icon::Trash,
         kit::RED,
-        "Delete all DegenView data from iCloud?",
-        "This permanently removes what DegenView synced to your private iCloud storage.",
+        "Delete all FakingView data from iCloud?",
+        "This permanently removes what FakingView synced to your private iCloud storage.",
         "Delete iCloud Data",
     );
     spec.destructive = true;
@@ -622,7 +622,7 @@ fn prompts(ui: &mut egui::Ui, sync: &SyncHost, view: &SyncView) {
                 ui,
                 Icon::TriangleFill,
                 kit::ORANGE,
-                "DegenView's data in iCloud was deleted",
+                "FakingView's data in iCloud was deleted",
                 Some("Another Mac deleted it. Everything on this Mac is still here."),
                 None,
             );
@@ -679,7 +679,7 @@ fn join_prompt(ui: &mut egui::Ui, sync: &SyncHost, summary: &JoinSummary) {
             ui,
             Icon::Cycle,
             kit::ACCENT,
-            "iCloud has no DegenView data yet",
+            "iCloud has no FakingView data yet",
             Some(&format!(
                 "This Mac's data ({}) will be uploaded so your other Macs can have it.",
                 counts_text(&summary.local)
@@ -702,7 +702,7 @@ fn join_prompt(ui: &mut egui::Ui, sync: &SyncHost, summary: &JoinSummary) {
         ui,
         Icon::Cycle,
         kit::ACCENT,
-        "iCloud already has DegenView data",
+        "iCloud already has FakingView data",
         Some(&format!(
             "iCloud has {}{}. This Mac has {}.",
             counts_text(&summary.cloud),
@@ -1013,7 +1013,7 @@ mod tests {
     #[test]
     fn the_production_schema_error_is_recognised() {
         assert!(schema_not_deployed(
-            "Error saving record <CKRecordID: 0x1; recordName=watchlist.1> to server: Cannot create new type DegenViewSyncRecord in production schema"
+            "Error saving record <CKRecordID: 0x1; recordName=watchlist.1> to server: Cannot create new type FakingViewSyncRecord in production schema"
         ));
         assert!(!schema_not_deployed("The network connection was lost"));
     }
@@ -1095,7 +1095,7 @@ mod tests {
             store,
             None,
             None,
-            std::env::temp_dir().join("degenview-ui-sync-draw"),
+            std::env::temp_dir().join("fakingview-ui-sync-draw"),
             std::sync::Arc::new(|| {}),
         );
         let ctx = egui::Context::default();
@@ -1117,7 +1117,7 @@ mod tests {
         deleting.deleting = true;
         draw_view(&deleting);
         let mut failed = ready_view();
-        failed.delete_error = Some("DegenView couldn't reach iCloud.".into());
+        failed.delete_error = Some("FakingView couldn't reach iCloud.".into());
         draw_view(&failed);
         let mut offline = ready_view();
         offline.phase = Phase::WaitingForNetwork;
@@ -1202,7 +1202,7 @@ mod tests {
             store.clone(),
             None,
             None,
-            std::env::temp_dir().join("degenview-ui-sync"),
+            std::env::temp_dir().join("fakingview-ui-sync"),
             std::sync::Arc::new(|| {}),
         );
         draw(&host);

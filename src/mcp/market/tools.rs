@@ -14,7 +14,7 @@ use crate::mcp::market::{
 };
 use crate::mcp::state::ClientIdentity;
 use crate::mcp::tools::{
-    Caller, DegenViewMcp, McpSource, alpaca_configured, failure, invalid, parse_id, unexpected,
+    Caller, FakingViewMcp, McpSource, alpaca_configured, failure, invalid, parse_id, unexpected,
 };
 use crate::model::mcp::Permission;
 use crate::model::watchlist::WatchlistInstrument;
@@ -30,14 +30,14 @@ use serde::Deserialize;
 use std::collections::HashSet;
 use std::time::{Duration, Instant};
 
-pub const SEARCH_SYMBOLS: &str = "degenview_search_symbols";
-pub const GET_QUOTES: &str = "degenview_get_quotes";
-pub const GET_MARKET_CANDLES: &str = "degenview_get_market_candles";
-pub const LIST_WATCHLISTS: &str = "degenview_list_watchlists";
-pub const GET_WATCHLIST: &str = "degenview_get_watchlist";
-pub const CREATE_WATCHLIST: &str = "degenview_create_watchlist";
-pub const UPDATE_WATCHLIST: &str = "degenview_update_watchlist";
-pub const DELETE_WATCHLIST: &str = "degenview_delete_watchlist";
+pub const SEARCH_SYMBOLS: &str = "fakingview_search_symbols";
+pub const GET_QUOTES: &str = "fakingview_get_quotes";
+pub const GET_MARKET_CANDLES: &str = "fakingview_get_market_candles";
+pub const LIST_WATCHLISTS: &str = "fakingview_list_watchlists";
+pub const GET_WATCHLIST: &str = "fakingview_get_watchlist";
+pub const CREATE_WATCHLIST: &str = "fakingview_create_watchlist";
+pub const UPDATE_WATCHLIST: &str = "fakingview_update_watchlist";
+pub const DELETE_WATCHLIST: &str = "fakingview_delete_watchlist";
 
 /// Results per provider when the caller does not say.
 const DEFAULT_SEARCH_LIMIT: usize = 10;
@@ -53,7 +53,8 @@ const QUOTE_POLL: Duration = Duration::from_millis(100);
 const DEFAULT_ENTRY_PAGE: usize = 100;
 
 /// Providers searched when the caller names none: every one a market can be charted from.
-const ALL_SOURCES: [McpSource; 10] = [
+const ALL_SOURCES: [McpSource; 11] = [
+    McpSource::Kite,
     McpSource::Binance,
     McpSource::Coinbase,
     McpSource::Okx,
@@ -71,7 +72,7 @@ const ALL_SOURCES: [McpSource; 10] = [
 pub struct MarketRef {
     /// The market data provider.
     pub source: McpSource,
-    /// The provider's own symbol, as `degenview_search_symbols` returns it: `BTCUSDT` (binance),
+    /// The provider's own symbol, as `fakingview_search_symbols` returns it: `BTCUSDT` (binance),
     /// `BTC-USD` (coinbase), `BTC-USDT` (okx), `BTC/USD` (kraken), `BTCUSDT` (bybit), `BTC_USDT` (gateio), `BTCUSDT` (mexc), `bitcoin` (coingecko), `chain/address` (dexscreener), `AAPL`
     /// (alpaca).
     #[schemars(length(min = 1, max = 128))]
@@ -108,7 +109,7 @@ pub struct GetQuotesParams {
 pub struct MarketCandlesParams {
     /// The market data provider.
     pub source: McpSource,
-    /// The provider's own symbol, as `degenview_search_symbols` returns it.
+    /// The provider's own symbol, as `fakingview_search_symbols` returns it.
     #[schemars(length(min = 1, max = 128))]
     pub symbol: String,
     /// The bar length: a count and a unit (m minutes, h hours, D days, W weeks, M months, or 1Y),
@@ -126,7 +127,7 @@ const CANDLE_DEADLINE: Duration = Duration::from_secs(30);
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct WatchlistIdParams {
-    /// A `watchlist_id` from `degenview_list_watchlists`.
+    /// A `watchlist_id` from `fakingview_list_watchlists`.
     #[schemars(length(min = 1, max = 20))]
     pub watchlist_id: String,
 }
@@ -134,7 +135,7 @@ pub struct WatchlistIdParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct GetWatchlistParams {
-    /// A `watchlist_id` from `degenview_list_watchlists`.
+    /// A `watchlist_id` from `fakingview_list_watchlists`.
     #[schemars(length(min = 1, max = 20))]
     pub watchlist_id: String,
     /// Entries to skip (sections count as entries). Default 0.
@@ -168,7 +169,7 @@ pub struct CreateWatchlistParams {
 pub struct AddMarket {
     /// The market data provider.
     pub source: McpSource,
-    /// The provider's own symbol, as `degenview_search_symbols` returns it.
+    /// The provider's own symbol, as `fakingview_search_symbols` returns it.
     #[schemars(length(min = 1, max = 128))]
     pub symbol: String,
     /// The section to put it in: its id (a section entry's `entry_id`) or its title (case ignored), including
@@ -204,7 +205,7 @@ pub struct RenameSection {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct UpdateWatchlistParams {
-    /// A `watchlist_id` from `degenview_list_watchlists`.
+    /// A `watchlist_id` from `fakingview_list_watchlists`.
     #[schemars(length(min = 1, max = 20))]
     pub watchlist_id: String,
     /// A new name.
@@ -371,7 +372,7 @@ fn list_changes(params: &UpdateWatchlistParams) -> Result<ListChanges, CallToolR
 }
 
 fn parse_watchlist_id(raw: &str) -> Result<u64, CallToolResult> {
-    parse_id(raw, "watchlist_id", "degenview_list_watchlists")
+    parse_id(raw, "watchlist_id", "fakingview_list_watchlists")
 }
 
 /// The rows an add would make, one per distinct market (`InstrumentId::key` decides which are the
@@ -451,7 +452,7 @@ fn search_all(
                     if data == DataSource::Alpaca && !alpaca_ready {
                         return (
                             source,
-                            Err("Alpaca needs API credentials: add them in DegenView Settings > API Keys"
+                            Err("Alpaca needs API credentials: add them in FakingView Settings > API Keys"
                                 .to_owned()),
                         );
                     }
@@ -473,10 +474,10 @@ fn search_all(
 }
 
 #[tool_router(router = market_router, vis = "pub(in crate::mcp)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_search_symbols",
-        description = "Search the market data providers for symbols by ticker or name. Returns, per hit, the `source` and `symbol` to pass to degenview_add_chart, degenview_get_quotes, degenview_create_price_alert and the watchlist tools, plus how the app labels it. Searches Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, CoinGecko, DEXScreener and (with API keys) Alpaca stocks side by side; a provider that fails is reported in `source_errors` while the others still answer. Hits only prove the provider lists the market; ask degenview_get_quotes for a price.",
+        name = "fakingview_search_symbols",
+        description = "Search the market data providers for symbols by ticker or name. Returns, per hit, the `source` and `symbol` to pass to fakingview_add_chart, fakingview_get_quotes, fakingview_create_price_alert and the watchlist tools, plus how the app labels it. Searches Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, CoinGecko, DEXScreener and (with API keys) Alpaca stocks side by side; a provider that fails is reported in `source_errors` while the others still answer. Hits only prove the provider lists the market; ask fakingview_get_quotes for a price.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -567,7 +568,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_quotes",
+        name = "fakingview_get_quotes",
         description = "Read the last price, 24-hour change (previous-close change for stocks) and volume of up to 50 markets, from the same live feed the app's watchlists use. A price that is not known yet is waited for up to `wait_seconds` (default 5); markets still unpriced are returned with status `unavailable` and counted in `pending`, so ask again. `status` is `live`, `stale`, `market_closed` (a stock outside US hours: the last price is the close), `unavailable` or `unsupported`; a `note` says why a provider gave nothing. Works for any market, not only ones on a chart or watchlist.",
         annotations(
             read_only_hint = true,
@@ -596,8 +597,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_market_candles",
-        description = "Read the price candles of any market straight from its provider, with no chart needed: the newest `limit` bars (default 200, max 1000) at any timeframe (a count and unit: m minutes, h hours, D days, W weeks, M months, or 1Y; e.g. 15m, 4h, 1D, 2W, 3M), oldest first, as rows under named `columns` (time, open, high, low, close, volume). The same bars a chart of that market would load, through the same provider calls and caches, so it can lag a live chart by a refresh. Slow providers (CoinGecko, DEXScreener) are rate limited and may take several seconds. Older history than the newest `limit` bars is not available here; open a chart and scroll back, or use degenview_get_candles on one. Volume is null where a provider reports none. For many markets at once use degenview_get_quotes.",
+        name = "fakingview_get_market_candles",
+        description = "Read the price candles of any market straight from its provider, with no chart needed: the newest `limit` bars (default 200, max 1000) at any timeframe (a count and unit: m minutes, h hours, D days, W weeks, M months, or 1Y; e.g. 15m, 4h, 1D, 2W, 3M), oldest first, as rows under named `columns` (time, open, high, low, close, volume). The same bars a chart of that market would load, through the same provider calls and caches, so it can lag a live chart by a refresh. Slow providers (CoinGecko, DEXScreener) are rate limited and may take several seconds. Older history than the newest `limit` bars is not available here; open a chart and scroll back, or use fakingview_get_candles on one. Volume is null where a provider reports none. For many markets at once use fakingview_get_quotes.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -624,7 +625,7 @@ impl DegenViewMcp {
             .instrument;
         if source == DataSource::Alpaca && !alpaca_configured().await {
             return Err(failure(&McpError::Unsupported(
-                "Alpaca needs API credentials: add them in DegenView Settings > API Keys".into(),
+                "Alpaca needs API credentials: add them in FakingView Settings > API Keys".into(),
             )));
         }
         let Some(permit) = self.shared.try_candle_job() else {
@@ -689,8 +690,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_list_watchlists",
-        description = "List the user's watchlists: id, name, how many markets and sections each holds, and which one is Favorites (the list the chart star adds to). Read one with degenview_get_watchlist.",
+        name = "fakingview_list_watchlists",
+        description = "List the user's watchlists: id, name, how many markets and sections each holds, and which one is Favorites (the list the chart star adds to). Read one with fakingview_get_watchlist.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -719,8 +720,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_watchlist",
-        description = "Read a watchlist's entries in order: markets (with `source` and `symbol` to pass to other tools), the section each sits in, and the section dividers themselves. Pages of up to 500 entries (`offset`, `limit`). With `include_quotes` each market also carries its price, change and volume (see degenview_get_quotes for the fields), limited to 50 markets per page; this needs the markets.read permission as well.",
+        name = "fakingview_get_watchlist",
+        description = "Read a watchlist's entries in order: markets (with `source` and `symbol` to pass to other tools), the section each sits in, and the section dividers themselves. Pages of up to 500 entries (`offset`, `limit`). With `include_quotes` each market also carries its price, change and volume (see fakingview_get_quotes for the fields), limited to 50 markets per page; this needs the markets.read permission as well.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -789,8 +790,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_create_watchlist",
-        description = "Create a watchlist, optionally with markets (`source` + `symbol`, as degenview_search_symbols returns them). Fails if the name is empty or too long, or there are already 200 lists. The list syncs through iCloud like any other.",
+        name = "fakingview_create_watchlist",
+        description = "Create a watchlist, optionally with markets (`source` + `symbol`, as fakingview_search_symbols returns them). Fails if the name is empty or too long, or there are already 200 lists. The list syncs through iCloud like any other.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -816,8 +817,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_update_watchlist",
-        description = "Change a watchlist in one step: rename it, add / rename / delete sections, and remove, move and add markets (`source` + `symbol`). If anything is refused (a bad name, an unknown or ambiguous section, a full list) nothing changes. Order of application: rename, new sections, renamed sections, removals, moves, additions, deleted sections, so a section made by `add_sections` can be used by `move_markets` and `add` in the same call. A section is named by its id (the `entry_id` of a `section` entry in degenview_get_watchlist) or its title, case ignored; two sections with the same title must be named by id. A market already in the list, or one to remove or move that is not, is skipped and reported (`already_present`, `not_present`), so retrying market changes is harmless. Section changes are not: a retried `add_sections` adds the dividers again, and a retried rename or delete of a section by its old title can fail. Read the list before retrying. New markets go at the end of the list (the end of its last section) unless given a `section`. A section is a divider: the markets after it, up to the next, belong to it; deleting one keeps its markets.",
+        name = "fakingview_update_watchlist",
+        description = "Change a watchlist in one step: rename it, add / rename / delete sections, and remove, move and add markets (`source` + `symbol`). If anything is refused (a bad name, an unknown or ambiguous section, a full list) nothing changes. Order of application: rename, new sections, renamed sections, removals, moves, additions, deleted sections, so a section made by `add_sections` can be used by `move_markets` and `add` in the same call. A section is named by its id (the `entry_id` of a `section` entry in fakingview_get_watchlist) or its title, case ignored; two sections with the same title must be named by id. A market already in the list, or one to remove or move that is not, is skipped and reported (`already_present`, `not_present`), so retrying market changes is harmless. Section changes are not: a retried `add_sections` adds the dividers again, and a retried rename or delete of a section by its old title can fail. Read the list before retrying. New markets go at the end of the list (the end of its last section) unless given a `section`. A section is a divider: the markets after it, up to the next, belong to it; deleting one keeps its markets.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -844,8 +845,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_delete_watchlist",
-        description = "Permanently delete a watchlist and its markets and sections. This cannot be undone from here. Favorites (is_favorites) cannot be deleted. Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_delete_watchlist",
+        description = "Permanently delete a watchlist and its markets and sections. This cannot be undone from here. Favorites (is_favorites) cannot be deleted. Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -868,7 +869,7 @@ impl DegenViewMcp {
     }
 }
 
-impl DegenViewMcp {
+impl FakingViewMcp {
     async fn change_watchlist(
         &self,
         client: &ClientIdentity,

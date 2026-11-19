@@ -1,4 +1,4 @@
-//! The builtin functions DegenView runs, in one place, for the compiler to ask.
+//! The builtin functions FakingView runs, in one place, for the compiler to ask.
 //!
 //! Each module that evaluates a family of builtins keeps its own list (`array::KNOWN`,
 //! `math::SUPPORTED`, `drawings::NAMESPACES`, …) and stays the truth the interpreter dispatches from.
@@ -147,7 +147,7 @@ pub fn is_closed_for_values(namespace: &str) -> bool {
     CLOSED_VALUES.contains(&namespace)
 }
 
-/// Whether `name` is a builtin function DegenView runs.
+/// Whether `name` is a builtin function FakingView runs.
 pub fn is_function(name: &str) -> bool {
     // The `array.new_<type>` family is matched by prefix, not listed.
     registry().functions.contains(name) || array::handles(name)

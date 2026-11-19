@@ -24,7 +24,7 @@ fn soon() -> Instant {
 
 /// A real, loadable font on disk: egui's own monospace font, under a family name of the test's.
 fn font_on_disk(dir: &str, family: &str) -> (std::path::PathBuf, FontEntry) {
-    let root = std::env::temp_dir().join(format!("degenview-host-{dir}-{}", std::process::id()));
+    let root = std::env::temp_dir().join(format!("fakingview-host-{dir}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);
     std::fs::create_dir_all(&root).unwrap();
     let bytes = egui::FontDefinitions::default().font_data["Hack"]

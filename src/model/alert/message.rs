@@ -110,7 +110,7 @@ pub fn timestamp(epoch_ms: i64) -> String {
     )
 }
 
-/// Maps DegenView's interval names (`1m`, `1h`, `1d`, `1w`, `1M`) to TradingView's (`1`,
+/// Maps FakingView's interval names (`1m`, `1h`, `1d`, `1w`, `1M`) to TradingView's (`1`,
 /// `60`, `D`, `W`, `M`). Unknown names pass through unchanged.
 pub fn trading_view_interval(interval: &str) -> String {
     match interval {

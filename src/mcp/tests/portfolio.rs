@@ -103,14 +103,14 @@ fn the_portfolio_tools_need_portfolio_read_and_nothing_else_unlocks_them() {
     assert_eq!(
         tool_names(&url, "tok"),
         [
-            "degenview_get_portfolio_holdings",
-            "degenview_list_portfolio_transactions",
-            "degenview_list_portfolios",
+            "fakingview_get_portfolio_holdings",
+            "fakingview_list_portfolio_transactions",
+            "fakingview_list_portfolios",
         ]
     );
     for tool in [
-        "degenview_list_portfolios",
-        "degenview_get_portfolio_holdings",
+        "fakingview_list_portfolios",
+        "fakingview_get_portfolio_holdings",
     ] {
         let denied = call(&url, "o-tok", tool, json!({}));
         assert_eq!(error_code(&denied), "PERMISSION_DENIED", "{tool}");
@@ -124,7 +124,7 @@ fn portfolios_are_listed_with_their_transaction_counts() {
     let listed = call(
         &harness.url(),
         "tok",
-        "degenview_list_portfolios",
+        "fakingview_list_portfolios",
         json!({}),
     );
     assert_eq!(listed["isError"], json!(false), "{listed}");
@@ -146,7 +146,7 @@ fn holdings_are_valued_per_currency_and_a_foreign_cost_gets_no_profit() {
     let result = call(
         &harness.url(),
         "tok",
-        "degenview_get_portfolio_holdings",
+        "fakingview_get_portfolio_holdings",
         json!({"portfolio_id": id.to_string(), "wait_seconds": 1}),
     );
     assert_eq!(result["isError"], json!(false), "{result}");
@@ -191,7 +191,7 @@ fn prices_can_be_skipped_and_need_no_quote_feed() {
     let result = call(
         &harness.url(),
         "tok",
-        "degenview_get_portfolio_holdings",
+        "fakingview_get_portfolio_holdings",
         json!({"include_prices": false}),
     );
     assert_eq!(result["isError"], json!(false), "{result}");
@@ -207,7 +207,7 @@ fn prices_can_be_skipped_and_need_no_quote_feed() {
     let unfed = call(
         &harness.url(),
         "tok",
-        "degenview_get_portfolio_holdings",
+        "fakingview_get_portfolio_holdings",
         json!({"wait_seconds": 0}),
     );
     assert_eq!(error_code(&unfed), "APP_UNAVAILABLE");
@@ -221,7 +221,7 @@ fn transactions_page_newest_first_and_filter_by_asset() {
     let page = call(
         &url,
         "tok",
-        "degenview_list_portfolio_transactions",
+        "fakingview_list_portfolio_transactions",
         json!({"portfolio_id": id, "limit": 2}),
     );
     let out = &page["structuredContent"];
@@ -233,7 +233,7 @@ fn transactions_page_newest_first_and_filter_by_asset() {
     let btc = call(
         &url,
         "tok",
-        "degenview_list_portfolio_transactions",
+        "fakingview_list_portfolio_transactions",
         json!({"asset": "binance:btcusdt"}),
     );
     assert_eq!(btc["structuredContent"]["total"], 3);
@@ -245,8 +245,8 @@ fn unknown_portfolios_and_bad_arguments_are_refused() {
     seeded(&harness);
     let url = harness.url();
     for tool in [
-        "degenview_get_portfolio_holdings",
-        "degenview_list_portfolio_transactions",
+        "fakingview_get_portfolio_holdings",
+        "fakingview_list_portfolio_transactions",
     ] {
         let missing = call(&url, "tok", tool, json!({"portfolio_id": "424242"}));
         assert_eq!(error_code(&missing), "NOT_FOUND", "{tool}");
@@ -268,7 +268,7 @@ fn unknown_portfolios_and_bad_arguments_are_refused() {
             rejected(
                 &url,
                 "tok",
-                "degenview_list_portfolio_transactions",
+                "fakingview_list_portfolio_transactions",
                 extra.clone()
             ),
             "{extra}"
@@ -277,7 +277,7 @@ fn unknown_portfolios_and_bad_arguments_are_refused() {
     assert!(rejected(
         &url,
         "tok",
-        "degenview_get_portfolio_holdings",
+        "fakingview_get_portfolio_holdings",
         json!({"wait_seconds": 16})
     ));
 }

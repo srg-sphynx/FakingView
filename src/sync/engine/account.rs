@@ -7,7 +7,7 @@ use crate::store::sync::SyncState;
 use crate::sync::engine::SyncError;
 use std::path::{Path, PathBuf};
 
-pub const CONTAINER: &str = "iCloud.es.nico.degenview";
+pub const CONTAINER: &str = "iCloud.local.fakingview.desktop";
 
 /// What a database keeps of an iCloud account: a hash, never the identifier itself. The Swift
 /// bridge computes it (`Codec.hashUser`); this copy pins the format in a test.
@@ -148,7 +148,7 @@ pub fn after_cloud_delete(store: &Store) -> Result<(), SyncError> {
     })?)
 }
 
-/// Another Mac deleted DegenView's data in iCloud. Either upload this Mac's data again as a fresh
+/// Another Mac deleted FakingView's data in iCloud. Either upload this Mac's data again as a fresh
 /// start (`reupload`), or stop syncing. Nothing local is removed either way.
 pub fn resolve_remote_deletion(store: &Store, reupload: bool) -> Result<(), SyncError> {
     store.in_savepoint("resolve_remote_deletion", || {
@@ -169,13 +169,13 @@ pub fn resolve_remote_deletion(store: &Store, reupload: bool) -> Result<(), Sync
     })
 }
 
-/// A copy of the whole database, named by time, that opens as an ordinary DegenView database.
+/// A copy of the whole database, named by time, that opens as an ordinary FakingView database.
 pub fn stash(store: &Store, backups_dir: &Path, now_ms: i64) -> Result<PathBuf, SyncError> {
     std::fs::create_dir_all(backups_dir)?;
-    let mut path = backups_dir.join(format!("degenview-before-icloud-{now_ms}.sqlite"));
+    let mut path = backups_dir.join(format!("fakingview-before-icloud-{now_ms}.sqlite"));
     let mut n = 2;
     while path.exists() {
-        path = backups_dir.join(format!("degenview-before-icloud-{now_ms}-{n}.sqlite"));
+        path = backups_dir.join(format!("fakingview-before-icloud-{now_ms}-{n}.sqlite"));
         n += 1;
     }
     store.backup_to(&path)?;
@@ -219,7 +219,7 @@ mod tests {
 
     fn dir(tag: &str) -> PathBuf {
         std::env::temp_dir().join(format!(
-            "degenview-sync-account-{tag}-{}-{}",
+            "fakingview-sync-account-{tag}-{}-{}",
             std::process::id(),
             crate::store::sync::new_device_id()
         ))

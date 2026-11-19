@@ -13,11 +13,8 @@ pub fn is_flatpak() -> bool {
         )
 }
 
-/// What an update notice says in a Flatpak. Flatpak records nothing about the remote an app was
-/// installed from (`/.flatpak-info` has no such key), so the app cannot tell a copy installed from
-/// the hosted repo, which `flatpak update` replaces, from one installed from a downloaded bundle,
-/// which it cannot. The notice is true for both. The repo can trail GitHub by hours.
-pub const FLATPAK_UPDATE_NOTE: &str = "Run flatpak update if you installed from the DegenView repository, or download the new .flatpak from the release page.";
+/// This fork has no hosted Flatpak remote or release feed; local bundles must be rebuilt.
+pub const FLATPAK_UPDATE_NOTE: &str = "FakingView is a local build. Rebuild and reinstall its Flatpak bundle to update it; no hosted update repository is configured.";
 
 fn from_signals(flatpak_id: Option<&std::ffi::OsStr>, info_file: &Path) -> bool {
     flatpak_id.is_some_and(|id| !id.is_empty()) || info_file.exists()
@@ -31,7 +28,10 @@ mod tests {
     #[test]
     fn the_app_id_variable_means_flatpak() {
         let missing = Path::new("/definitely/not/here");
-        assert!(from_signals(Some(OsStr::new("es.nico.degenview")), missing));
+        assert!(from_signals(
+            Some(OsStr::new("local.fakingview.desktop")),
+            missing
+        ));
     }
 
     #[test]
@@ -42,9 +42,9 @@ mod tests {
     }
 
     #[test]
-    fn the_flatpak_note_names_both_ways_to_update() {
-        assert!(FLATPAK_UPDATE_NOTE.contains("flatpak update"));
-        assert!(FLATPAK_UPDATE_NOTE.contains("release page"));
+    fn the_flatpak_note_explains_local_updates_without_claiming_hosting() {
+        assert!(FLATPAK_UPDATE_NOTE.contains("Rebuild and reinstall"));
+        assert!(FLATPAK_UPDATE_NOTE.contains("no hosted update repository"));
     }
 
     #[test]

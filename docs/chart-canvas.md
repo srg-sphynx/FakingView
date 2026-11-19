@@ -36,7 +36,7 @@ Not stated by TradingView's documentation, so **inferred**, not claimed as Tradi
 - The scale text sizes (10, 11, 12, 13, 14, 16, 18 pt) and the margin limits (a margin is at most
   45 %, both together at most 80 %; right margin at most 200 bars).
 - A "Replay mode" watermark. TradingView's pages only describe symbol, description and interval
-  visibility; DegenView adds "Replay mode" (shown only while a replay runs, hidden otherwise).
+  visibility; FakingView adds "Replay mode" (shown only while a replay runs, hidden otherwise).
 - Which of the three line styles each setting offers.
 
 ## Settings
@@ -68,7 +68,7 @@ opacity. Every row writes straight into the chart, which repaints at once.
 - **OHLC values.** On/off for the box of values in the plot's top-left corner while the pointer is
   over the chart (open, high, low, close, and volume, `Mkt`, constructed-bar and script-candle values
   where they apply). On by default. Off hides the whole box; the crosshair lines, the price and time
-  tags and the ring on a line chart's bar stay. The switch is DegenView's own, not stated by the
+  tags and the ring on a line chart's bar stay. The switch is FakingView's own, not stated by the
   TradingView pages cited above. Snapshots never contain the box (it belongs to the crosshair).
 - **Watermark.** Hidden, Symbol (market and timeframe, with the source) or Replay mode. Centred in
   the plot, sized to the plot (at most 72 pt, never above 70 % of its width or 24 % of its height
@@ -151,7 +151,7 @@ market, not the look.
 - **Menu** (chart settings, beside the Reset button of Appearance and Canvas): Save current settings as template…, the apply scope
   (*Apply appearance and canvas* / *Apply colors and canvas only*), My templates, Presets,
   Manage Templates…, Apply current settings to all charts…, Reset chart appearance to defaults….
-- **Colors and canvas only** is DegenView's own addition. It keeps the target's chart type and
+- **Colors and canvas only** is FakingView's own addition. It keeps the target's chart type and
   what its bars are built from (brick/reversal/range sizes and sources, line count), checked
   against `Construction::of` for every type, so its data does not move.
 - **Applying** goes through `ChartCard::apply_template`; a different chart type goes through

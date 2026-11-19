@@ -297,7 +297,7 @@ prints the time from a Pause request to the stop and from a step to the next sto
 specifics, realtime, sessions, stress) and `pine_studio::debug_*` (through the window).
 `tools/pine-bench.sh <base> [head]` is the A/B benchmark; `cargo test --release --lib
 pine::tests::bench -- --ignored --nocapture` prints one workload per line, with
-`--features alloc-count` adding allocations and peak memory. Pictures: `DEGENVIEW_GALLERY_DIR=… cargo
+`--features alloc-count` adding allocations and peak memory. Pictures: `FAKINGVIEW_GALLERY_DIR=… cargo
 test --lib pine_studio::debug::gallery -- --ignored`.
 
 ## Not verified / limitations

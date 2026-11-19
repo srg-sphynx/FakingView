@@ -147,7 +147,7 @@ although Dracula was selected (and Settings, reading the real host, still showed
 theme again published from the real host and healed it. Tests hold both halves
 (`a_placeholder_host_never_undoes_the_real_hosts_choice`,
 `host::settings::tests::building_the_host_leaves_the_editors_theme_alone`). Any new code that builds
-a host outside `DegenViewApp::new` must use `default()`, never `new()`.
+a host outside `FakingViewApp::new` must use `default()`, never `new()`.
 
 The preview's sample (`pine_studio::theme_preview`) is editable. It is compiled with the real Pine
 compiler whenever its text changes (hashed, so a repaint or a theme change does not compile again), and the
@@ -251,11 +251,11 @@ the synced records is a release-candidate change under `AGENTS.md`.
 
 ## The file format
 
-`degenview-editor-theme`, version 1, JSON (`model/editor_theme/codec/mod.rs`):
+`fakingview-editor-theme`, version 1, JSON (`model/editor_theme/codec/mod.rs`):
 
 ```json
 {
-  "format": "degenview-editor-theme",
+  "format": "fakingview-editor-theme",
   "version": 1,
   "name": "My Dracula",
   "base": "builtin.dracula",
@@ -268,10 +268,10 @@ the synced records is a release-candidate change under `AGENTS.md`.
 An export is complete (every colour, resolved, so it looks the same whatever a later version does to
 the built-in it started from), human-readable, and holds nothing machine-specific: no paths, ids or
 times. `typography` holds only what the theme sets. Colours are `#RRGGBB` or `#RRGGBBAA` (no shorthand,
-no names). The file is `<name>.degenview-theme.json`.
+no names). The file is `<name>.fakingview-theme.json`.
 
 Import reads at most 256 KB, refuses anything that is not this format and a version this build reads
-(with "update DegenView"), a name it cannot use and a base it does not have; every colour and
+(with "update FakingView"), a name it cannot use and a base it does not have; every colour and
 typography value is checked on its own, and a bad one is skipped and reported (not guessed). Colours
 equal to the base's are dropped, so the imported theme overrides only what differs. **An import never
 replaces a theme**: it gets a new id and the first free name (`Name 2`), and it is worn once imported.
@@ -326,7 +326,7 @@ size in both appearances, keyboard navigation, the sheets, delete and reset conf
 export results); the real editor painting each surface and role colour, and repainting on a change
 without touching text, caret or span cache; the gutter and line height at 9 and 32 points.
 
-Pictures: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib -- settings::pine_studio::tests::gallery
+Pictures: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib -- settings::pine_studio::tests::gallery
 settings_theme_editor::tests::gallery --ignored` writes the page and every tab of the editor at three
 sizes in both appearances; they were looked at, and the layout was changed for what they showed (the
 tile miniatures, a preview that left no room for the colours, tabs that ran into the search at 320

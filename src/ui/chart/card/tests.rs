@@ -1,5 +1,5 @@
 use super::crosshair::flow_readout;
-use super::header::change_text;
+use super::header::{change_text, headline_text};
 use super::*;
 
 #[test]
@@ -284,9 +284,35 @@ fn the_header_change_reads_in_price_and_percent() {
         visible_price_move(&candles, 2, 0.0, 0),
         Some((-20.0, -20.0 / 110.0 * 100.0))
     );
-    assert_eq!(change_text(Some(67.125), 0.1), "+$67.125 (+0.10%)");
-    assert_eq!(change_text(Some(-20.0), -18.18), "-$20.00 (-18.18%)");
-    assert_eq!(change_text(None, 0.0), "+0.00%");
+    assert_eq!(
+        change_text(Some(67.125), 0.1, DataSource::Binance),
+        "+$67.125 (+0.10%)"
+    );
+    assert_eq!(
+        change_text(Some(-20.0), -18.18, DataSource::Binance),
+        "-$20.00 (-18.18%)"
+    );
+    assert_eq!(change_text(None, 0.0, DataSource::Binance), "+0.00%");
+}
+
+#[test]
+fn kite_header_prices_and_changes_use_inr_without_converting_native_values() {
+    assert_eq!(headline_text(1500.5, DataSource::Kite), "₹1,500.50");
+    assert_eq!(headline_text(-12.25, DataSource::Kite), "-₹12.25");
+    assert_eq!(headline_text(0.125, DataSource::Kite), "₹0.125");
+    assert_eq!(
+        change_text(Some(67.125), 0.1, DataSource::Kite),
+        "+₹67.125 (+0.10%)"
+    );
+    assert_eq!(
+        change_text(Some(-20.0), -18.18, DataSource::Kite),
+        "-₹20.00 (-18.18%)"
+    );
+    assert_eq!(change_text(None, 0.0, DataSource::Kite), "+0.00%");
+    for source in [DataSource::Binance, DataSource::Alpaca] {
+        assert_eq!(headline_text(1500.5, source), "$1,500.50");
+    }
+    assert_eq!(headline_text(0.675, DataSource::Polymarket), "67.5%");
 }
 
 fn hourly(closes: &[f64]) -> Vec<Kline> {

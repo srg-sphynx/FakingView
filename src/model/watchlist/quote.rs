@@ -26,7 +26,7 @@ impl ChangeBasis {
             | DataSource::Mexc
             | DataSource::CoinGecko
             | DataSource::DexScreener => Self::Rolling24h,
-            DataSource::Alpaca => Self::PreviousClose,
+            DataSource::Alpaca | DataSource::Kite => Self::PreviousClose,
             DataSource::Polymarket | DataSource::Kalshi | DataSource::CoinMarketCap => Self::Window,
         }
     }
@@ -158,7 +158,18 @@ impl WatchlistQuote {
             volume: quote.volume_24h,
             volume_kind: quote.volume_kind,
             timestamp_ms: quote.timestamp_ms.or(Some(received_at_ms)),
-            freshness: evaluate_freshness(source, received_at_ms, received_at_ms),
+            freshness: evaluate_freshness(
+                source,
+                if source == DataSource::Kite {
+                    quote
+                        .timestamp_ms
+                        .unwrap_or(received_at_ms)
+                        .min(received_at_ms)
+                } else {
+                    received_at_ms
+                },
+                received_at_ms,
+            ),
             note: None,
         }
     }
@@ -176,7 +187,8 @@ pub fn refresh_interval_secs(source: DataSource) -> u64 {
         | DataSource::Bybit
         | DataSource::Gate
         | DataSource::Mexc
-        | DataSource::Alpaca => 5,
+        | DataSource::Alpaca
+        | DataSource::Kite => 5,
         DataSource::DexScreener => 10,
         DataSource::CoinGecko | DataSource::Polymarket | DataSource::Kalshi => 30,
         DataSource::CoinMarketCap => 0,
@@ -193,7 +205,8 @@ pub fn maximum_age_secs(source: DataSource) -> i64 {
         | DataSource::Bybit
         | DataSource::Gate
         | DataSource::Mexc
-        | DataSource::Alpaca => 45,
+        | DataSource::Alpaca
+        | DataSource::Kite => 45,
         DataSource::DexScreener => 60,
         // Coinbase is refreshed from REST every 30 seconds when the socket has been quiet.
         DataSource::Coinbase => 90,
@@ -388,6 +401,26 @@ mod tests {
             previous_day_price: previous,
             ..SourceQuote::default()
         }
+    }
+
+    #[test]
+    fn a_retrieved_kite_close_keeps_its_exchange_age_and_previous_close_basis() {
+        let quote = SourceQuote {
+            timestamp_ms: Some(MONDAY_10AM_EST - 60_000),
+            ..source_quote(110.0, Some(100.0))
+        };
+        let stale = WatchlistQuote::from_source(DataSource::Kite, &quote, MONDAY_10AM_EST);
+        assert_eq!(stale.freshness, Freshness::Stale);
+        assert_eq!(stale.timestamp_ms, quote.timestamp_ms);
+        assert_eq!(stale.change_basis, Some(ChangeBasis::PreviousClose));
+        let current = SourceQuote {
+            timestamp_ms: Some(MONDAY_10AM_EST - 1_000),
+            ..quote
+        };
+        assert_eq!(
+            WatchlistQuote::from_source(DataSource::Kite, &current, MONDAY_10AM_EST).freshness,
+            Freshness::Live
+        );
     }
 
     #[test]

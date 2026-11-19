@@ -1,4 +1,4 @@
-//! "Is there a newer DegenView?" — asks GitHub for the recent releases of `degenview/degenview`,
+//! "Is there a newer FakingView?" — asks GitHub for the recent releases of `srg-sphynx/FakingView`,
 //! picks the newest one the chosen `Channel` accepts and compares its tag with the running version.
 //! Read-only: it never downloads or installs anything, it only reports where the release page is.
 
@@ -7,13 +7,13 @@ use serde::Deserialize;
 
 /// The recent releases, prereleases included (`/releases/latest` never returns one, and is "the
 /// most recently created stable release", not the highest version).
-const RELEASE_LIST_URL: &str = "https://api.github.com/repos/degenview/degenview/releases";
+const RELEASE_LIST_URL: &str = "https://api.github.com/repos/srg-sphynx/FakingView/releases";
 /// Releases per page of the list, and how many pages one check reads at most. The list is ordered
 /// by creation, so a run of release candidates can push the newest stable release past page one.
 const PAGE_SIZE: usize = 30;
 const MAX_PAGES: usize = 3;
 /// Where "view release" falls back to when the API reply carries no page URL.
-pub const RELEASES_URL: &str = "https://github.com/degenview/degenview/releases";
+pub const RELEASES_URL: &str = "https://github.com/srg-sphynx/FakingView/releases";
 
 /// Which releases the updater offers. A channel also takes everything more stable than itself, so
 /// a Release Candidate user moves on to `0.6.0` rather than staying on `0.6.0-rc.2`.
@@ -102,7 +102,7 @@ const MAX_ASSET_BYTES: u64 = 256 * 1024 * 1024;
 /// its own assets for a signed tag, with no workflow run and so no provenance attestation. A
 /// release made by hand is a manual download.
 const RELEASE_AUTHORS: &[&str] = &["github-actions[bot]"];
-const DOWNLOAD_PREFIX: &str = "https://github.com/degenview/degenview/releases/download/";
+const DOWNLOAD_PREFIX: &str = "https://github.com/srg-sphynx/FakingView/releases/download/";
 
 #[derive(Deserialize)]
 struct ReleaseDto {
@@ -141,14 +141,14 @@ fn platform_suffix() -> Option<&'static str> {
     } else if cfg!(all(target_os = "macos", target_arch = "x86_64")) {
         Some("-macos-x64.zip")
     } else if cfg!(all(windows, target_arch = "x86_64")) {
-        // The zip `release.yml` builds for Windows: `degenview.exe` at its root.
+        // The zip `release.yml` builds for Windows: `fakingview.exe` at its root.
         Some("-windows-x64.zip")
     } else if cfg!(all(windows, target_arch = "aarch64")) {
         // Native ARM64. An x64 build running emulated on Windows on ARM is still x86_64 here, so it
         // keeps taking the x64 zip.
         Some("-windows-arm64.zip")
     } else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
-        // The tarball `release.yml` builds for Linux: `./degenview` at its root. The Flatpak next to
+        // The tarball `release.yml` builds for Linux: `./fakingview` at its root. The Flatpak next to
         // it ends `.flatpak` and is never picked; a Flatpak install is refused by `install_target`.
         Some("-linux-x64.tar.gz")
     } else if cfg!(all(target_os = "linux", target_arch = "aarch64")) {
@@ -158,10 +158,10 @@ fn platform_suffix() -> Option<&'static str> {
     }
 }
 
-/// The platform's download for the release tagged `tag`: exactly `DegenView-<tag><suffix>`, as
+/// The platform's download for the release tagged `tag`: exactly `FakingView-<tag><suffix>`, as
 /// `release.yml` names it. A stale or misnamed file that merely ends in the suffix is not offered.
 fn select_asset(assets: Vec<AssetDto>, tag: &str, suffix: Option<&str>) -> Option<ReleaseAsset> {
-    let expected = format!("DegenView-{tag}{}", suffix?);
+    let expected = format!("FakingView-{tag}{}", suffix?);
     let asset = assets.into_iter().find(|asset| asset.name == expected)?;
     let sha256 = asset.digest?.strip_prefix("sha256:")?.to_ascii_lowercase();
     let valid = sha256.len() == 64 && sha256.bytes().all(|byte| byte.is_ascii_hexdigit());
@@ -182,7 +182,7 @@ pub fn github_headers() -> [(&'static str, &'static str); 3] {
         ("Accept", "application/vnd.github+json"),
         (
             "User-Agent",
-            concat!("DegenView/", env!("CARGO_PKG_VERSION")),
+            concat!("FakingView/", env!("CARGO_PKG_VERSION")),
         ),
         ("X-GitHub-Api-Version", "2022-11-28"),
     ]
@@ -190,6 +190,12 @@ pub fn github_headers() -> [(&'static str, &'static str); 3] {
 
 /// Blocking: up to `MAX_PAGES` GETs. Call it from a worker thread.
 pub fn check(current: &str, channel: Channel) -> UpdateOutcome {
+    // Local builds have no configured signing policy for automatic installation.
+    if env!("CARGO_PKG_NAME") == "fakingview" {
+        return UpdateOutcome::Failed(
+            "Automatic installation is disabled for this FakingView build. Download a release from github.com/srg-sphynx/FakingView/releases.".into(),
+        );
+    }
     check_pages(current, channel, |page| {
         let url = format!("{RELEASE_LIST_URL}?per_page={PAGE_SIZE}&page={page}");
         http::get_text(&url, &github_headers(), Retry::Transient)
@@ -441,6 +447,17 @@ fn cmp_prerelease(a: &str, b: &str) -> std::cmp::Ordering {
 mod tests {
     use super::*;
 
+    #[test]
+    fn local_builds_offer_manual_downloads_without_automatic_installation() {
+        for channel in Channel::ALL {
+            let UpdateOutcome::Failed(message) = check("0.0.0", channel) else {
+                panic!("a local build must not offer automatic installation");
+            };
+            assert!(message.contains("Automatic installation is disabled"));
+            assert!(message.contains("srg-sphynx/FakingView/releases"));
+        }
+    }
+
     /// A release as the release workflow publishes it: immutable, authored by the bot.
     fn reply(tag: &str) -> String {
         reply_by(tag, true, "github-actions[bot]")
@@ -459,13 +476,13 @@ mod tests {
         .iter()
         .map(|platform| {
             format!(
-                r#"{{"name":"DegenView-{tag}-{platform}","size":10,"digest":"{digest}","browser_download_url":"{DOWNLOAD_PREFIX}{tag}/DegenView-{tag}-{platform}"}}"#
+                r#"{{"name":"FakingView-{tag}-{platform}","size":10,"digest":"{digest}","browser_download_url":"{DOWNLOAD_PREFIX}{tag}/FakingView-{tag}-{platform}"}}"#
             )
         })
         .collect();
         let prerelease = tag.contains('-');
         format!(
-            r#"{{"tag_name":"{tag}","prerelease":{prerelease},"immutable":{immutable},"author":{{"login":"{author}"}},"html_url":"https://github.com/degenview/degenview/releases/tag/{tag}","assets":[{}]}}"#,
+            r#"{{"tag_name":"{tag}","prerelease":{prerelease},"immutable":{immutable},"author":{{"login":"{author}"}},"html_url":"https://github.com/srg-sphynx/FakingView/releases/tag/{tag}","assets":[{}]}}"#,
             assets.join(",")
         )
     }
@@ -581,7 +598,7 @@ mod tests {
         assert_eq!(release.version, "0.2.0");
         assert_eq!(
             release.url,
-            "https://github.com/degenview/degenview/releases/tag/v0.2.0"
+            "https://github.com/srg-sphynx/FakingView/releases/tag/v0.2.0"
         );
         assert_eq!(release.manual_only, None);
         // An installable asset exists only on platforms the updater can replace in place.
@@ -755,22 +772,33 @@ mod tests {
         assert_eq!(ended, UpdateOutcome::UpToDate);
     }
 
-    /// `release.yml` publishes exactly the names the updater looks for.
+    /// Manual releases carry the app, its corresponding source and verifiable checksums.
     #[test]
-    fn the_workflow_publishes_every_asset_the_updater_picks() {
+    fn the_workflow_and_publisher_share_the_manual_arm64_release_contract() {
         let workflow = include_str!("../../../.github/workflows/release.yml");
-        for suffix in [
-            "macos-arm64.zip",
-            "macos-x64.zip",
-            "windows-x64.zip",
-            "windows-arm64.zip",
-            "linux-x64.tar.gz",
-            "linux-arm64.tar.gz",
+        for required in [
+            "runs-on: macos-15",
+            r#"test "$(uname -m)" = arm64"#,
+            "FakingView-${RELEASE_TAG}-macos-arm64.zip",
+            "FakingView-${RELEASE_TAG}-source.tar.gz",
+            "SHA256SUMS.txt",
+            "shasum -a 256 -c SHA256SUMS.txt",
+            "cp THIRD_PARTY_NOTICES.md",
         ] {
-            assert!(
-                workflow.contains(suffix),
-                "release.yml does not list {suffix}"
-            );
+            assert!(workflow.contains(required), "release.yml omits {required}");
+        }
+        let publisher = include_str!("../../../tools/release.sh");
+        for required in [
+            "FakingView-$tag-macos-arm64.zip",
+            "FakingView-$tag-source.tar.gz",
+            "SHA256SUMS.txt",
+            "shasum -a 256 -c SHA256SUMS.txt",
+        ] {
+            assert!(publisher.contains(required), "release.sh omits {required}");
+        }
+        // Publishing a compatible archive does not authorize this unsigned build to install it.
+        for channel in Channel::ALL {
+            assert!(matches!(check("0.0.0", channel), UpdateOutcome::Failed(_)));
         }
     }
 
@@ -780,15 +808,15 @@ mod tests {
         let suffix = Some("-macos-arm64.zip");
         for name in [
             "old-macos-arm64.zip",
-            "DegenView-v0.9.9-macos-arm64.zip",
-            "DegenView-v1.0.0-extra-macos-arm64.zip",
-            "DegenView-1.0.0-macos-arm64.zip",
+            "FakingView-v0.9.9-macos-arm64.zip",
+            "FakingView-v1.0.0-extra-macos-arm64.zip",
+            "FakingView-1.0.0-macos-arm64.zip",
         ] {
             let assets = vec![asset(name, "v1.0.0/a", 5, Some(&digest))];
             assert!(select_asset(assets, "v1.0.0", suffix).is_none(), "{name}");
         }
         let exact = vec![asset(
-            "DegenView-v1.0.0-macos-arm64.zip",
+            "FakingView-v1.0.0-macos-arm64.zip",
             "v1.0.0/a",
             5,
             Some(&digest),
@@ -810,13 +838,13 @@ mod tests {
         let digest = format!("sha256:{}", "AB".repeat(32));
         let assets = vec![
             asset(
-                "DegenView-v1.0.0-macos-x64.zip",
+                "FakingView-v1.0.0-macos-x64.zip",
                 "v1.0.0/x64",
                 10,
                 Some(&digest),
             ),
             asset(
-                "DegenView-v1.0.0-macos-arm64.zip",
+                "FakingView-v1.0.0-macos-arm64.zip",
                 "v1.0.0/arm",
                 20,
                 Some(&digest),
@@ -835,18 +863,22 @@ mod tests {
         let digest = format!("sha256:{}", "ab".repeat(32));
         for order in [[0, 1], [1, 0]] {
             let files = [
-                ("DegenView-v1.0.0-windows-x64-setup.exe", "v1.0.0/setup", 30),
-                ("DegenView-v1.0.0-windows-x64.zip", "v1.0.0/zip", 20),
+                (
+                    "FakingView-v1.0.0-windows-x64-setup.exe",
+                    "v1.0.0/setup",
+                    30,
+                ),
+                ("FakingView-v1.0.0-windows-x64.zip", "v1.0.0/zip", 20),
             ];
             let assets = order
                 .map(|i| asset(files[i].0, files[i].1, files[i].2, Some(&digest)))
                 .into_iter()
                 .collect();
             let picked = select_asset(assets, "v1.0.0", Some("-windows-x64.zip")).unwrap();
-            assert_eq!(picked.name, "DegenView-v1.0.0-windows-x64.zip");
+            assert_eq!(picked.name, "FakingView-v1.0.0-windows-x64.zip");
         }
         let only_setup = vec![asset(
-            "DegenView-v1.0.0-windows-x64-setup.exe",
+            "FakingView-v1.0.0-windows-x64-setup.exe",
             "v1.0.0/setup",
             30,
             Some(&digest),
@@ -860,10 +892,10 @@ mod tests {
     fn each_windows_cpu_takes_only_its_own_zip() {
         let digest = format!("sha256:{}", "ab".repeat(32));
         let files = [
-            "DegenView-v1.0.0-windows-x64-setup.exe",
-            "DegenView-v1.0.0-windows-arm64-setup.exe",
-            "DegenView-v1.0.0-windows-x64.zip",
-            "DegenView-v1.0.0-windows-arm64.zip",
+            "FakingView-v1.0.0-windows-x64-setup.exe",
+            "FakingView-v1.0.0-windows-arm64-setup.exe",
+            "FakingView-v1.0.0-windows-x64.zip",
+            "FakingView-v1.0.0-windows-arm64.zip",
         ];
         for (suffix, expected) in [
             ("-windows-x64.zip", files[2]),
@@ -892,8 +924,8 @@ mod tests {
             let cpu = suffix.trim_end_matches(".tar.gz");
             for order in [[0, 1], [1, 0]] {
                 let files = [
-                    (format!("DegenView-v1.0.0{cpu}.flatpak"), "v1.0.0/flatpak"),
-                    (format!("DegenView-v1.0.0{cpu}.tar.gz"), "v1.0.0/tarball"),
+                    (format!("FakingView-v1.0.0{cpu}.flatpak"), "v1.0.0/flatpak"),
+                    (format!("FakingView-v1.0.0{cpu}.tar.gz"), "v1.0.0/tarball"),
                 ];
                 let assets = order
                     .map(|i| asset(&files[i].0, files[i].1, 40, Some(&digest)))
@@ -903,7 +935,7 @@ mod tests {
                 assert!(picked.name.ends_with(".tar.gz"), "{}", picked.name);
             }
             let only_flatpak = vec![asset(
-                &format!("DegenView-v1.0.0{cpu}.flatpak"),
+                &format!("FakingView-v1.0.0{cpu}.flatpak"),
                 "v1.0.0/flatpak",
                 40,
                 Some(&digest),
@@ -919,18 +951,18 @@ mod tests {
         let digest = format!("sha256:{}", "ab".repeat(32));
         for order in [[0, 1], [1, 0]] {
             let files = [
-                ("DegenView-v1.0.0-macos-arm64.dmg", "v1.0.0/dmg", 30),
-                ("DegenView-v1.0.0-macos-arm64.zip", "v1.0.0/zip", 20),
+                ("FakingView-v1.0.0-macos-arm64.dmg", "v1.0.0/dmg", 30),
+                ("FakingView-v1.0.0-macos-arm64.zip", "v1.0.0/zip", 20),
             ];
             let assets = order
                 .map(|i| asset(files[i].0, files[i].1, files[i].2, Some(&digest)))
                 .into_iter()
                 .collect();
             let picked = select_asset(assets, "v1.0.0", Some("-macos-arm64.zip")).unwrap();
-            assert_eq!(picked.name, "DegenView-v1.0.0-macos-arm64.zip");
+            assert_eq!(picked.name, "FakingView-v1.0.0-macos-arm64.zip");
         }
         let only_image = vec![asset(
-            "DegenView-v1.0.0-macos-arm64.dmg",
+            "FakingView-v1.0.0-macos-arm64.dmg",
             "v1.0.0/dmg",
             30,
             Some(&digest),
@@ -942,7 +974,7 @@ mod tests {
     fn assets_without_a_trustworthy_digest_or_url_are_not_installable() {
         let digest = format!("sha256:{}", "ab".repeat(32));
         let pick = |asset| select_asset(vec![asset], "v1.0.0", Some("-macos-arm64.zip"));
-        let name = "DegenView-v1.0.0-macos-arm64.zip";
+        let name = "FakingView-v1.0.0-macos-arm64.zip";
         assert!(pick(asset(name, "v1.0.0/a", 5, None)).is_none());
         assert!(pick(asset(name, "v1.0.0/a", 5, Some("sha256:abc"))).is_none());
         assert!(pick(asset(name, "v1.0.0/a", 5, Some("md5:00"))).is_none());

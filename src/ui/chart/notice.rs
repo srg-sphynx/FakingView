@@ -194,7 +194,7 @@ mod tests {
     }
 
     /// The notices in both themes: an upload in progress (fast and slow), then a result and a
-    /// warning for comparison. `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib
+    /// warning for comparison. `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib
     /// gallery_of_the_notices -- --ignored` writes them.
     #[test]
     #[ignore = "writes images for a person to look at"]

@@ -166,7 +166,7 @@ impl Tabs {
         self.tick();
     }
 
-    /// `DegenViewApp::tick_tab_links` for two tabs.
+    /// `FakingViewApp::tick_tab_links` for two tabs.
     fn tick(&mut self) {
         let members: Vec<LinkMember> = (0..self.tabs.len())
             .map(|index| LinkMember {

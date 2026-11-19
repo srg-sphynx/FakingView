@@ -697,7 +697,12 @@ impl Engine {
             else {
                 continue;
             };
-            if evaluate_freshness(source, *confirmed, now) == Freshness::Stale {
+            let confirmed = if source == DataSource::Kite {
+                quote.timestamp_ms.unwrap_or(*confirmed).min(*confirmed)
+            } else {
+                *confirmed
+            };
+            if evaluate_freshness(source, confirmed, now) == Freshness::Stale {
                 updates.insert(key.clone(), quote.with_freshness(Freshness::Stale));
             }
         }
@@ -759,7 +764,7 @@ impl Engine {
     }
 }
 
-const ALL_SOURCES: [DataSource; 13] = [
+const ALL_SOURCES: [DataSource; 14] = [
     DataSource::Binance,
     DataSource::Coinbase,
     DataSource::Okx,
@@ -770,6 +775,7 @@ const ALL_SOURCES: [DataSource; 13] = [
     DataSource::CoinGecko,
     DataSource::DexScreener,
     DataSource::Alpaca,
+    DataSource::Kite,
     DataSource::Polymarket,
     DataSource::Kalshi,
     DataSource::CoinMarketCap,
@@ -1603,6 +1609,47 @@ mod tests {
         // Becoming visible again ages quotes that went unpolled meanwhile.
         lock(&engine).update(1, vec![btc.clone()], true, T0 + 100_000);
         assert_eq!(book.get(&btc).unwrap().freshness, Freshness::Stale);
+    }
+
+    #[test]
+    fn kite_quotes_age_from_exchange_time_after_a_socket_goes_quiet() {
+        let (engine, book, _) = setup();
+        let infy = id(DataSource::Kite, "NSE:INFY");
+        lock(&engine).update(1, vec![infy.clone()], true, T0);
+        let mut quote = tick("NSE:INFY", 1500.0, Some(1490.0));
+        quote.source = DataSource::Kite;
+        quote.quote.timestamp_ms = Some(T0 - 44_000);
+        lock(&engine).receive_ticks(vec![quote], T0);
+        assert_eq!(book.get(&infy).unwrap().freshness, Freshness::Live);
+        lock(&engine).age_quotes(T0 + 2_000);
+        assert_eq!(book.get(&infy).unwrap().freshness, Freshness::Stale);
+        assert_eq!(book.get(&infy).unwrap().last, Some(1500.0));
+    }
+
+    #[test]
+    fn kite_quotes_without_exchange_time_age_on_receipt_and_stay_stale_on_return() {
+        let (engine, book, _) = setup();
+        let infy = id(DataSource::Kite, "NSE:INFY");
+        lock(&engine).update(1, vec![infy.clone()], true, T0);
+        let mut quote = tick("NSE:INFY", 1500.0, None);
+        quote.source = DataSource::Kite;
+        lock(&engine).receive_ticks(vec![quote], T0);
+        assert_eq!(book.get(&infy).unwrap().freshness, Freshness::Live);
+        lock(&engine).update(1, vec![infy.clone()], false, T0 + 1_000);
+        lock(&engine).update(1, vec![infy.clone()], true, T0 + 46_000);
+        assert_eq!(book.get(&infy).unwrap().freshness, Freshness::Stale);
+    }
+
+    #[test]
+    fn other_sources_keep_their_receipt_based_age() {
+        let (engine, book, _) = setup();
+        let btc = id(DataSource::Coinbase, "BTC-USD");
+        lock(&engine).update(1, vec![btc.clone()], true, T0);
+        let mut quote = tick("BTC-USD", 100.0, None);
+        quote.quote.timestamp_ms = Some(T0 - 120_000);
+        lock(&engine).receive_ticks(vec![quote], T0);
+        lock(&engine).age_quotes(T0 + 2_000);
+        assert_eq!(book.get(&btc).unwrap().freshness, Freshness::Live);
     }
 
     #[test]

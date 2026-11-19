@@ -22,7 +22,7 @@ pub fn team_id(bundle: &Path) -> Result<String, String> {
         .arg(bundle))
     .map_err(|error| format!("Could not read this app's signature: {error}"))?;
     parse_team_id(&output.text).ok_or_else(|| {
-        "This copy of DegenView is not signed with a Developer ID, so it cannot update itself."
+        "This copy of FakingView is not signed with a Developer ID, so it cannot update itself."
             .to_owned()
     })
 }
@@ -128,7 +128,7 @@ mod tests {
 
     #[test]
     fn the_team_id_is_read_from_codesign_output() {
-        let output = "Identifier=es.nico.degenview\nFormat=app bundle\nTeamIdentifier=AB12CD34EF\nSealed Resources version=2\n";
+        let output = "Identifier=local.fakingview.desktop\nFormat=app bundle\nTeamIdentifier=AB12CD34EF\nSealed Resources version=2\n";
         assert_eq!(parse_team_id(output).as_deref(), Some("AB12CD34EF"));
     }
 
@@ -166,7 +166,7 @@ mod tests {
 
         fn scratch(name: &str) -> std::path::PathBuf {
             let dir = std::env::temp_dir().join(format!(
-                "degenview-code-signature-{name}-{}",
+                "fakingview-code-signature-{name}-{}",
                 std::process::id()
             ));
             let _ = std::fs::remove_dir_all(&dir);

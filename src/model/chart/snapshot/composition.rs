@@ -1,5 +1,5 @@
 //! The Studio's image as a layout: how large it is, where the chart sits in it and where the
-//! title block and the DegenView mark go. Everything is in points, so the preview and the export
+//! title block and the FakingView mark go. Everything is in points, so the preview and the export
 //! lay out identically and only the scale they are drawn at differs; pixels appear in
 //! [`dimensions`], through the same limits every snapshot has.
 //!
@@ -20,7 +20,7 @@ pub const MIN_PADDING: f64 = 24.0;
 const HEADER_SHARE: f32 = 0.15;
 /// The title block's least and most height, in points.
 pub const HEADER_HEIGHT: (f32, f32) = (44.0, 96.0);
-/// The DegenView mark's height as a share of the chart's, within [`BRANDING_HEIGHT`].
+/// The FakingView mark's height as a share of the chart's, within [`BRANDING_HEIGHT`].
 const BRANDING_SHARE: f32 = 0.05;
 /// The mark's least and most height, in points.
 pub const BRANDING_HEIGHT: (f32, f32) = (18.0, 28.0);
@@ -44,7 +44,7 @@ pub struct Composition {
     /// A Styled image's title block: the strip across the top of the chart, its content at the
     /// left.
     pub header: Option<Rect>,
-    /// A Styled image's DegenView mark, at the right end of the title strip.
+    /// A Styled image's FakingView mark, at the right end of the title strip.
     pub branding: Option<Rect>,
 }
 

@@ -8,7 +8,7 @@ use std::path::PathBuf;
 /// What a theme file is called: the theme's name, then what it is, then `.json`, so a folder of
 /// them is recognisable and any editor opens them.
 pub fn file_name(stem: &str) -> String {
-    format!("{stem}.degenview-theme.json")
+    format!("{stem}.fakingview-theme.json")
 }
 
 /// Asks for a theme file and reads it, up to `limit` bytes. `None` when the person cancels.
@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn a_theme_file_says_what_it_is() {
-        assert_eq!(file_name("My Dracula"), "My Dracula.degenview-theme.json");
+        assert_eq!(file_name("My Dracula"), "My Dracula.fakingview-theme.json");
         assert!(file_name("x").ends_with(".json"));
     }
 }

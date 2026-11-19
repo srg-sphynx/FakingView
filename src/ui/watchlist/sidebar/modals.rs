@@ -236,7 +236,7 @@ fn import_window(
                         });
                 }
             } else {
-                ui.label(RichText::new("One symbol per line as SOURCE:SYMBOL, for example BINANCE:BTCUSDT or COINBASE:ETH-USD. Lines starting with ### become sections. A single comma-separated line from TradingView is read too; markets DegenView has no provider for are skipped.").small().color(ui.visuals().weak_text_color()));
+                ui.label(RichText::new("One symbol per line as SOURCE:SYMBOL, for example BINANCE:BTCUSDT or COINBASE:ETH-USD. Lines starting with ### become sections. A single comma-separated line from TradingView is read too; markets FakingView has no provider for are skipped.").small().color(ui.visuals().weak_text_color()));
                 ui.add_space(10.0);
                 ui.add_sized(
                     [ui.available_width(), 155.0],

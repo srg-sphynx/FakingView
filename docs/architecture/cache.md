@@ -1,8 +1,8 @@
 # Cache architecture
 
 Regenerable data lives in `store::cache_dir`, never the user-data folder: macOS
-`~/Library/Caches/es.nico.degenview`, Windows `%LOCALAPPDATA%\es.nico.degenview\Cache`, and Linux
-`$XDG_CACHE_HOME` or `~/.cache`. `DEGENVIEW_CACHE_DIR` overrides it. Missing, unreadable, or invalid
+`~/Library/Caches/local.fakingview.desktop`, Windows `%LOCALAPPDATA%\local.fakingview.desktop\Cache`, and Linux
+`$XDG_CACHE_HOME` or `~/.cache`. `FAKINGVIEW_CACHE_DIR` overrides it. Missing, unreadable, or invalid
 files are misses.
 
 | Path | Data | Owner |

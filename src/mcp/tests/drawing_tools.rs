@@ -29,7 +29,7 @@ fn add(url: &str, drawings: Value) -> Value {
     call(
         url,
         "tok",
-        "degenview_add_drawings",
+        "fakingview_add_drawings",
         with(chart(), json!({"drawings": drawings})),
     )
 }
@@ -46,7 +46,7 @@ fn rejected(url: &str, name: &str, arguments: Value) -> bool {
 }
 
 fn listed(url: &str) -> Vec<Value> {
-    let result = call(url, "tok", "degenview_list_drawings", chart());
+    let result = call(url, "tok", "fakingview_list_drawings", chart());
     result["structuredContent"]["drawings"]
         .as_array()
         .unwrap()
@@ -137,7 +137,7 @@ fn a_level_a_ray_and_a_label_can_be_moved_and_restyled() {
         call(
             &url,
             "tok",
-            "degenview_update_drawing",
+            "fakingview_update_drawing",
             with(with(chart(), json!({"drawing_id": id})), extra),
         )
     };
@@ -208,7 +208,7 @@ fn a_tool_gets_only_the_points_and_styles_it_takes() {
         json!({"tool": "fib_extension", "a": a, "b": b}),
     ] {
         assert!(
-            rejected(&url, "degenview_add_drawings", one(drawing.clone())),
+            rejected(&url, "fakingview_add_drawings", one(drawing.clone())),
             "{drawing}"
         );
     }
@@ -252,7 +252,7 @@ fn drawings_of_other_tools_are_still_listed_read_only() {
     let edit = call(
         &url,
         "tok",
-        "degenview_update_drawing",
+        "fakingview_update_drawing",
         with(chart(), json!({"drawing_id": "7", "color": "#FF0000"})),
     );
     assert_eq!(error_code(&edit), "UNSUPPORTED");
@@ -260,7 +260,7 @@ fn drawings_of_other_tools_are_still_listed_read_only() {
     let deleted = call(
         &url,
         "tok",
-        "degenview_delete_drawings",
+        "fakingview_delete_drawings",
         with(chart(), json!({"drawing_ids": ["7"]})),
     );
     assert_eq!(deleted["isError"], json!(false), "{deleted}");

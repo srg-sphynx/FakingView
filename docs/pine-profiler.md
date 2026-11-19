@@ -249,10 +249,10 @@ The run's own slowdown is in the table above; nothing is subtracted from any fig
   thread, two windows. The editor's column moves the text once and washes the hovered block.
 * `cargo test --lib pine::tests::bench -- --ignored` prints one workload per line, including the
   `profiled_*` twins.
-* Pictures: `DEGENVIEW_GALLERY_DIR=… cargo test --lib pine_studio::profiler::gallery -- --ignored`
+* Pictures: `FAKINGVIEW_GALLERY_DIR=… cargo test --lib pine_studio::profiler::gallery -- --ignored`
   (off, ready, hovering, stale; wide and narrow; dark and light).
 * `cargo test --lib pine_studio::drawer::tabs_tests` draws a finished profile, current and stale (same text
-  and other text), at the five drawer sizes and asserts it fits; with `DEGENVIEW_GALLERY_DIR` set it
+  and other text), at the five drawer sizes and asserts it fits; with `FAKINGVIEW_GALLERY_DIR` set it
   writes the pictures.
 
 ## Not verified / limitations

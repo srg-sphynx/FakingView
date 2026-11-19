@@ -151,7 +151,7 @@ impl CatalogEntry {
             aliases: aliases.iter().map(|alias| (*alias).to_owned()).collect(),
             overlay: kind.is_overlay(),
             origin: Origin::Native,
-            author: "DegenView",
+            author: "FakingView",
             license: "GPL-3.0-only",
             script: None,
         }

@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // ADX with the +DI and -DI lines (Directional Movement Index). ADX says how strong a trend is,
 // not which way: above about 25 there is a trend, and +DI over -DI means it is up.
 indicator("ADX / DMI", overlay = false)

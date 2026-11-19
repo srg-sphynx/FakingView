@@ -18,7 +18,7 @@ pub(in crate::mcp) mod tls_protect;
 
 use crate::mcp::bridge::BridgeClient;
 use crate::mcp::state::McpShared;
-use crate::mcp::tools::DegenViewMcp;
+use crate::mcp::tools::FakingViewMcp;
 use crate::mcp::transport::auth::require_bearer;
 use crate::mcp::transport::cancel::honour_cancellations;
 use crate::model::mcp::Peer;
@@ -72,7 +72,7 @@ pub fn router(
         .with_cancellation_token(cancel.child_token());
     let tools_shared = shared.clone();
     let service = StreamableHttpService::new(
-        move || Ok(DegenViewMcp::new(bridge.clone(), tools_shared.clone())),
+        move || Ok(FakingViewMcp::new(bridge.clone(), tools_shared.clone())),
         Arc::new(NeverSessionManager::default()),
         config,
     );

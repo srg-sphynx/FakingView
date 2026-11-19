@@ -7,7 +7,7 @@ use crate::mcp::chart::data::iso;
 use crate::mcp::chart::drawings::{TimeArg, parse_time};
 use crate::mcp::confirm::{Confirm, Gate};
 use crate::mcp::tools::{
-    Caller, DegenViewMcp, failure, invalid, parse_chart_id, parse_workspace_id, unexpected,
+    Caller, FakingViewMcp, failure, invalid, parse_chart_id, parse_workspace_id, unexpected,
 };
 use crate::model::mcp::Permission;
 use crate::model::{ReplayCommand, ReplayStart};
@@ -48,8 +48,8 @@ impl Confirm for ReplayRequest {
     }
 }
 
-pub const GET_REPLAY: &str = "degenview_get_replay";
-pub const CONTROL_REPLAY: &str = "degenview_control_replay";
+pub const GET_REPLAY: &str = "fakingview_get_replay";
+pub const CONTROL_REPLAY: &str = "fakingview_control_replay";
 
 /// Bars one step command may move.
 const MAX_STEPS: u32 = 500;
@@ -181,7 +181,7 @@ impl ReplaySpeedArg {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct WorkspaceReplayParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
 }
@@ -189,11 +189,11 @@ pub struct WorkspaceReplayParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ControlReplayParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
     pub action: ReplayAction,
-    /// `start` only: the chart to replay, from `degenview_list_charts`. Default: the focused one.
+    /// `start` only: the chart to replay, from `fakingview_list_charts`. Default: the focused one.
     /// It becomes the focused chart.
     #[schemars(length(max = 20))]
     pub chart_id: Option<String>,
@@ -262,10 +262,10 @@ fn command_of(params: &ControlReplayParams) -> Result<ReplayCommand, CallToolRes
 }
 
 #[tool_router(router = replay_router, vis = "pub(super)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_get_replay",
-        description = "Read a workspace's replay: whether charts are cut at a past position, where, on which market, how many bars there are and how many remain, and the playback speed. Replay is workspace-wide and runs on one chart's bars; while it runs, degenview_get_candles and degenview_get_indicator_values return only bars up to the position, as the charts show them.",
+        name = "fakingview_get_replay",
+        description = "Read a workspace's replay: whether charts are cut at a past position, where, on which market, how many bars there are and how many remain, and the playback speed. Replay is workspace-wide and runs on one chart's bars; while it runs, fakingview_get_candles and fakingview_get_indicator_values return only bars up to the position, as the charts show them.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -296,8 +296,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_control_replay",
-        description = "Drive a workspace's replay, the one behind the chart's replay bar: `start` (paused, at `time` or the first bar, on `chart_id` or the focused chart), `step_forward` / `step_back` by `steps` bars, `seek` to a `time`, `restart` to the start bar, `set_speed`, `play` / `pause` (real-time playback; stepping is the deterministic way to walk bars), and `stop` to go back to live. Returns the replay state. Stepping through a chart bar by bar and reading degenview_get_candles each time is how to test a read of the market without seeing the future. Replay changes what every chart in the workspace shows. Paper-trading orders still fill at live prices during replay.",
+        name = "fakingview_control_replay",
+        description = "Drive a workspace's replay, the one behind the chart's replay bar: `start` (paused, at `time` or the first bar, on `chart_id` or the focused chart), `step_forward` / `step_back` by `steps` bars, `seek` to a `time`, `restart` to the start bar, `set_speed`, `play` / `pause` (real-time playback; stepping is the deterministic way to walk bars), and `stop` to go back to live. Returns the replay state. Stepping through a chart bar by bar and reading fakingview_get_candles each time is how to test a read of the market without seeing the future. Replay changes what every chart in the workspace shows. Paper-trading orders still fill at live prices during replay.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,

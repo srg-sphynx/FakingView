@@ -1,4 +1,4 @@
-//! Whether this copy of DegenView is signed to use iCloud. Creating a CloudKit container without
+//! Whether this copy of FakingView is signed to use iCloud. Creating a CloudKit container without
 //! the entitlement raises an Objective-C exception that Swift cannot catch, so the answer comes
 //! from the signature first and CloudKit is never touched when it is "no".
 
@@ -25,8 +25,8 @@ pub fn icloud_environment(
     release_build: bool,
 ) -> Result<String, String> {
     let not_signed = || {
-        "This copy of DegenView is not signed for iCloud. Install a release downloaded from the \
-         DegenView website."
+        "This local FakingView build is not signed for iCloud. Build and sign it with your own \
+         CloudKit entitlements to enable sync."
             .to_string()
     };
     let has = |key: &str, wanted: &str| match read(key) {
@@ -197,7 +197,7 @@ mod platform {
     #[cfg(test)]
     #[test]
     fn an_entitlement_this_process_lacks_reads_as_none() {
-        assert_eq!(read("com.degenview.test.no-such-entitlement"), None);
+        assert_eq!(read("com.fakingview.test.no-such-entitlement"), None);
     }
 }
 

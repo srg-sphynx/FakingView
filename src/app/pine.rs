@@ -1,4 +1,4 @@
-use super::DegenViewApp;
+use super::FakingViewApp;
 use super::now_ms;
 use super::tabs::TabContent;
 use super::tabs::TabSlot;
@@ -6,7 +6,7 @@ use crate::lock::lock;
 use crate::pine_studio::PineStudio;
 use eframe::egui;
 
-impl DegenViewApp {
+impl FakingViewApp {
     /// The focused tab's Pine Studio, if that is what has the keyboard, for the Edit menu.
     pub(super) fn with_focused_pine_studio<R>(
         &self,

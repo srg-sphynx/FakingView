@@ -7,7 +7,7 @@ use library::prefs::{ChartPosition, DrawerTab};
 use std::sync::{Arc, Mutex};
 
 fn manager(tag: &str) -> (PineStudio, PathBuf) {
-    let root = std::env::temp_dir().join(format!("degenview-sm-{tag}-{}", std::process::id()));
+    let root = std::env::temp_dir().join(format!("fakingview-sm-{tag}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);
     let shared: SharedStore = Arc::new(Mutex::new(Store::open_in_memory().unwrap()));
     let store = ScriptStore::new(root.join("Scripts"), root.join("ScriptMetadata"));
@@ -41,7 +41,7 @@ fn picker_frames(
     last.expect("a frame")
 }
 
-/// With `DEGENVIEW_GALLERY_DIR` set, the script picker is written as pictures in both themes: the
+/// With `FAKINGVIEW_GALLERY_DIR` set, the script picker is written as pictures in both themes: the
 /// list with the open script lit, a row under the pointer, every group at once, a search that
 /// finds nothing, and the short form of an empty library.
 #[test]
@@ -512,7 +512,7 @@ fn configure_themes_asks_the_app_for_the_editor_theme_page_of_settings() {
     let _ = std::fs::remove_dir_all(root);
 }
 
-/// With `DEGENVIEW_GALLERY_DIR` set, the whole window is written as pictures in both themes at the
+/// With `FAKINGVIEW_GALLERY_DIR` set, the whole window is written as pictures in both themes at the
 /// default and the narrowest size, with the preview chart at each place, with the assistant and
 /// debugger panels open under the code, and with the position menu open.
 #[test]
@@ -799,7 +799,7 @@ fn escape_that_closes_a_menu_or_the_picker_leaves_the_find_bar_open() {
     assert!(window.find_open(), "and the find bar stayed");
 }
 
-/// With `DEGENVIEW_GALLERY_DIR` set, the whole window is written as pictures in both themes at the
+/// With `FAKINGVIEW_GALLERY_DIR` set, the whole window is written as pictures in both themes at the
 /// default and the narrowest size with each of the strip's menus open, the Edit menu with a
 /// selection and with the caret in a change, a submenu of View and one of Edit open, and the Theme
 /// menu with a saved theme of the person's own.

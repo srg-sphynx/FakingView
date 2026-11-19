@@ -1,5 +1,5 @@
 //! The first-time merge: what happens the first time a database syncs, whether it is the first
-//! Mac to use iCloud for DegenView or the second joining data that is already there.
+//! Mac to use iCloud for FakingView or the second joining data that is already there.
 //!
 //! While this has not run, the core reads iCloud's data but applies and uploads nothing. The
 //! user sees what was found and chooses how to combine it; only then are the fetched records

@@ -124,7 +124,7 @@ fn paper_account(
         .find(|account| account.id == account_id)
         .ok_or_else(|| {
             McpError::NotFound(
-                "No such paper account: use an account_id from degenview_list_paper_accounts"
+                "No such paper account: use an account_id from fakingview_list_paper_accounts"
                     .into(),
             )
         })
@@ -293,7 +293,7 @@ fn tradable_account(host: &PaperHost, account_id: u64) -> Result<(), McpError> {
     paper_account(host, account_id)?;
     if let Some(elsewhere) = host.owned_elsewhere(account_id) {
         return Err(McpError::Conflict(format!(
-            "{} Change it in DegenView to take it over; it is not changed over MCP.",
+            "{} Change it in FakingView to take it over; it is not changed over MCP.",
             owner_text(elsewhere)
         )));
     }

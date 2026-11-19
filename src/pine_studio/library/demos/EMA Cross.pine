@@ -1,5 +1,5 @@
 //@version=6
-// Example script bundled with DegenView. Edit it freely.
+// Example script bundled with FakingView. Edit it freely.
 // Two exponential moving averages. A triangle marks each crossover, and both
 // crossovers are available as alert conditions.
 indicator("EMA Cross", overlay = true)

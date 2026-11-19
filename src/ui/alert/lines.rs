@@ -1097,7 +1097,7 @@ mod tests {
         assert_eq!(pointer.release(160.0).moves.len(), 1);
     }
 
-    /// Written by hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib alert_lines::tests::gallery -- --ignored`.
+    /// Written by hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib alert_lines::tests::gallery -- --ignored`.
     #[test]
     #[ignore = "writes pictures"]
     fn gallery_of_the_alert_lines() {

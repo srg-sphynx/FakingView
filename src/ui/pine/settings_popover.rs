@@ -343,7 +343,7 @@ mod tests {
         assert_eq!(popover.applied_style().len(), 2);
     }
 
-    /// The popover as pictures. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+    /// The popover as pictures. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_the_popover() {

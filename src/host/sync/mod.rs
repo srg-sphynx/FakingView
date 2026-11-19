@@ -54,7 +54,7 @@ pub enum SyncAction {
     KeepHeldDeletes,
     /// Dismiss the open conflicts of one kind, or all of them.
     DismissConflicts(Option<String>),
-    /// Delete every DegenView record in iCloud for the account this Mac syncs with.
+    /// Delete every FakingView record in iCloud for the account this Mac syncs with.
     DeleteCloudData,
     /// Dismiss the note about something that finished (such as the deletion).
     DismissNotice,
@@ -73,7 +73,7 @@ pub enum SyncPrompt {
     Join(JoinSummary),
     /// A different Apple Account is signed in than the one this database syncs with.
     AccountChanged,
-    /// Another Mac deleted DegenView's data in iCloud.
+    /// Another Mac deleted FakingView's data in iCloud.
     RemoteDataDeleted,
 }
 
@@ -94,7 +94,7 @@ pub struct SyncView {
     pub prompt: Option<SyncPrompt>,
     pub categories: Vec<(Category, bool)>,
     pub conflicts: Vec<ConflictSummary>,
-    /// iCloud confirmed that all DegenView data there was deleted at this Mac's request.
+    /// iCloud confirmed that all FakingView data there was deleted at this Mac's request.
     pub cloud_deleted: bool,
     /// A deletion was asked for and iCloud has not answered yet.
     pub deleting: bool,
@@ -107,7 +107,7 @@ pub struct SyncView {
 /// A note shown on the page after something finished.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SyncNotice {
-    /// All DegenView data in iCloud was deleted at this Mac's request.
+    /// All FakingView data in iCloud was deleted at this Mac's request.
     CloudDeleted,
 }
 
@@ -362,7 +362,7 @@ impl SyncHost {
         hardware: Arc<dyn Fn() -> Option<String> + Send + Sync>,
     ) -> Self {
         let unavailable = match &factory {
-            None => Some("iCloud Sync is not included in this build of DegenView.".to_string()),
+            None => Some("iCloud Sync is not included in this build of FakingView.".to_string()),
             Some(factory) => factory.environment().err(),
         };
         let shared = Arc::new(Mutex::new(Shared {
@@ -476,7 +476,7 @@ impl SyncHost {
         let repaint = self.repaint.clone();
         let applier = self.applier.clone();
         let handle = std::thread::Builder::new()
-            .name("degenview-sync".into())
+            .name("fakingview-sync".into())
             .spawn(move || run_worker(core, rx, shared, store, repaint, applier))
             .ok();
         *guard = Some(Worker { tx, handle });
@@ -1048,7 +1048,7 @@ pub fn adopt_this_mac(store: &SharedStore) {
         return;
     }
     if let Err(error) = account::check_device_identity(&store, hardware_id().as_deref()) {
-        eprintln!("DegenView: could not check which Mac this database belongs to: {error}");
+        eprintln!("FakingView: could not check which Mac this database belongs to: {error}");
     }
 }
 

@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Stochastic RSI: the Stochastic formula applied to RSI instead of price. It reaches the ends of
 // its range far more often than RSI does, so it times turns earlier and gives more false ones.
 indicator("Stochastic RSI", overlay = false)

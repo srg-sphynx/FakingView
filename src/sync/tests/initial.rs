@@ -21,7 +21,7 @@ fn new_mac(cloud: &MockCloud, name: &str) -> Mac {
 
 fn backups(tag: &str) -> PathBuf {
     std::env::temp_dir().join(format!(
-        "degenview-sync-join-{tag}-{}-{}",
+        "fakingview-sync-join-{tag}-{}-{}",
         std::process::id(),
         crate::store::sync::new_device_id()
     ))

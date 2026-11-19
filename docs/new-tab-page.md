@@ -49,5 +49,5 @@ every 250 ms made it crawl); the system does not draw a hidden or minimised wind
 
 ## Checking it
 
-`DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib empty_state -- --ignored` writes every tab, with and without data, dark
+`FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib empty_state -- --ignored` writes every tab, with and without data, dark
 and light, wide and narrow. Headless pictures show fallback artwork for tickers (icons load from the network).

@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Linear Regression Bands: the least-squares line through the last N closes, with bands a
 // multiple of the standard deviation of price around it. Price tends to return to the line.
 indicator("Linear Regression Bands", overlay = true)

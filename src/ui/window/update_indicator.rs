@@ -57,9 +57,9 @@ pub fn look(view: &UpdateView) -> Option<Look> {
         } => (
             "Update".to_owned(),
             match (installable, note) {
-                (true, _) => format!("DegenView {version} is available. Click to install it."),
-                (false, Some(note)) => format!("DegenView {version} is available. {note}"),
-                (false, None) => format!("DegenView {version} is available."),
+                (true, _) => format!("FakingView {version} is available. Click to install it."),
+                (false, Some(note)) => format!("FakingView {version} is available. {note}"),
+                (false, None) => format!("FakingView {version} is available."),
             },
             kit::ORANGE,
             Some(Icon::ArrowUp),
@@ -78,7 +78,7 @@ pub fn look(view: &UpdateView) -> Option<Look> {
         ),
         Phase::Ready { version } => (
             "Restart".to_owned(),
-            format!("DegenView {version} is ready. Restart to finish updating."),
+            format!("FakingView {version} is ready. Restart to finish updating."),
             kit::ORANGE,
             Some(Icon::Cycle),
             true,
@@ -484,7 +484,7 @@ mod tests {
     }
 
     /// The mark as pictures. Run by hand:
-    /// `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib update_indicator_gallery -- --ignored`.
+    /// `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib update_indicator_gallery -- --ignored`.
     #[test]
     #[ignore = "writes pictures; run by hand"]
     fn update_indicator_gallery() {

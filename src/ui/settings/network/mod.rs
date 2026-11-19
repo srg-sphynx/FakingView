@@ -1,4 +1,4 @@
-//! Settings ▸ Network: whether DegenView follows the system's proxy, uses one typed here, or
+//! Settings ▸ Network: whether FakingView follows the system's proxy, uses one typed here, or
 //! connects directly. The choices are the local `net.proxy` setting and save as they are typed
 //! (`Autosave`); the proxy's password goes to the secure storage through the host. Every rule
 //! (what may be saved, what the status line says) is a plain method tested without a window.

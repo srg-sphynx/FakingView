@@ -9,7 +9,7 @@
   #error Pass /DTag=<release tag>, for example v0.6.0-rc.12
 #endif
 #ifndef ExePath
-  #error Pass /DExePath=<path to degenview.exe>
+  #error Pass /DExePath=<path to fakingview.exe>
 #endif
 ; The CPU the exe in ExePath is built for. One script makes both installers; they share the AppId below,
 ; so installing the arm64 one over an x64 install is an in-place move to the native build.
@@ -31,51 +31,51 @@
 ; makes the next installer install beside the old one instead of over it. The app writes the same
 ; id (`INSTALLER_APP_ID` in src/service/update/install/installed_version.rs, kept in step by a test) to keep
 ; the displayed version current after a self-update.
-AppId={{79717C79-2D1E-4206-B25A-F3E626438640}
-AppName=DegenView
+AppId={{FA88671D-145C-576B-9B00-22DB6C36120D}
+AppName=FakingView
 AppVersion={#AppVersion}
-AppPublisher=Nico Oelgart
-AppPublisherURL=https://github.com/degenview/degenview
-AppSupportURL=https://github.com/degenview/degenview/issues
+AppPublisher=FakingView contributors
+AppPublisherURL=https://github.com/srg-sphynx/FakingView
+AppSupportURL=https://github.com/srg-sphynx/FakingView/issues
 ; Per-user only, on purpose. With no admin rights {autopf} is %LOCALAPPDATA%\Programs, a folder the
 ; app can write to, which is what the self-updater needs; an all-users install under Program Files
 ; could not update itself. So there is no PrivilegesRequiredOverridesAllowed.
 PrivilegesRequired=lowest
-DefaultDirName={autopf}\DegenView
+DefaultDirName={autopf}\FakingView
 DisableProgramGroupPage=yes
 ArchitecturesAllowed={#ArchAllowed}
 ArchitecturesInstallIn64BitMode={#ArchAllowed}
 LicenseFile=..\..\LICENSE.md
-SetupIconFile=..\..\assets\brand\DegenView.ico
-UninstallDisplayIcon={app}\degenview.exe
+SetupIconFile=..\..\assets\brand\FakingView.ico
+UninstallDisplayIcon={app}\fakingview.exe
 WizardStyle=modern
 Compression=lzma2
 SolidCompression=yes
-; Ask a running DegenView to close before its exe is replaced; nothing needs reopening afterwards.
+; Ask a running FakingView to close before its exe is replaced; nothing needs reopening afterwards.
 CloseApplications=yes
 RestartApplications=no
 OutputDir=..\..\dist
-OutputBaseFilename=DegenView-{#Tag}-windows-{#Arch}-setup
+OutputBaseFilename=FakingView-{#Tag}-windows-{#Arch}-setup
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
 ; The exe carries no version resource, so Inno cannot compare versions: install what this setup holds.
-Source: "{#ExePath}"; DestDir: "{app}"; DestName: "degenview.exe"; Flags: ignoreversion
+Source: "{#ExePath}"; DestDir: "{app}"; DestName: "fakingview.exe"; Flags: ignoreversion
 ; The fonts built into the app are under the SIL OFL, which wants its text to come with them.
 Source: "..\..\assets\fonts\OFL-JetBrainsMono.txt"; DestDir: "{app}\licenses"; Flags: ignoreversion
 Source: "..\..\assets\fonts\OFL-NotoSansSymbols2.txt"; DestDir: "{app}\licenses"; Flags: ignoreversion
 Source: "..\..\assets\fonts\README.md"; DestDir: "{app}\licenses"; DestName: "FONTS.md"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\DegenView"; Filename: "{app}\degenview.exe"
-Name: "{autodesktop}\DegenView"; Filename: "{app}\degenview.exe"; Tasks: desktopicon
+Name: "{autoprograms}\FakingView"; Filename: "{app}\fakingview.exe"
+Name: "{autodesktop}\FakingView"; Filename: "{app}\fakingview.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\degenview.exe"; Description: "{cm:LaunchProgram,DegenView}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\fakingview.exe"; Description: "{cm:LaunchProgram,FakingView}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
-; What the self-updater leaves next to the exe. The user's data (%APPDATA%\es.nico.degenview) and
+; What the self-updater leaves next to the exe. The user's data (%APPDATA%\local.fakingview.desktop) and
 ; cache are not the installer's and are kept.
-Type: filesandordirs; Name: "{app}\.DegenView-update"
+Type: filesandordirs; Name: "{app}\.FakingView-update"

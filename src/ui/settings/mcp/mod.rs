@@ -109,7 +109,7 @@ enum Copied {
 pub fn connection_json(endpoint: &str, token: Option<&str>) -> String {
     let value = serde_json::json!({
         "mcpServers": {
-            "degenview": {
+            "fakingview": {
                 "type": "http",
                 "url": endpoint,
                 "headers": {
@@ -137,7 +137,7 @@ struct AccessOverview {
     headline: &'static str,
     /// The areas, a few by name and then a count; empty when there is nothing to name.
     detail: String,
-    /// It can change DegenView, not only look.
+    /// It can change FakingView, not only look.
     writes: bool,
 }
 

@@ -759,7 +759,7 @@ mod tests {
         }
     }
 
-    /// The sheets as pictures, in both themes. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+    /// The sheets as pictures, in both themes. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
     #[test]
     #[ignore = "writes images for a person to look at"]
     #[allow(clippy::type_complexity)]

@@ -198,7 +198,7 @@ fn each_include_toggle_flips_its_part_alone() {
             ..all
         })]
     );
-    let at = centre(&rig, "DegenView mark, on");
+    let at = centre(&rig, "FakingView mark, on");
     assert_eq!(
         rig.click(&scenario, at),
         [off(Include {

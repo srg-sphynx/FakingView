@@ -570,7 +570,7 @@ fn plot_y(live: &Live, share: f32) -> f32 {
 }
 
 /// Pictures of the four modes and of the open menu, to look at by hand:
-/// `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_scale -- --ignored`.
+/// `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_scale -- --ignored`.
 #[test]
 #[ignore = "writes pictures; run by hand"]
 fn gallery_of_the_scale_modes() {

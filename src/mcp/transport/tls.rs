@@ -33,7 +33,7 @@ use super::tls_protect::{self, AtRest};
 /// The file inside the data directory.
 pub const FILE_NAME: &str = "mcp-tls.pem";
 
-/// Held, exclusively, for the whole of reading, making and saving the identity, so two DegenView
+/// Held, exclusively, for the whole of reading, making and saving the identity, so two FakingView
 /// processes starting together adopt the same certificate instead of each making one.
 pub const LOCK_FILE_NAME: &str = "mcp-tls.lock";
 
@@ -44,7 +44,7 @@ const LOCK_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 /// First line of the file, ahead of the PEM blocks (a PEM reader skips text outside them). It
 /// records which address the certificate was made for, so a changed address is noticed without
 /// parsing the certificate.
-const ADDRESS_PREFIX: &str = "# degenview-mcp-tls address=";
+const ADDRESS_PREFIX: &str = "# fakingview-mcp-tls address=";
 
 /// A certificate and the key that signs for it.
 #[derive(Clone)]
@@ -72,7 +72,7 @@ impl TlsIdentity {
         let mut params = CertificateParams::new(vec![address.to_string()])
             .map_err(|error| format!("Could not make a certificate: {error}"))?;
         let mut name = DistinguishedName::new();
-        name.push(DnType::CommonName, "DegenView MCP");
+        name.push(DnType::CommonName, "FakingView MCP");
         params.distinguished_name = name;
         params.is_ca = IsCa::ExplicitNoCa;
         params.key_usages = vec![KeyUsagePurpose::DigitalSignature];
@@ -248,7 +248,7 @@ fn lock_dir(dir: &Path, wait: std::time::Duration) -> Result<std::fs::File, Stri
             }
             Err(std::fs::TryLockError::WouldBlock) => {
                 return Err(format!(
-                    "Another DegenView has held {} for {} seconds; try again in a moment",
+                    "Another FakingView has held {} for {} seconds; try again in a moment",
                     path.display(),
                     wait.as_secs().max(1)
                 ));
@@ -374,7 +374,7 @@ mod tests {
 
     fn scratch(name: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "degenview-mcp-tls-{name}-{}",
+            "fakingview-mcp-tls-{name}-{}",
             crate::model::watchlist::new_id()
         ));
         std::fs::create_dir_all(&dir).unwrap();
@@ -593,7 +593,7 @@ mod tests {
     #[test]
     fn callers_starting_together_all_adopt_the_one_certificate_that_is_saved() {
         use std::sync::{Arc, Barrier};
-        // As several DegenView processes finding no file at once would: every caller must succeed
+        // As several FakingView processes finding no file at once would: every caller must succeed
         // and hold exactly the certificate that ended up on disk. (Before the lock, two callers
         // never got through a round: one failed, and others held a certificate that was not saved.)
         for callers in [2, 3, 4] {
@@ -633,7 +633,7 @@ mod tests {
         let error = load_or_create_within(&dir, address(), std::time::Duration::from_millis(200))
             .unwrap_err();
         assert!(
-            error.contains("Another DegenView") && error.contains(LOCK_FILE_NAME),
+            error.contains("Another FakingView") && error.contains(LOCK_FILE_NAME),
             "{error}"
         );
         assert!(

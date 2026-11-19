@@ -2,7 +2,7 @@
 //!
 //! ```json
 //! {
-//!   "format": "degenview-editor-theme",
+//!   "format": "fakingview-editor-theme",
 //!   "version": 1,
 //!   "name": "My Dracula",
 //!   "base": "builtin.dracula",
@@ -30,7 +30,7 @@ use serde::ser::{SerializeMap, Serializer};
 use serde_json::Value;
 use std::collections::BTreeMap;
 
-pub const FORMAT: &str = "degenview-editor-theme";
+pub const FORMAT: &str = "fakingview-editor-theme";
 pub const VERSION: u32 = 1;
 /// Larger files are refused unread. A theme is a few kilobytes.
 pub const MAX_FILE_BYTES: usize = 256 * 1024;
@@ -107,9 +107,9 @@ impl ImportError {
                 MAX_FILE_BYTES / 1024
             ),
             Self::NotJson => "That file is not valid JSON.".to_owned(),
-            Self::NotAThemeFile => "That file is not a DegenView editor theme.".to_owned(),
+            Self::NotAThemeFile => "That file is not a FakingView editor theme.".to_owned(),
             Self::UnsupportedVersion(version) => format!(
-                "That theme is version {version}; this version of DegenView reads version {VERSION}. Update DegenView to import it."
+                "That theme is version {version}; this version of FakingView reads version {VERSION}. Update FakingView to import it."
             ),
             Self::MissingName => "That theme has no name.".to_owned(),
             Self::BadName(why) => format!("That theme's name cannot be used: {why}"),

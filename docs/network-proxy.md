@@ -1,6 +1,6 @@
 # Network proxy
 
-DegenView follows a proxy for everything it sends over the internet: market data, live price feeds,
+FakingView follows a proxy for everything it sends over the internet: market data, live price feeds,
 updates, link previews, webhooks, AI requests and chart sharing. It was added for users whose VPN or
 network publishes a proxy (a Windows user running Karing in system-proxy mode, say) and who could
 only start the app from a launcher that set `HTTPS_PROXY`. Code: `src/service/net/proxy/`; page:
@@ -18,8 +18,8 @@ classified in `sync::record::policy`).
 | Off | Direct, whatever the system or environment says. |
 
 The manual proxy's password is never in SQLite: `keychain::proxy_password::ProxyPasswordStore` (service
-`es.nico.degenview.network`). It is read only when a user name is set, so nobody without one is
-prompted. `DEGENVIEW_NO_KEYCHAIN` keeps it in memory. The page asks `is_saved` every frame, so
+`local.fakingview.desktop.network`). It is read only when a user name is set, so nobody without one is
+prompted. `FAKINGVIEW_NO_KEYCHAIN` keeps it in memory. The page asks `is_saved` every frame, so
 no call to the storage happens under a lock it takes (`keychain::cached_secret`: a short `state`
 lock for the page, a separate `io` lock for the reads and writes).
 

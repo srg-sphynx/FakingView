@@ -75,12 +75,12 @@ jobs:
         run: cargo build --release
 
       - name: Check the glibc baseline
-        run: python3 tools/check-glibc.py target/release/degenview
+        run: python3 tools/check-glibc.py target/release/fakingview
 
       # The check has to be able to fail, or it proves nothing.
       - name: The check fails below what the binary needs
         run: |
-          if python3 tools/check-glibc.py target/release/degenview 2.0; then
+          if python3 tools/check-glibc.py target/release/fakingview 2.0; then
             echo "::error::tools/check-glibc.py passed a baseline the binary cannot meet"
             exit 1
           fi

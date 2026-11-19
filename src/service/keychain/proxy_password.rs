@@ -1,6 +1,6 @@
 //! The manual proxy's password, kept in the system's secure storage and never in the database.
 //! It is read only when the proxy is applied and a user name is set, so a user who has no
-//! proxy password is never prompted. Under `DEGENVIEW_NO_KEYCHAIN` it lives in memory for the
+//! proxy password is never prompted. Under `FAKINGVIEW_NO_KEYCHAIN` it lives in memory for the
 //! session.
 
 use crate::service::keychain::api_keys::{KeyBackend, default_backend};
@@ -10,7 +10,7 @@ use crate::service::webhook::delivery::SecretStoreError;
 use std::sync::OnceLock;
 
 const SCOPE: Scope = Scope {
-    service: "es.nico.degenview.network",
+    service: "local.fakingview.desktop.network",
     shared_group: false,
 };
 const ACCOUNT: &str = "proxy-password-v1";

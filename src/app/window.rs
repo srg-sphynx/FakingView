@@ -1,5 +1,5 @@
 use super::AppAction;
-use super::DegenViewApp;
+use super::FakingViewApp;
 use super::alert::SharedFxRates;
 use super::mcp::McpQuestions;
 use super::now_ms;
@@ -34,7 +34,7 @@ use std::sync::{Arc, Mutex};
 
 /// The Settings window's viewport (the same id `sync_settings_viewport` opens it under).
 pub(super) fn settings_viewport_id() -> egui::ViewportId {
-    egui::ViewportId::from_hash_of("degenview-settings")
+    egui::ViewportId::from_hash_of("fakingview-settings")
 }
 
 /// Brings an already-open Settings or Alerts window in front of the tab windows. Asking to open
@@ -256,7 +256,7 @@ fn show_session_save_error(ctx: &egui::Context, error: &SessionSaveError) {
         icon: Icon::Triangle,
         tint: kit::ORANGE,
         title: "Couldn\u{2019}t Save Open Tabs",
-        message: "DegenView couldn\u{2019}t save which tabs are open, so they may not reopen after a restart. It keeps trying in the background.",
+        message: "FakingView couldn\u{2019}t save which tabs are open, so they may not reopen after a restart. It keeps trying in the background.",
     };
     let dismissed = kit::notice_with(ctx, egui::Id::new("session-save-error"), &spec, |ui| {
         ui.add_space(10.0);
@@ -285,7 +285,7 @@ fn show_restart_prompt(ctx: &egui::Context, env: &WindowEnv, update: &UpdateView
     if !env.updates.restart_prompt_pending() {
         return;
     }
-    let message = format!("DegenView {version} is ready. DegenView will close and reopen.");
+    let message = format!("FakingView {version} is ready. FakingView will close and reopen.");
     let outcome = kit::alert(
         ctx,
         egui::Id::new("update-restart-prompt"),
@@ -314,7 +314,7 @@ fn show_restart_prompt(ctx: &egui::Context, env: &WindowEnv, update: &UpdateView
     }
 }
 
-impl DegenViewApp {
+impl FakingViewApp {
     pub(super) fn sync_viewports(&self, ctx: &egui::Context) {
         // What a script alert would watch: the focused chart's market.
         let chart_info = self

@@ -7,7 +7,7 @@ use crate::model::pine::script::ScriptType;
 use crate::model::{DataSource, IndicatorConfig};
 use crate::pine_studio::commands::Cmd;
 use crate::pine_studio::workspace::PreviewInput;
-use crate::service::keychain::api_keys::alpaca_configured;
+use crate::service::keychain::api_keys::{alpaca_configured, kite_configured};
 use crate::ui::icons::{self, Icon};
 use crate::ui::{DrawingFrame, ReplayChartFrame, theme};
 use eframe::egui::{
@@ -26,8 +26,12 @@ pub fn chart(
     ui.painter().rect_filled(area, 0.0, theme::background());
     preview.source_changed(input);
     preview.maybe_apply(input);
-    if std::mem::take(&mut preview.pending_settings) {
-        cmds.borrow_mut().push(Cmd::OpenAlpacaSettings);
+    if let Some(source) = preview.pending_settings.take() {
+        cmds.borrow_mut().push(if source == DataSource::Kite {
+            Cmd::OpenKiteSettings
+        } else {
+            Cmd::OpenAlpacaSettings
+        });
     }
 
     if input.script_type == ScriptType::Library {
@@ -50,6 +54,18 @@ pub fn chart(
             "Alpaca isn't set up",
             "Stock candles come from Alpaca. Add your keys in Settings to test on stocks.",
             Some(("Open Settings", Cmd::OpenAlpacaSettings)),
+            cmds,
+        );
+        return;
+    }
+    if preview.market.source == DataSource::Kite && !kite_configured() {
+        message(
+            ui,
+            area,
+            Icon::Key,
+            "Kite Connect isn't set up",
+            "Indian market candles need a daily Kite session. Sign in in Settings to preview this market.",
+            Some(("Open Settings", Cmd::OpenKiteSettings)),
             cmds,
         );
         return;

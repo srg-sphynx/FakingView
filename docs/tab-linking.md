@@ -38,7 +38,7 @@ Everything else is **not stated by TradingView, so it is a decision here**:
 - A tab is in one group or none. The hub reads membership from the tabs every frame, so a closed,
   moved or recoloured tab cannot leave a stale subscriber, and a group with no tabs keeps nothing.
 - Only a user's action is announced: the symbol picker, a watchlist click, the timeframe picker,
-  `degenview_set_timeframe`, and (with Time or Date range) the focused chart's own pan or zoom.
+  `fakingview_set_timeframe`, and (with Time or Date range) the focused chart's own pan or zoom.
   Applying a delivery goes through the same commands (`switch_chart`, `reload_for_timeframe`) but
   never touches the outbox, so nothing echoes. There is no value comparison in the loop guard.
 - A tab's outbox has one slot per kind, newest wins (so BTC → ETH → SOL → AVAX is one delivery,

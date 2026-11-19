@@ -550,7 +550,7 @@ fn a_call_dropped_by_the_client_never_runs() {
     // Send an add-chart call and hang up without waiting for the answer.
     let body = json!({
         "jsonrpc": "2.0", "id": 9, "method": "tools/call",
-        "params": {"name": "degenview_add_chart",
+        "params": {"name": "fakingview_add_chart",
                    "arguments": {"workspace_id": "1", "source": "binance", "symbol": "ETHUSDT"}}
     })
     .to_string();
@@ -577,7 +577,7 @@ fn a_call_dropped_by_the_client_never_runs() {
     let added = call(
         &harness.url(),
         "tok",
-        "degenview_add_chart",
+        "fakingview_add_chart",
         json!({"workspace_id": "1", "source": "binance", "symbol": "ETHUSDT"}),
     );
     assert_eq!(added["isError"], json!(false), "{added}");
@@ -587,7 +587,7 @@ fn a_call_dropped_by_the_client_never_runs() {
 pub(super) fn add_chart_call(id: serde_json::Value) -> String {
     json!({
         "jsonrpc": "2.0", "id": id, "method": "tools/call",
-        "params": {"name": "degenview_add_chart",
+        "params": {"name": "fakingview_add_chart",
                    "arguments": {"workspace_id": "1", "source": "binance", "symbol": "ETHUSDT"}}
     })
     .to_string()
@@ -657,7 +657,7 @@ fn a_cancel_notification_stops_the_queued_call() {
     let added = call(
         &url,
         "tok",
-        "degenview_add_chart",
+        "fakingview_add_chart",
         json!({"workspace_id": "1", "source": "binance", "symbol": "ETHUSDT"}),
     );
     assert_eq!(added["isError"], json!(false), "{added}");
@@ -767,7 +767,7 @@ fn finished_calls_leave_nothing_registered() {
     let harness = Harness::start(&[("c1", "tok", BOTH)]);
     let url = harness.url();
     for _ in 0..3 {
-        let reply = call(&url, "tok", "degenview_list_workspaces", json!({}));
+        let reply = call(&url, "tok", "fakingview_list_workspaces", json!({}));
         assert_eq!(reply["isError"], json!(false));
     }
     let _ = rpc(&url, Some("tok"), "tools/list", json!({}));

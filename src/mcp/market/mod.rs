@@ -69,9 +69,9 @@ impl Confirm for WatchlistCommand {
     }
 }
 
-/// Markets one `degenview_get_quotes` call may ask about.
+/// Markets one `fakingview_get_quotes` call may ask about.
 pub const MAX_QUOTE_MARKETS: usize = 50;
-/// Entries one `degenview_get_watchlist` page holds at most.
+/// Entries one `fakingview_get_watchlist` page holds at most.
 pub const MAX_ENTRY_PAGE: usize = 500;
 /// Markets one watchlist edit may add or remove.
 pub const MAX_EDIT_MARKETS: usize = 100;
@@ -89,6 +89,7 @@ pub fn source_id(source: DataSource) -> &'static str {
         DataSource::CoinGecko => "coingecko",
         DataSource::DexScreener => "dexscreener",
         DataSource::Alpaca => "alpaca",
+        DataSource::Kite => "kite",
         DataSource::Polymarket => "polymarket",
         DataSource::Kalshi => "kalshi",
         DataSource::CoinMarketCap => "coinmarketcap",
@@ -99,7 +100,7 @@ pub fn source_id(source: DataSource) -> &'static str {
 
 #[derive(Debug, Clone, PartialEq, Serialize, JsonSchema)]
 pub struct SymbolHit {
-    /// The provider, as `degenview_add_chart` and the watchlist tools take it.
+    /// The provider, as `fakingview_add_chart` and the watchlist tools take it.
     pub source: String,
     /// The provider's own symbol: pass it back, with `source`, to any tool that takes a market.
     pub symbol: String,
@@ -108,7 +109,7 @@ pub struct SymbolHit {
     /// The source-qualified identity (`BINANCE:BTCUSDT`), the same one charts and watchlists use.
     pub instrument: String,
     /// The price the provider returned with the hit, when it did (few do; use
-    /// `degenview_get_quotes` for a price).
+    /// `fakingview_get_quotes` for a price).
     pub price: Option<f64>,
 }
 
@@ -179,7 +180,7 @@ pub struct QuoteInfo {
     pub volume: Option<f64>,
     /// What `volume` counts: `quote_currency`, `shares` or `base`.
     pub volume_unit: Option<String>,
-    /// When the provider priced it (or, failing that, when DegenView received it), ISO-8601 UTC.
+    /// When the provider priced it (or, failing that, when FakingView received it), ISO-8601 UTC.
     pub as_of: Option<String>,
     /// `live`, `stale`, `market_closed` (the last price is the close), `unavailable` (no answer
     /// yet or the provider refused the symbol) or `unsupported`.

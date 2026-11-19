@@ -109,7 +109,7 @@ one per tab: `Chart` is `ToolbarAction::SetTimeframe` (`reload_for_timeframe`, t
   (`sync::record::policy`). A label that does not parse is dropped on read.
 - The footer is `kit::hints::hint_row`, also the symbol picker's; the field is `kit::search_box`.
   `Icon::Shift` draws ⇧ because its glyph is missing from some Linux fonts.
-- `gallery_of_the_timeframe_picker` (in the toolbar tests; ignored, set `DEGENVIEW_GALLERY_DIR`) writes
+- `gallery_of_the_timeframe_picker` (in the toolbar tests; ignored, set `FAKINGVIEW_GALLERY_DIR`) writes
   the picker in both themes: closed, open, typed, error, pinned, warning.
 
 ## What acts on what
@@ -139,5 +139,5 @@ one per tab: `Chart` is `ToolbarAction::SetTimeframe` (`reload_for_timeframe`, t
 
 Unit tests cover layout at several widths (the timeframe button is the same width at all of them), that every new button asks for its action and that a
 disabled one never does, and the workspace methods. `gallery_of_the_toolbar` (ignored, set
-`DEGENVIEW_GALLERY_DIR`) writes pictures of the bar in each state. Not checked in a real window on
+`FAKINGVIEW_GALLERY_DIR`) writes pictures of the bar in each state. Not checked in a real window on
 Linux or Windows.

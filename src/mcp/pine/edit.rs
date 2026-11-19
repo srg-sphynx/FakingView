@@ -11,7 +11,7 @@ use crate::store::scripts::{ScriptStore, ScriptStoreError, hash_source};
 
 fn changed_on_disk() -> McpError {
     McpError::Conflict(
-        "The script's file was changed outside DegenView after it was opened, so nothing was saved. Resolve it in Pine Studio (keep the file's text or your editor's), then read the script again and retry".into(),
+        "The script's file was changed outside FakingView after it was opened, so nothing was saved. Resolve it in Pine Studio (keep the file's text or your editor's), then read the script again and retry".into(),
     )
 }
 
@@ -69,7 +69,7 @@ fn working_text(script: &LocalScript, draft: Option<&ScriptDraft>, live: Option<
 fn check_revision(expected: &str, working: &Working) -> Result<String, McpError> {
     if !is_revision(expected) {
         return Err(McpError::InvalidArgument(
-            "expected_revision must be the 64-character source_hash from degenview_get_pine_script"
+            "expected_revision must be the 64-character source_hash from fakingview_get_pine_script"
                 .into(),
         ));
     }

@@ -3,7 +3,7 @@
 A camera in the toolbar, right of the chart settings button, takes a picture of the focused chart and does one of five things with it,
 as TradingView's does: **Download image**, **Copy image**, **Copy link**, **Open in new tab**,
 **Tweet image**. The first two work offline. The other three upload the image to a **provider**
-the user turns on in Settings ▸ Snapshots (ImgBB, or a host of their own); DegenView hosts nothing,
+the user turns on in Settings ▸ Snapshots (ImgBB, or a host of their own); FakingView hosts nothing,
 and nothing is uploaded until a provider is on.
 
 The menu ends with a separator and **Configure Snapshots…**, which opens Settings on the Snapshots
@@ -179,7 +179,12 @@ answer's fields. **Not stated by it and so assumed**: the error answer's shape (
 anything else is read by its HTTP status), and rate limits. Not run against ImgBB with a real key
 by the author of this change.
 
-### The protocol of a host of your own
+### Self-hosted
+
+Use a server you control that implements the protocol below. FakingView does not run a public
+snapshot service; sharing is opt-in and sends the image only to the host you configure.
+
+#### The protocol of a host of your own
 
 The host is any HTTPS service that implements this protocol (`http://` is accepted for a host on
 this computer only, for development).
@@ -188,7 +193,7 @@ this computer only, for development).
 POST <host address>
 Content-Type: image/png
 Authorization: Bearer <token>        only if a token is set
-User-Agent: DegenView/<version>
+User-Agent: FakingView/<version>
 
 <PNG bytes, at most 24 MiB>
 ```
@@ -210,14 +215,14 @@ not redraw.
 A host should: require a token (never an open upload), check the file really is a PNG and its size
 and dimensions, store it under a random unguessable name, serve it as `image/png` with
 `Content-Disposition: inline` and `X-Content-Type-Options: nosniff`, rate-limit and set quotas,
-purge on a schedule it states (TradingView's own links do not expire, but DegenView promises no
-permanence: the host decides), log requests without image content, and may offer deletion. DegenView
+purge on a schedule it states (TradingView's own links do not expire, but FakingView promises no
+permanence: the host decides), log requests without image content, and may offer deletion. FakingView
 ships no server; its tests use a mock server on this computer.
 
 ### Consent and privacy
 
 - Download and Copy image never touch the network.
-- The first upload to a destination asks ("To share this chart, DegenView uploads its image to
+- The first upload to a destination asks ("To share this chart, FakingView uploads its image to
   {label}. {the provider's notice}"). The answer is remembered per **consent key** (`api.imgbb.com`,
   or `host[:port]` for a host of the user's own) in the `snapshot.prefs` setting, never synced, and
   can be forgotten. Agreeing to one destination is not agreeing to another. A host of the user's
@@ -226,10 +231,10 @@ ships no server; its tests use a mock server on this computer.
 - Hosted rows are disabled, with the reason, until a provider is on and set up. Nothing is uploaded
   to any default. The one upload that is not a chart is a provider's **Test** button, which sends a
   one-pixel image when the user clicks it.
-- A provider's secrets are in the system's secure storage (`es.nico.degenview.snapshots`, account
+- A provider's secrets are in the system's secure storage (`local.fakingview.desktop.snapshots`, account
   `"{provider}.{field}-v1"`; the self-hosted token keeps its older `host-token-v1`), read only on
-  the upload's worker thread, or the field's environment variable (`DEGENVIEW_IMGBB_KEY`,
-  `DEGENVIEW_SNAPSHOT_TOKEN`). The window never waits for the storage: whether a secret is saved is
+  the upload's worker thread, or the field's environment variable (`FAKINGVIEW_IMGBB_KEY`,
+  `FAKINGVIEW_SNAPSHOT_TOKEN`). The window never waits for the storage: whether a secret is saved is
   asked on a thread of its own the first time and cached, the camera menu says "Checking your saved
   key" until the answer is in, and the cache is never locked while the storage is. They are never in
   the settings, in SQLite or synced; on Linux they are
@@ -274,11 +279,11 @@ Capture (frozen once)  +  StudioConfig  ─►  compose::paint ─► Scene ─�
 - **Order:** backdrop (only with a frame, `Background::has_frame`), soft shadow, the chart(s)
   through `paint_snapshot` with `SnapshotFrame { viewport: framing, outputs: frozen,
   include_indicators, restyle }` and `hide_all_drawings` for Include, the rounded corners, the
-  Styled title block, the DegenView mark. The chart is painted into `Composition::body()` (below the
+  Styled title block, the FakingView mark. The chart is painted into `Composition::body()` (below the
   title strip). Its view is `Framing::viewport(base, plot)`, refitted (at most three rounds) to the
   plot the card really lays out there, since the axis width and pane heights are the card's to decide.
 - **Backdrops** (`compose/background.rs`) are pure functions of position, `color_at(background, uv)`:
-  DegenView's own palettes (Luminous deep teal with a cyan glow, Radiant pink to orange, Spectrum purple
+  FakingView's own palettes (Luminous deep teal with a cyan glow, Radiant pink to orange, Spectrum purple
   through magenta to teal, Illuminated deep blue with a bright glow, Dots charcoal with dots every
   14 pt). A gradient is a 96 × 64 vertex-coloured grid (cells under the chart are skipped); dots are
   circles on a fixed grid in points, so they are sharp at any scale. `swatch(background)` says what
@@ -292,7 +297,7 @@ Capture (frozen once)  +  StudioConfig  ─►  compose::paint ─► Scene ─�
   at 1.35×). The title block fills the strip with the canvas' top colour and sets the market's logo
   (a monogram until the icon cache has one), its name in bold and `EXCHANGE · timeframe`. Its
   colours follow the canvas, not the app's theme: near black on a light canvas, near white on a dark
-  one, the axis text colour for the subline. The mark (the app icon in a circle and "DegenView",
+  one, the axis text colour for the subline. The mark (the app icon in a circle and "FakingView",
   at 55 % opacity) is at the right end of the title strip, centred on it, so it is never over market
   data (`composition::branding` reserves its place). The market's name always comes first: it is cut
   only when it alone is wider than the strip. The mark takes what is left of the strip, in full if it
@@ -386,7 +391,7 @@ the **Width** and **Height** rulers with **Reset view**; the footer.
   (None a slashed circle, Dots a dotted disc, four gradient discs); the selected one has a ring;
   hover says the name.
 - **Include**: three icon toggles. Indicators (disabled, "No indicators on this chart", when the
-  capture has none), Drawings (disabled, "No visible drawings") and the DegenView mark (only in
+  capture has none), Drawings (disabled, "No visible drawings") and the FakingView mark (only in
   Styled, a toggle we added). Where a group row does not fit the window the groups wrap to a
   second line (`toolbar::lines`).
 - **Rulers** (`kit::ruler`, generic): a pill of evenly spaced ticks that slides under a fixed
@@ -445,7 +450,7 @@ path as the camera menu: `launch` → `job::run(Download | CopyImage, &scene, &n
 the snapshot worker, the same `Running` state and `poll_snapshot` messages ("Saved …" and "Image
 copied" only after the job reports success, nothing for a cancelled Save panel, the existing
 error notice for a failure). The Studio stays open. The name is `snapshot::file_name(symbol,
-timeframe, now, offset)`, or `DegenView_Layout_<date>_<time>.png` for a layout. While an export of
+timeframe, now, offset)`, or `FakingView_Layout_<date>_<time>.png` for a layout. While an export of
 the Studio's runs both buttons are disabled and the one pressed shows the candle indicator. The result notice (`ui::chart::notice`) is drawn in the tooltip layer, above the window, so "Saved …" is not hidden by it. If the
 Studio is closed meanwhile the job finishes and its notice still shows (a decision: a file may
 well be written after a Save panel was answered).
@@ -484,7 +489,7 @@ builds from).
   disabled in Chart, the backgrounds and their names, Include's availability rules, the
   dials' range, step, snap and reset, Reset view appearing after a change, the preview's limits and
   rubber band, the footer's summary and a prominent download button.
-- Our additions: **Copy image** and the **DegenView mark** toggle.
+- Our additions: **Copy image** and the **FakingView mark** toggle.
 - Decided: the first Studio opens Styled; a drag of the ruler to the left raises the value (documented
   by Vela for the rulers; the preview is dragged like content, the other way); the arrow steps on
   the preview; half-resolution pictures during a drag; the backdrop does not close the window; the
@@ -558,9 +563,9 @@ by `previews` (one job in flight, latest wins, restart) and its workspace side b
 `workspace/chart/snapshot/studio/tests.rs` (a real selection over a real grid, the areas, Portion
 and back, the picture arriving and replaced in one texture, half size during a drag, the export
 to a PNG of the footer's size, the live charts untouched, the keys waiting).
-`DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_studio -- --ignored` writes
+`FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_studio -- --ignored` writes
 every backdrop in the Chart and Styled looks and every size on a dark and a light canvas, plus layouts and
-portions, and (`gallery_of_the_studio_window`, with `DEGENVIEW_GALLERY_FILTER=<part of a name>` to
+portions, and (`gallery_of_the_studio_window`, with `FAKINGVIEW_GALLERY_FILTER=<part of a name>` to
 write some) the whole window in both themes at the default and smallest sizes in every state.
 
 `cargo test --release studio_cost -- --ignored --nocapture` prints the Studio's stage timings (a
@@ -580,7 +585,7 @@ makes the same shapes. An export is the preview's work at another scale plus the
 on the worker after the click, with the window never waiting.
 
 The Settings page and its provider rows are drawn headless by
-`DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_snapshots_page -- --ignored`, which
+`FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_snapshots_page -- --ignored`, which
 writes the page in both themes at the Settings window's width and at its narrowest, with nothing on,
 ImgBB needing a key, ImgBB active, a host of your own, and both rows unfolded. The upload client is
 tested against a mock server for both providers (the self-hosted wire format is unchanged, asserted

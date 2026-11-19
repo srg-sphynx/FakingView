@@ -5,7 +5,7 @@
 use crate::mcp::bridge::{McpReply, REQUEST_TIMEOUT};
 use crate::mcp::chart::ChartCommand;
 use crate::mcp::tools::{
-    Caller, DegenViewMcp, failure, invalid, parse_chart_id, parse_workspace_id, unexpected,
+    Caller, FakingViewMcp, failure, invalid, parse_chart_id, parse_workspace_id, unexpected,
 };
 use crate::mcp::types::ChartInfo;
 use crate::model::mcp::Permission;
@@ -16,9 +16,9 @@ use rmcp::{tool, tool_router};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-pub const SET_TIMEFRAME: &str = "degenview_set_timeframe";
-pub const SET_CHART_TYPE: &str = "degenview_set_chart_type";
-pub const REMOVE_CHART: &str = "degenview_remove_chart";
+pub const SET_TIMEFRAME: &str = "fakingview_set_timeframe";
+pub const SET_CHART_TYPE: &str = "fakingview_set_chart_type";
+pub const REMOVE_CHART: &str = "fakingview_remove_chart";
 
 /// How a timeframe is written in a tool's arguments, for the descriptions and the schema.
 pub const TIMEFRAME_GRAMMAR: &str = "a count and a unit: m minutes, h hours, D days, W weeks, M months, or 1Y; e.g. 15m, 4h, 1D, 2W, 3M. Seconds are not offered";
@@ -60,7 +60,7 @@ pub struct ChartChangeResult {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SetTimeframeParams {
-    /// A `workspace_id` from `degenview_list_workspaces`. Every chart in it changes.
+    /// A `workspace_id` from `fakingview_list_workspaces`. Every chart in it changes.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
     /// The bar length: a count and a unit (m minutes, h hours, D days, W weeks, M months, or 1Y),
@@ -72,10 +72,10 @@ pub struct SetTimeframeParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SetChartTypeParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts`.
+    /// A `chart_id` from `fakingview_list_charts`.
     #[schemars(length(max = 20))]
     pub chart_id: String,
     /// One of: candles, hollow_candles, bars, high_low_bars, volume_candles, line,
@@ -88,10 +88,10 @@ pub struct SetChartTypeParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RemoveChartParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts`.
+    /// A `chart_id` from `fakingview_list_charts`.
     #[schemars(length(max = 20))]
     pub chart_id: String,
 }
@@ -103,10 +103,10 @@ pub fn chart_type_named(slug: &str) -> Option<ChartType> {
 }
 
 #[tool_router(router = chart_control_router, vis = "pub(in crate::mcp)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_set_timeframe",
-        description = "Move a workspace to another timeframe (a count and unit: m minutes, h hours, D days, W weeks, M months, or 1Y; e.g. 15m, 4h, 1D, 2W, 3M). A source that has no such candle builds it from finer ones, or refuses the chart with its reason. The timeframe belongs to the workspace, so every chart in it reloads its candles for the new bar length and goes back to the newest bars; replay re-bases. Candles and indicators read right after may still be loading: check the charts' `status` in degenview_list_charts. Answers `unchanged` when the workspace already uses it.",
+        name = "fakingview_set_timeframe",
+        description = "Move a workspace to another timeframe (a count and unit: m minutes, h hours, D days, W weeks, M months, or 1Y; e.g. 15m, 4h, 1D, 2W, 3M). A source that has no such candle builds it from finer ones, or refuses the chart with its reason. The timeframe belongs to the workspace, so every chart in it reloads its candles for the new bar length and goes back to the newest bars; replay re-bases. Candles and indicators read right after may still be loading: check the charts' `status` in fakingview_list_charts. Answers `unchanged` when the workspace already uses it.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -141,8 +141,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_set_chart_type",
-        description = "Switch a market chart to another chart type, as its type menu does: candles, hollow candles, bars, lines, areas, Heikin Ashi, Renko and the rest. Each type keeps the settings it had. A market drawn as a line (prediction markets, CoinMarketCap) and a source with no volume for volume candles refuse with UNSUPPORTED. Price-based types (Heikin Ashi, Renko, Kagi, Line Break, Point & Figure, Range) draw bars built from the candles; degenview_get_candles still returns the market's own. Answers `unchanged` when the chart already draws it.",
+        name = "fakingview_set_chart_type",
+        description = "Switch a market chart to another chart type, as its type menu does: candles, hollow candles, bars, lines, areas, Heikin Ashi, Renko and the rest. Each type keeps the settings it had. A market drawn as a line (prediction markets, CoinMarketCap) and a source with no volume for volume candles refuse with UNSUPPORTED. Price-based types (Heikin Ashi, Renko, Kagi, Line Break, Point & Figure, Range) draw bars built from the candles; fakingview_get_candles still returns the market's own. Answers `unchanged` when the chart already draws it.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -185,8 +185,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_remove_chart",
-        description = "Remove a market chart from a workspace, as the chart's Remove button does. The drawings on it go with it and cannot be brought back from here; alerts and watchlists are not touched, and degenview_add_chart can chart the market again (with a clean chart). Portfolio cards cannot be removed this way. Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_remove_chart",
+        description = "Remove a market chart from a workspace, as the chart's Remove button does. The drawings on it go with it and cannot be brought back from here; alerts and watchlists are not touched, and fakingview_add_chart can chart the market again (with a clean chart). Portfolio cards cannot be removed this way. Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,

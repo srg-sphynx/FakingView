@@ -233,7 +233,7 @@ fn the_preview_chip_is_offered_only_while_the_card_has_no_preview() {
     if let Some(Geometry::Card { card, .. }) = rig.drawings[0].geometry_mut() {
         card.meta = Some(LinkMeta {
             title: "Developers".into(),
-            author: "@degenview".into(),
+            author: "@fakingview".into(),
             excerpt: "Hello".into(),
             fetched_at_ms: 1,
             avatar: None,

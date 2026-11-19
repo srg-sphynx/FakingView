@@ -10,7 +10,7 @@ mod window;
 
 pub(super) use fx::SharedFxRates;
 
-use super::DegenViewApp;
+use super::FakingViewApp;
 use super::now_ms;
 use super::tabs::TabContent;
 use crate::host::alert::AlertHost;
@@ -181,7 +181,7 @@ impl AlertCoordinator {
     }
 }
 
-impl DegenViewApp {
+impl FakingViewApp {
     pub(super) fn tick_alerts(&mut self) {
         let tabs = &self.tabs;
         self.alerts.tick(

@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Stochastic Oscillator: where the close sits inside the recent high-low range, from 0 to 100.
 // Above the upper level is overbought, below the lower level is oversold.
 indicator("Stochastic", overlay = false)

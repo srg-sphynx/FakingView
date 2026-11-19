@@ -1,5 +1,5 @@
 //@version=6
-// Example script bundled with DegenView. Edit it freely.
+// Example script bundled with FakingView. Edit it freely.
 // A small table pinned to the corner of the chart. It is rebuilt on the last bar
 // only, so history stays cheap.
 indicator("Stats Table", overlay = true)

@@ -99,16 +99,16 @@ pub fn gate(command: &McpCommand) -> Gate {
 /// each one explains the step in its description, so a model learns of it from the tool list.
 #[cfg(test)]
 pub const GATED_TOOLS: [&str; 10] = [
-    "degenview_delete_price_alert",
-    "degenview_delete_watchlist",
-    "degenview_delete_drawings",
-    "degenview_remove_chart",
-    "degenview_remove_pine_instance",
-    "degenview_save_pine_script",
-    "degenview_place_paper_order",
-    "degenview_modify_paper_order",
-    "degenview_cancel_paper_orders",
-    "degenview_close_paper_positions",
+    "fakingview_delete_price_alert",
+    "fakingview_delete_watchlist",
+    "fakingview_delete_drawings",
+    "fakingview_remove_chart",
+    "fakingview_remove_pine_instance",
+    "fakingview_save_pine_script",
+    "fakingview_place_paper_order",
+    "fakingview_modify_paper_order",
+    "fakingview_cancel_paper_orders",
+    "fakingview_close_paper_positions",
 ];
 
 /// The tool whose call produced a gated command (for the activity log), or `None` for a command
@@ -537,7 +537,7 @@ mod tests {
 
         let settled = book.approve(later, 10).expect("it was open");
         assert_eq!(settled.how, Settlement::Approved);
-        assert_eq!(settled.tool, "degenview_delete_price_alert");
+        assert_eq!(settled.tool, "fakingview_delete_price_alert");
         assert_eq!(settled.client_id, "c1");
         assert!(book.pending(later).is_empty());
 
@@ -851,7 +851,7 @@ mod tests {
             assert!(!summary.action.is_empty());
             assert!(summary.note.is_some());
             assert!(
-                tool_of(command).is_some_and(|t| t.starts_with("degenview_")),
+                tool_of(command).is_some_and(|t| t.starts_with("fakingview_")),
                 "{command:?}"
             );
         }
@@ -869,7 +869,7 @@ mod tests {
                 alert_id: 3,
                 paused: true
             })),
-            Some("degenview_pause_price_alert")
+            Some("fakingview_pause_price_alert")
         );
         // A draft and a save are different tools.
         assert_eq!(
@@ -878,7 +878,7 @@ mod tests {
                 expected_revision: "r".into(),
                 source: None,
             })),
-            Some("degenview_save_pine_script")
+            Some("fakingview_save_pine_script")
         );
     }
 

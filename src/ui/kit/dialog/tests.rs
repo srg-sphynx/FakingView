@@ -343,7 +343,7 @@ fn gallery_of_the_dialogs() {
                 icon: Icon::Cycle,
                 tint: theme::ORANGE,
                 title: "Restart to finish updating?",
-                message: "DegenView 0.6.0 is ready. DegenView will close and reopen.",
+                message: "FakingView 0.6.0 is ready. FakingView will close and reopen.",
                 accept: "Restart Now",
                 dismiss: "Later",
                 ..spec()

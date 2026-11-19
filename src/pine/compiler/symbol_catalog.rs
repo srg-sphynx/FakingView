@@ -2,7 +2,7 @@
 //! the structure validator, the identifier rules and `compiler::is_named_constant` read to tell a
 //! builtin from a user symbol without compiling. It mirrors the names the runtime dispatches and the
 //! tables `builtin_types`/`builtins`/`builtins::alert::frequency`/`outputs`/`time` already own; names Pine
-//! defines but DegenView does not implement are listed under the `reserved`/`unimplemented` sets.
+//! defines but FakingView does not implement are listed under the `reserved`/`unimplemented` sets.
 
 /// Builtin variables that change per bar or per symbol (`close`, `bar_index`, `syminfo.tickerid`).
 pub const VARIABLES: &[&str] = &[
@@ -127,7 +127,7 @@ pub const VARIABLES: &[&str] = &[
     "ta.pvt",
     "ta.wad",
     "ta.wvad",
-    // Pine variables DegenView cannot supply (reading one gives `na`, with a warning).
+    // Pine variables FakingView cannot supply (reading one gives `na`, with a warning).
     "syminfo.mincontract",
     "syminfo.description",
     "syminfo.volumetype",
@@ -177,7 +177,7 @@ pub const OBJECT_TYPES: &[&str] = &[
     "line", "label", "box", "table", "array", "matrix", "map", "object",
 ];
 
-/// Pine named constants DegenView's tables do not own. Each evaluates to its own name, so a name
+/// Pine named constants FakingView's tables do not own. Each evaluates to its own name, so a name
 /// outside this catalog (a typo) is an error rather than a string.
 pub const RESERVED_CONSTANTS: &[&str] = &[
     "session.regular",
@@ -353,7 +353,7 @@ pub fn is_function(name: &str) -> bool {
     FUNCTIONS.contains(&name) && name != "color" && !OBJECT_TYPES.contains(&name)
 }
 
-/// Whether `name` is a named constant DegenView's other tables do not own.
+/// Whether `name` is a named constant FakingView's other tables do not own.
 pub fn is_reserved_constant(name: &str) -> bool {
     RESERVED_CONSTANTS.contains(&name)
 }

@@ -12,7 +12,7 @@ on:
   pull_request:
     paths:
       - packaging/flatpak/**
-      - assets/brand/DegenView-512-rounded.png
+      - assets/brand/FakingView-512-rounded.png
       - .github/workflows/flatpak.yml
       - .github/workflows/flatpak-check.yml
       - tools/requirements/flatpak-generator.txt
@@ -35,4 +35,4 @@ jobs:
     with:
       # The manifest and Cargo.lock are the same for both CPUs; the release builds arm64 too.
       arm64: false
-      bundle-prefix: DegenView-ci-linux
+      bundle-prefix: FakingView-ci-linux

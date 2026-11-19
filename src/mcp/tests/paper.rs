@@ -89,17 +89,17 @@ fn the_paper_tools_are_read_only_and_listed_only_for_paper_read() {
     assert_eq!(
         names,
         [
-            "degenview_get_paper_account",
-            "degenview_list_paper_accounts",
-            "degenview_list_paper_fills",
-            "degenview_list_paper_trades",
+            "fakingview_get_paper_account",
+            "fakingview_list_paper_accounts",
+            "fakingview_list_paper_fills",
+            "fakingview_list_paper_trades",
         ]
     );
     assert!(Permission::PaperRead.id() == "paper.read" && !Permission::PaperRead.is_mutating());
     let denied = call(
         &harness.url(),
         "c-tok",
-        "degenview_list_paper_accounts",
+        "fakingview_list_paper_accounts",
         json!({}),
     );
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
@@ -111,7 +111,7 @@ fn an_account_reports_its_equity_positions_and_working_orders() {
     let account = seeded(&harness);
     let url = harness.url();
 
-    let listed = call(&url, "tok", "degenview_list_paper_accounts", json!({}));
+    let listed = call(&url, "tok", "fakingview_list_paper_accounts", json!({}));
     assert_eq!(listed["isError"], json!(false), "{listed}");
     let accounts = listed["structuredContent"]["accounts"].as_array().unwrap();
     assert_eq!(accounts.len(), 1);
@@ -126,7 +126,7 @@ fn an_account_reports_its_equity_positions_and_working_orders() {
     let detail = call(
         &url,
         "tok",
-        "degenview_get_paper_account",
+        "fakingview_get_paper_account",
         json!({"account_id": account.to_string()}),
     );
     let detail = &detail["structuredContent"];
@@ -157,7 +157,7 @@ fn fills_and_closed_trades_page_newest_first() {
     let fills = call(
         &url,
         "tok",
-        "degenview_list_paper_fills",
+        "fakingview_list_paper_fills",
         json!({"account_id": account, "limit": 2}),
     );
     let fills = &fills["structuredContent"];
@@ -171,7 +171,7 @@ fn fills_and_closed_trades_page_newest_first() {
     let older = call(
         &url,
         "tok",
-        "degenview_list_paper_fills",
+        "fakingview_list_paper_fills",
         json!({"account_id": account, "limit": 2, "offset": 2}),
     );
     assert_eq!(
@@ -186,7 +186,7 @@ fn fills_and_closed_trades_page_newest_first() {
     let trades = call(
         &url,
         "tok",
-        "degenview_list_paper_trades",
+        "fakingview_list_paper_trades",
         json!({"account_id": account}),
     );
     let trades = &trades["structuredContent"];
@@ -204,9 +204,9 @@ fn unknown_accounts_and_bad_arguments_are_refused() {
     let account = seeded(&harness).to_string();
     let url = harness.url();
     for tool in [
-        "degenview_get_paper_account",
-        "degenview_list_paper_fills",
-        "degenview_list_paper_trades",
+        "fakingview_get_paper_account",
+        "fakingview_list_paper_fills",
+        "fakingview_list_paper_trades",
     ] {
         let missing = call(&url, "tok", tool, json!({"account_id": "424242"}));
         assert_eq!(error_code(&missing), "NOT_FOUND", "{tool}");
@@ -230,7 +230,7 @@ fn unknown_accounts_and_bad_arguments_are_refused() {
             .unwrap()
             .extend(extra.as_object().unwrap().clone());
         assert!(
-            rejected(&url, "tok", "degenview_list_paper_fills", args.clone()),
+            rejected(&url, "tok", "fakingview_list_paper_fills", args.clone()),
             "{args}"
         );
     }
@@ -271,7 +271,7 @@ fn place(url: &str, token: &str, account: u64, extra: Value) -> Value {
     args.as_object_mut()
         .unwrap()
         .extend(extra.as_object().unwrap().clone());
-    call(url, token, "degenview_place_paper_order", args)
+    call(url, token, "fakingview_place_paper_order", args)
 }
 
 #[test]
@@ -287,34 +287,37 @@ fn each_paper_write_permission_gates_only_its_own_tools() {
     assert_eq!(
         tool_names(&url, "p-tok"),
         [
-            "degenview_modify_paper_order",
-            "degenview_place_paper_order"
+            "fakingview_modify_paper_order",
+            "fakingview_place_paper_order"
         ]
     );
-    assert_eq!(tool_names(&url, "c-tok"), ["degenview_cancel_paper_orders"]);
+    assert_eq!(
+        tool_names(&url, "c-tok"),
+        ["fakingview_cancel_paper_orders"]
+    );
     assert_eq!(
         tool_names(&url, "x-tok"),
-        ["degenview_close_paper_positions"]
+        ["fakingview_close_paper_positions"]
     );
     let a = account.to_string();
     let tools = [
         (
-            "degenview_place_paper_order",
+            "fakingview_place_paper_order",
             json!({"account_id": a, "source": "binance", "symbol": "BTCUSDT", "side": "buy", "order_type": "market", "quantity": 1.0}),
             "p-tok",
         ),
         (
-            "degenview_modify_paper_order",
+            "fakingview_modify_paper_order",
             json!({"order_id": "1", "limit_price": 5.0}),
             "p-tok",
         ),
         (
-            "degenview_cancel_paper_orders",
+            "fakingview_cancel_paper_orders",
             json!({"account_id": a, "all": true}),
             "c-tok",
         ),
         (
-            "degenview_close_paper_positions",
+            "fakingview_close_paper_positions",
             json!({"account_id": a, "all": true}),
             "x-tok",
         ),
@@ -367,7 +370,7 @@ fn a_market_order_fills_at_the_ask_and_a_close_takes_the_position_off() {
     let detail = call(
         &url,
         "r-tok",
-        "degenview_get_paper_account",
+        "fakingview_get_paper_account",
         json!({"account_id": account.to_string()}),
     );
     assert_eq!(detail["structuredContent"]["positions"][0]["quantity"], 1.0);
@@ -375,7 +378,7 @@ fn a_market_order_fills_at_the_ask_and_a_close_takes_the_position_off() {
     let closed = call(
         &url,
         "tok",
-        "degenview_close_paper_positions",
+        "fakingview_close_paper_positions",
         json!({"account_id": account.to_string(), "source": "binance", "symbol": "btcusdt"}),
     );
     assert_eq!(closed["structuredContent"]["account"], Value::Null);
@@ -386,21 +389,21 @@ fn a_market_order_fills_at_the_ask_and_a_close_takes_the_position_off() {
     let detail = call(
         &url,
         "r-tok",
-        "degenview_get_paper_account",
+        "fakingview_get_paper_account",
         json!({"account_id": account.to_string()}),
     );
     assert_eq!(detail["structuredContent"]["positions"], json!([]));
     let again = call(
         &url,
         "tok",
-        "degenview_close_paper_positions",
+        "fakingview_close_paper_positions",
         json!({"account_id": account.to_string(), "all": true}),
     );
     assert_eq!(again["structuredContent"]["status"], "nothing_to_do");
     let named = call(
         &url,
         "tok",
-        "degenview_close_paper_positions",
+        "fakingview_close_paper_positions",
         json!({"account_id": account.to_string(), "source": "binance", "symbol": "BTCUSDT"}),
     );
     assert_eq!(error_code(&named), "NOT_FOUND");
@@ -425,7 +428,7 @@ fn a_limit_order_works_can_be_changed_and_canceled() {
     let modified = call(
         &url,
         "tok",
-        "degenview_modify_paper_order",
+        "fakingview_modify_paper_order",
         json!({"order_id": id, "limit_price": 60.0, "quantity": 2.0}),
     );
     let out = &modified["structuredContent"];
@@ -436,7 +439,7 @@ fn a_limit_order_works_can_be_changed_and_canceled() {
     let canceled = call(
         &url,
         "tok",
-        "degenview_cancel_paper_orders",
+        "fakingview_cancel_paper_orders",
         json!({"account_id": account.to_string(), "order_ids": [id, "999999"]}),
     );
     let out = &canceled["structuredContent"];
@@ -450,7 +453,7 @@ fn a_limit_order_works_can_be_changed_and_canceled() {
     let gone = call(
         &url,
         "tok",
-        "degenview_modify_paper_order",
+        "fakingview_modify_paper_order",
         json!({"order_id": id, "limit_price": 61.0}),
     );
     assert_ne!(
@@ -462,7 +465,7 @@ fn a_limit_order_works_can_be_changed_and_canceled() {
     let nothing = call(
         &url,
         "tok",
-        "degenview_cancel_paper_orders",
+        "fakingview_cancel_paper_orders",
         json!({"account_id": account.to_string(), "all": true}),
     );
     assert_eq!(nothing["structuredContent"]["status"], "nothing_to_do");
@@ -535,7 +538,7 @@ fn a_bracket_reports_its_exit_orders_and_an_unpriced_market_is_refused() {
     let unpriced = call(
         &url,
         "tok",
-        "degenview_place_paper_order",
+        "fakingview_place_paper_order",
         json!({"account_id": account.to_string(), "source": "binance", "symbol": "ETHUSDT",
                "side": "buy", "order_type": "market", "quantity": 1.0}),
     );
@@ -568,7 +571,7 @@ fn an_account_another_mac_runs_is_not_changed_over_mcp() {
     assert!(harness.paper().owned_elsewhere(77).is_some());
 
     // Reading it is fine and says who runs it.
-    let listed = call(&url, "r-tok", "degenview_list_paper_accounts", json!({}));
+    let listed = call(&url, "r-tok", "fakingview_list_paper_accounts", json!({}));
     let accounts = listed["structuredContent"]["accounts"].as_array().unwrap();
     let theirs = accounts.iter().find(|a| a["account_id"] == "77").unwrap();
     assert!(theirs["run_by_another_mac"].as_str().is_some());
@@ -584,11 +587,11 @@ fn an_account_another_mac_runs_is_not_changed_over_mcp() {
     );
     for (tool, arguments) in [
         (
-            "degenview_cancel_paper_orders",
+            "fakingview_cancel_paper_orders",
             json!({"account_id": "77", "all": true}),
         ),
         (
-            "degenview_close_paper_positions",
+            "fakingview_close_paper_positions",
             json!({"account_id": "77", "all": true}),
         ),
     ] {
@@ -611,7 +614,7 @@ fn bad_paper_orders_never_reach_the_engine() {
     let harness = Harness::start(&[("t", "tok", TRADE)]);
     let url = harness.url();
     let account = funded(&harness).to_string();
-    let tool = "degenview_place_paper_order";
+    let tool = "fakingview_place_paper_order";
     let base = json!({"account_id": account, "source": "binance", "symbol": "BTCUSDT",
         "side": "buy", "order_type": "market", "quantity": 1.0});
     for extra in [
@@ -641,41 +644,41 @@ fn bad_paper_orders_never_reach_the_engine() {
         assert!(rejected(&url, "tok", tool, args.clone()), "{args}");
     }
     for (tool, arguments) in [
-        ("degenview_modify_paper_order", json!({"order_id": "1"})),
+        ("fakingview_modify_paper_order", json!({"order_id": "1"})),
         (
-            "degenview_modify_paper_order",
+            "fakingview_modify_paper_order",
             json!({"order_id": "x", "limit_price": 1.0}),
         ),
         (
-            "degenview_modify_paper_order",
+            "fakingview_modify_paper_order",
             json!({"order_id": "1", "quantity": 0.0}),
         ),
         (
-            "degenview_cancel_paper_orders",
+            "fakingview_cancel_paper_orders",
             json!({"account_id": account}),
         ),
         (
-            "degenview_cancel_paper_orders",
+            "fakingview_cancel_paper_orders",
             json!({"account_id": account, "all": true, "order_ids": ["1"]}),
         ),
         (
-            "degenview_cancel_paper_orders",
+            "fakingview_cancel_paper_orders",
             json!({"account_id": account, "order_ids": []}),
         ),
         (
-            "degenview_cancel_paper_orders",
+            "fakingview_cancel_paper_orders",
             json!({"account_id": account, "all": false}),
         ),
         (
-            "degenview_close_paper_positions",
+            "fakingview_close_paper_positions",
             json!({"account_id": account}),
         ),
         (
-            "degenview_close_paper_positions",
+            "fakingview_close_paper_positions",
             json!({"account_id": account, "all": true, "source": "binance", "symbol": "BTCUSDT"}),
         ),
         (
-            "degenview_close_paper_positions",
+            "fakingview_close_paper_positions",
             json!({"account_id": account, "source": "binance"}),
         ),
     ] {
@@ -743,7 +746,7 @@ fn a_write_grant_alone_never_returns_the_account() {
         &call(
             &url,
             "c-tok",
-            "degenview_cancel_paper_orders",
+            "fakingview_cancel_paper_orders",
             json!({"account_id": a, "all": true}),
         ),
         "cancel nothing",
@@ -752,7 +755,7 @@ fn a_write_grant_alone_never_returns_the_account() {
         &call(
             &url,
             "cr-tok",
-            "degenview_cancel_paper_orders",
+            "fakingview_cancel_paper_orders",
             json!({"account_id": a, "all": true}),
         ),
         "cancel nothing with read",
@@ -761,7 +764,7 @@ fn a_write_grant_alone_never_returns_the_account() {
     let partial = call(
         &url,
         "c-tok",
-        "degenview_cancel_paper_orders",
+        "fakingview_cancel_paper_orders",
         json!({"account_id": a, "order_ids": ["999999"]}),
     );
     none(&partial, "partial failure");
@@ -776,7 +779,7 @@ fn a_write_grant_alone_never_returns_the_account() {
         &call(
             &url,
             "x-tok",
-            "degenview_close_paper_positions",
+            "fakingview_close_paper_positions",
             json!({"account_id": a, "all": true}),
         ),
         "close",

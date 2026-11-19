@@ -11,7 +11,8 @@ const TABLE: [&str; 24] = [
     "3D", "5D", "1W", "2W", "1M", "2M", "3M", "6M", "1Y",
 ];
 
-const CANDLE_SOURCES: [DataSource; 9] = [
+const CANDLE_SOURCES: [DataSource; 10] = [
+    DataSource::Kite,
     DataSource::Binance,
     DataSource::Coinbase,
     DataSource::Okx,
@@ -22,6 +23,26 @@ const CANDLE_SOURCES: [DataSource; 9] = [
     DataSource::Alpaca,
     DataSource::DexScreener,
 ];
+
+#[test]
+fn kite_folds_session_bars_without_moving_the_requested_grid() {
+    assert_eq!(
+        DataSource::Kite.natives(),
+        [Timeframe::MINUTE_1, Timeframe::DAY_1]
+    );
+    for text in TABLE {
+        assert!(DataSource::Kite.serves(tf(text)), "{text}");
+        let base = DataSource::Kite.plan(tf(text)).unwrap().base();
+        assert_eq!(
+            base,
+            if tf(text).is_intraday() {
+                Timeframe::MINUTE_1
+            } else {
+                Timeframe::DAY_1
+            }
+        );
+    }
+}
 
 #[test]
 fn every_native_is_its_own_base_and_lists_are_shortest_first() {

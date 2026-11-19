@@ -16,7 +16,7 @@ const FONTS_README: &str = include_str!("../../../assets/fonts/README.md");
 const ROOT_README: &str = include_str!("../../../README.md");
 const LICENSING: &str = include_str!("../../../docs/licensing.md");
 const BUNDLE_SCRIPT: &str = include_str!("../../../tools/bundle.sh");
-const FLATPAK: &str = include_str!("../../../packaging/flatpak/es.nico.degenview.yml");
+const FLATPAK: &str = include_str!("../../../packaging/flatpak/local.fakingview.desktop.yml");
 const RELEASE: &str = include_str!("../../../.github/workflows/release.yml");
 
 fn sha256(bytes: &[u8]) -> String {
@@ -135,9 +135,10 @@ fn the_licence_texts_ship_with_every_kind_of_download() {
         );
     }
     assert!(BUNDLE_SCRIPT.contains("Contents/Resources/Licenses"));
-    assert!(FLATPAK.contains("/app/share/licenses/es.nico.degenview"));
-    // Linux and Windows archives both.
-    assert_eq!(RELEASE.matches("OFL-JetBrainsMono.txt").count(), 2);
+    assert!(FLATPAK.contains("/app/share/licenses/local.fakingview.desktop"));
+    // The current release ships the licensed app bundle and complete corresponding source.
+    assert!(RELEASE.contains("target/FakingView.app"));
+    assert!(RELEASE.contains("git archive --format=tar"));
 }
 
 /// A context with the app's fonts, and one frame run so that they exist.

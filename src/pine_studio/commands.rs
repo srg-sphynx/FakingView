@@ -60,6 +60,7 @@ pub(crate) enum Cmd {
     /// Show a one-based line of the open script.
     RevealLine(usize),
     OpenAlpacaSettings,
+    OpenKiteSettings,
     /// Make a theme the editor's, in every window.
     SetEditorTheme(ThemeSelection),
     /// Open Settings on the page that edits the editor's themes.
@@ -193,6 +194,7 @@ impl PineStudio {
                 }
             }
             Cmd::OpenAlpacaSettings => self.actions.push(PineStudioAction::OpenAlpacaSettings),
+            Cmd::OpenKiteSettings => self.actions.push(PineStudioAction::OpenKiteSettings),
             Cmd::SetEditorTheme(selection) => self.themes.select(selection),
             Cmd::OpenThemeSettings => self.actions.push(PineStudioAction::OpenEditorThemeSettings),
         }

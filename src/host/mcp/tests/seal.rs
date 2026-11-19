@@ -188,7 +188,7 @@ fn a_deleted_or_unreadable_key_refuses_the_saved_state() {
         .items
         .write(
             Scope {
-                service: "es.nico.degenview.mcp",
+                service: "local.fakingview.desktop.mcp",
                 shared_group: false,
             },
             "seal-key-v1",
@@ -354,7 +354,7 @@ fn a_distributed_build_ignores_the_variable_that_turns_the_seal_off() {
     );
     assert!(
         !sealing_disabled(false, false, false, true),
-        "a release build seals even with DEGENVIEW_NO_KEYCHAIN set"
+        "a release build seals even with FAKINGVIEW_NO_KEYCHAIN set"
     );
     assert!(!sealing_disabled(false, false, false, false));
 }
@@ -367,7 +367,7 @@ fn a_reset_the_keychain_refuses_clears_nothing() {
     drop(host);
     // The key becomes unreadable: the case that offers the reset.
     let scope = Scope {
-        service: "es.nico.degenview.mcp",
+        service: "local.fakingview.desktop.mcp",
         shared_group: false,
     };
     keychain
@@ -408,7 +408,7 @@ fn resetting_from_an_unreadable_key_replaces_it() {
     create_client(&mut host, "Claude");
     drop(host);
     let scope = Scope {
-        service: "es.nico.degenview.mcp",
+        service: "local.fakingview.desktop.mcp",
         shared_group: false,
     };
     keychain
@@ -438,7 +438,7 @@ fn a_read_that_fails_after_a_good_write_does_not_stop_the_reset() {
     create_client(&mut host, "Claude");
     drop(host);
     let scope = Scope {
-        service: "es.nico.degenview.mcp",
+        service: "local.fakingview.desktop.mcp",
         shared_group: false,
     };
     let old_key = keychain.items.read(scope, "seal-key-v1");

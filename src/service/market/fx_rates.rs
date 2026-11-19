@@ -1319,7 +1319,7 @@ mod tests {
 
     #[test]
     fn caches_survive_a_restart() {
-        let directory = std::env::temp_dir().join(format!("degenview-fx-{}", std::process::id()));
+        let directory = std::env::temp_dir().join(format!("fakingview-fx-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&directory);
         {
             let f = fixture(Some(directory.clone()));

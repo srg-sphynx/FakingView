@@ -101,7 +101,7 @@ fn font(spec: &Spec, base: u32) -> Vec<u8> {
 }
 
 fn dir(name: &str) -> PathBuf {
-    let path = std::env::temp_dir().join(format!("degenview-fonts-{name}-{}", std::process::id()));
+    let path = std::env::temp_dir().join(format!("fakingview-fonts-{name}-{}", std::process::id()));
     let _ = fs::remove_dir_all(&path);
     fs::create_dir_all(&path).unwrap();
     path

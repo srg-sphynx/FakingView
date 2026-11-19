@@ -951,6 +951,10 @@ impl PaperTradingEngine {
         request: &PaperOrderRequest,
         account: &PaperAccount,
     ) -> Result<(), PaperTradingError> {
+        // Kite quotes are INR; the paper engine has no INR account or conversion model.
+        if request.instrument.source == crate::model::DataSource::Kite {
+            return Err(PaperTradingError::UnsupportedSymbol);
+        }
         if request.quantity < request.instrument.minimum_quantity {
             return Err(PaperTradingError::InvalidQuantity(format!(
                 "Quantity must be at least {}.",
@@ -1387,6 +1391,19 @@ mod tests {
             )
             .unwrap();
         (engine, id)
+    }
+
+    #[test]
+    fn indian_market_quotes_cannot_be_submitted_to_a_usd_paper_account() {
+        let (mut engine, id) = engine_with_account();
+        let mut order = request(id, PaperOrderType::Limit, 1.0);
+        order.instrument =
+            PaperInstrument::chart("NSE:INFY", "Infosys", crate::model::DataSource::Kite);
+        assert!(matches!(
+            engine.submit(order),
+            Err(PaperTradingError::UnsupportedSymbol)
+        ));
+        assert!(engine.snapshot().orders.is_empty());
     }
 
     #[test]

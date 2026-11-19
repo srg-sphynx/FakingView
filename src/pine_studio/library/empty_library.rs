@@ -216,7 +216,7 @@ mod tests {
 
     fn empty_manager(tag: &str) -> (PineStudio, std::path::PathBuf) {
         let root =
-            std::env::temp_dir().join(format!("degenview-empty-{tag}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("fakingview-empty-{tag}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let shared = Arc::new(Mutex::new(Store::open_in_memory().unwrap()));
         let store = ScriptStore::new(root.join("Scripts"), root.join("ScriptMetadata"));
@@ -256,7 +256,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(root);
     }
 
-    /// Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+    /// Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_the_empty_library() {

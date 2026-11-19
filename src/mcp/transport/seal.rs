@@ -23,7 +23,7 @@ use sha2::Sha256;
 pub const KEY_BYTES: usize = 32;
 
 /// Separates this MAC from any other use of the same key, and versions the encoding below.
-const DOMAIN: &[u8] = b"degenview.mcp.seal.v1\n";
+const DOMAIN: &[u8] = b"fakingview.mcp.seal.v1\n";
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

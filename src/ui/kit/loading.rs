@@ -500,7 +500,7 @@ mod tests {
     }
 
     /// The indicator in both themes: each size, then one frame every 0.15 s of a 44 pt one to see
-    /// the motion. `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_loading_indicator
+    /// the motion. `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_loading_indicator
     /// -- --ignored` writes them.
     #[test]
     #[ignore = "writes images for a person to look at"]

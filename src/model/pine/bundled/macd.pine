@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // MACD: the gap between a fast and a slow moving average, a smoothed signal line of that gap, and
 // a histogram of the difference. The histogram is darker while momentum is growing.
 indicator("MACD", overlay = false)

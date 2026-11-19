@@ -27,6 +27,7 @@ pub fn paint(ui: &Ui, rect: Rect, section: SettingsSection) {
         SettingsSection::Appearance => art.appearance(),
         SettingsSection::PineStudio => art.pine_studio(),
         SettingsSection::Alpaca => art.alpaca(),
+        SettingsSection::Kite => art.alpaca(),
         SettingsSection::Brokers => art.brokers(),
         SettingsSection::CoinMarketCap => art.coinmarketcap(),
         SettingsSection::Ai => art.ai(),
@@ -669,7 +670,7 @@ mod tests {
     }
 
     /// Pictures for a person to look at. Run by hand:
-    /// `DEGENVIEW_GALLERY_DIR=… cargo test --lib settings_art -- --ignored`.
+    /// `FAKINGVIEW_GALLERY_DIR=… cargo test --lib settings_art -- --ignored`.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_the_settings_pictures() {

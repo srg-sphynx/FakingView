@@ -185,7 +185,7 @@ impl McpError {
                 "confirmation_id": pending.id.to_string(),
                 "expires_in_seconds": pending.expires_in_secs,
                 "operation": pending.operation,
-                "next_step": "Ask the user to approve it in DegenView, then repeat this exact call.",
+                "next_step": "Ask the user to approve it in FakingView, then repeat this exact call.",
             })),
             Self::ConfirmationDenied(operation) => Some(serde_json::json!({
                 "operation": operation,
@@ -206,15 +206,15 @@ impl McpError {
             | Self::ResourceLimit(message)
             | Self::AppUnavailable(message) => message.clone(),
             Self::Timeout => {
-                "DegenView did not respond in time; the request was not applied".into()
+                "FakingView did not respond in time; the request was not applied".into()
             }
             Self::ConfirmationRequired(pending) => format!(
-                "Needs the user's approval in DegenView first, so nothing was changed: {}. \
+                "Needs the user's approval in FakingView first, so nothing was changed: {}. \
                  It waits {} seconds for an answer. Ask the user to approve it, then repeat this exact call.",
                 pending.operation, pending.expires_in_secs
             ),
             Self::ConfirmationDenied(operation) => format!(
-                "The user declined this in DegenView, so nothing was changed: {operation}. \
+                "The user declined this in FakingView, so nothing was changed: {operation}. \
                  Do not repeat it unless the user asks you to."
             ),
         }
@@ -337,7 +337,7 @@ impl BridgeClient {
         };
         if self.sender.try_send(request).is_err() {
             return Err(McpError::AppUnavailable(
-                "DegenView is busy; try again".into(),
+                "FakingView is busy; try again".into(),
             ));
         }
         (self.wake)();
@@ -345,7 +345,7 @@ impl BridgeClient {
         match tokio::time::timeout(timeout, &mut answer).await {
             Ok(Ok(reply)) => reply,
             Ok(Err(_)) => Err(McpError::AppUnavailable(
-                "DegenView is shutting down".into(),
+                "FakingView is shutting down".into(),
             )),
             Err(_) => {
                 // Cancel if the app has not started it: then it is certain not to run.

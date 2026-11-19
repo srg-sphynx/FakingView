@@ -161,10 +161,10 @@ impl<'a> View<'a> {
 
 // MARK: Rows
 
-/// "degenview_get_pine_report" as "Get pine report".
+/// "fakingview_get_pine_report" as "Get pine report".
 fn tool_title(tool: &str) -> String {
     let words = tool
-        .strip_prefix("degenview_")
+        .strip_prefix("fakingview_")
         .unwrap_or(tool)
         .replace('_', " ");
     let mut chars = words.chars();
@@ -473,7 +473,7 @@ pub fn preview(ui: &mut Ui, state: &mut ActivityState, input: &ActivityInput) {
         ui,
         "Recent activity",
         Some(
-            "What connected clients asked DegenView to do, newest first. Kept on this Mac only, and holds ids and results, never what a request contained.",
+            "What connected clients asked FakingView to do, newest first. Kept on this Mac only, and holds ids and results, never what a request contained.",
         ),
         |ui| {
             if input.entries.is_empty() {
@@ -551,7 +551,7 @@ pub fn sheet(
                 ui,
                 Icon::List,
                 "Activity log",
-                "What connected clients asked DegenView to do. Kept on this Mac only; it holds ids and results, never what a request contained.",
+                "What connected clients asked FakingView to do. Kept on this Mac only; it holds ids and results, never what a request contained.",
                 theme::text_secondary(),
             );
         });
@@ -1025,7 +1025,7 @@ mod tests {
             at_ms: NOW - 1_000 * n as i64,
             client_id: client.into(),
             client_name: format!("Client {client}"),
-            tool: "degenview_get_pine_report".into(),
+            tool: "fakingview_get_pine_report".into(),
             outcome,
             code: if outcome == McpAuditOutcome::Failed {
                 "NOT_FOUND".into()
@@ -1076,7 +1076,7 @@ mod tests {
 
     #[test]
     fn rows_say_what_who_and_how_it_ended() {
-        assert_eq!(tool_title("degenview_get_pine_report"), "Get pine report");
+        assert_eq!(tool_title("fakingview_get_pine_report"), "Get pine report");
         assert_eq!(tool_title("custom_thing"), "Custom thing");
         assert_eq!(tool_title(""), "");
         assert_eq!(target_text("chart_id", "3"), "chart 3");
@@ -1136,7 +1136,7 @@ mod tests {
         let tip = row_tooltip(&entry, 0);
         for part in [
             "Client: Client abc (abc)",
-            "Tool: degenview_get_pine_report",
+            "Tool: fakingview_get_pine_report",
             "Result: Failed (NOT_FOUND)",
             "Took 312 ms",
             "Named: workspace 46, chart 3",
@@ -1363,7 +1363,7 @@ mod tests {
             let mut rows = log(1000);
             // The longest things a row can hold must truncate, not widen the sheet.
             rows[7].client_name = "A client with a very long name ".repeat(4);
-            rows[7].tool = "degenview_".to_owned() + &"long_tool_name_".repeat(4);
+            rows[7].tool = "fakingview_".to_owned() + &"long_tool_name_".repeat(4);
             rows
         };
         let filters: [fn(&mut ActivityState); 5] = [
@@ -1456,7 +1456,7 @@ mod tests {
     fn nothing_is_painted_outside_the_sheet() {
         // Screen 900 wide, so the 760-wide sheet spans 70 to 830.
         let mut entries = log(30);
-        entries[2].tool = "degenview_".to_owned() + &"long_tool_name_".repeat(6);
+        entries[2].tool = "fakingview_".to_owned() + &"long_tool_name_".repeat(6);
         entries[2].client_name = "A client with a very long name ".repeat(5);
         let session = Session::new(input(&entries));
         assert!(session.last.len() > 50);

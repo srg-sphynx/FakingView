@@ -1,5 +1,5 @@
 use super::AppAction;
-use super::DegenViewApp;
+use super::FakingViewApp;
 use super::window::WindowEnv;
 use crate::host::tab::link::TabLinkHost;
 use crate::host::tab::title::TabTitleHost;
@@ -119,6 +119,7 @@ pub(super) fn show_tab(
                         AppAction::OpenWatchlistInNewTab(item)
                     }
                     WorkspaceAction::OpenAlpacaSettings => AppAction::OpenAlpacaSettings,
+                    WorkspaceAction::OpenKiteSettings => AppAction::OpenKiteSettings,
                     WorkspaceAction::OpenBrokerSettings => AppAction::OpenBrokerSettings,
                     WorkspaceAction::OpenSnapshotSettings => AppAction::OpenSnapshotSettings,
                     WorkspaceAction::SetAlertState { id, state } => {
@@ -191,6 +192,7 @@ pub(super) fn show_tab(
                         webhook_endpoint_ids,
                     },
                     PineStudioAction::OpenAlpacaSettings => AppAction::OpenAlpacaSettings,
+                    PineStudioAction::OpenKiteSettings => AppAction::OpenKiteSettings,
                     PineStudioAction::OpenWebhookSettings => AppAction::OpenWebhookSettings,
                     PineStudioAction::OpenAiSettings => AppAction::OpenAiSettings,
                     PineStudioAction::OpenEditorThemeSettings => AppAction::OpenEditorThemeSettings,
@@ -590,7 +592,7 @@ impl TabState {
     }
 }
 
-impl DegenViewApp {
+impl FakingViewApp {
     /// A tab with no chart: it opens on the empty page, as a new Swift tab does.
     pub(super) fn add_tab(&mut self, window: Option<WindowId>) {
         let id = self.tabs.allocate_id();

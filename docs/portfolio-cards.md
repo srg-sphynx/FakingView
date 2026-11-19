@@ -40,7 +40,7 @@ same card when kind and portfolio match; adding one that exists focuses it. The 
   the donut only when the card is taller than wide (`allocation::layout`). Legend names, bars and
   percentages sit in fixed columns so every track lines up; the bar is dropped before the name is cut.
 - A value-chart axis label that the badge of today's value would sit on is not drawn.
-- To look at all four in both themes: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib
+- To look at all four in both themes: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib
   portfolio_cards_gallery -- --ignored` (sizes, hover and the loading, down, privacy, empty and
   unpriced states). Verified that way only, not in a running window.
 

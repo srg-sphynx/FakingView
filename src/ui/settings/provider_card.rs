@@ -903,11 +903,11 @@ mod tests {
     fn a_secret_says_where_it_comes_from() {
         let key = imgbb_descriptor().field("key").unwrap();
         assert!(secret_hint(key, SecretState::Saved).contains("secure storage"));
-        assert!(secret_hint(key, SecretState::FromEnvironment).contains("DEGENVIEW_IMGBB_KEY"));
+        assert!(secret_hint(key, SecretState::FromEnvironment).contains("FAKINGVIEW_IMGBB_KEY"));
         assert_eq!(secret_hint(key, SecretState::Missing), key.hint);
         let token = host_descriptor().field("token").unwrap();
         assert!(
-            secret_hint(token, SecretState::FromEnvironment).contains("DEGENVIEW_SNAPSHOT_TOKEN")
+            secret_hint(token, SecretState::FromEnvironment).contains("FAKINGVIEW_SNAPSHOT_TOKEN")
         );
     }
 

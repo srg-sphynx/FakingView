@@ -224,7 +224,7 @@ impl Recents {
 }
 
 fn recents_id() -> Id {
-    Id::new("degenview-recent-colors")
+    Id::new("fakingview-recent-colors")
 }
 
 fn remember(ctx: &egui::Context, color: Color32) {
@@ -592,7 +592,7 @@ fn hue_stops() -> Vec<Color32> {
 /// without it the colour stays opaque.
 pub fn show(ui: &mut Ui, color: &mut Color32, alpha: Alpha) -> bool {
     let with_alpha = alpha != Alpha::Opaque;
-    let id = ui.id().with("degenview-color-picker");
+    let id = ui.id().with("fakingview-color-picker");
     let layout = Layout::new(ui.cursor().min, with_alpha);
     ui.allocate_space(layout.total);
 

@@ -241,7 +241,7 @@ model, store and mocked-sync round trips.
 ## Manual visual test matrix
 
 Compare against TradingView in both themes at 1x and 2x. The hand-run gallery
-(`DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_patterns -- --ignored`) writes every tool
+(`FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_patterns -- --ignored`) writes every tool
 as a PNG from the app's own renderer, which is a way to look at them without a window; it is not a
 comparison with TradingView.
 

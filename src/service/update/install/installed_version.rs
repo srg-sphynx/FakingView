@@ -1,6 +1,6 @@
 //! Keeps the installer's entry in Settings > Installed apps in step with self-updates (Windows).
 //!
-//! The Inno Setup installer (`packaging/windows/degenview.iss`) records the version it installed; a
+//! The Inno Setup installer (`packaging/windows/fakingview.iss`) records the version it installed; a
 //! self-updated exe swaps the file but not that entry. Compiled everywhere under test so the pure
 //! logic is tested on every platform; only the registry calls are Windows-only.
 #![cfg_attr(not(windows), allow(dead_code))]
@@ -10,9 +10,9 @@ use std::path::Path;
 #[cfg(windows)]
 use super::portable_binary::plain;
 
-/// The installer's `AppId` (`packaging/windows/degenview.iss`), which Inno Setup also uses to name
+/// The installer's `AppId` (`packaging/windows/fakingview.iss`), which Inno Setup also uses to name
 /// the per-user uninstall entry. A test keeps the two in step.
-const INSTALLER_APP_ID: &str = "79717C79-2D1E-4206-B25A-F3E626438640";
+const INSTALLER_APP_ID: &str = "FA88671D-145C-576B-9B00-22DB6C36120D";
 
 /// Where Inno Setup records a per-user install, under `HKEY_CURRENT_USER`.
 fn uninstall_key_path() -> String {
@@ -191,18 +191,18 @@ mod tests {
 
     #[test]
     fn the_installer_script_and_the_app_agree_on_the_app_id() {
-        let script = include_str!("../../../../packaging/windows/degenview.iss");
+        let script = include_str!("../../../../packaging/windows/fakingview.iss");
         assert!(
             script.contains(&format!("AppId={{{{{INSTALLER_APP_ID}}}")),
-            "packaging/windows/degenview.iss must declare AppId={{{{{INSTALLER_APP_ID}}}"
+            "packaging/windows/fakingview.iss must declare AppId={{{{{INSTALLER_APP_ID}}}"
         );
         assert!(uninstall_key_path().ends_with(&format!(r"\{{{INSTALLER_APP_ID}}}_is1")));
     }
 
     #[test]
     fn only_the_install_in_this_exes_folder_has_its_version_synced() {
-        let exe = Path::new(r"C:\Users\me\AppData\Local\Programs\DegenView\degenview.exe");
-        let installed = r"C:\Users\me\AppData\Local\Programs\DegenView";
+        let exe = Path::new(r"C:\Users\me\AppData\Local\Programs\FakingView\fakingview.exe");
+        let installed = r"C:\Users\me\AppData\Local\Programs\FakingView";
         let sync = |app_path: &str, exe: &Path, shown: Option<&str>| {
             needs_version_sync(app_path, exe, shown, "0.6.1")
         };
@@ -213,7 +213,7 @@ mod tests {
         // A portable copy elsewhere leaves the installed entry alone.
         assert!(!sync(
             installed,
-            Path::new(r"D:\Tools\degenview.exe"),
+            Path::new(r"D:\Tools\fakingview.exe"),
             Some("0.6.0")
         ));
     }
@@ -225,7 +225,7 @@ mod tests {
     fn the_installed_version_follows_the_running_exe() {
         use std::process::Command;
 
-        let path = format!(r"Software\DegenViewTest-{}", std::process::id());
+        let path = format!(r"Software\FakingViewTest-{}", std::process::id());
         let full = format!(r"HKCU\{path}");
         let reg = |args: &[&str]| {
             let output = Command::new("reg").args(args).output().unwrap();
@@ -241,20 +241,20 @@ mod tests {
             "/v",
             "Inno Setup: App Path",
             "/d",
-            r"C:\Apps\DegenView",
+            r"C:\Apps\FakingView",
             "/f",
         ]);
         reg(&["add", &full, "/v", "DisplayVersion", "/d", "1.0.0", "/f"]);
 
         // Another folder's exe does not touch it.
-        assert!(!sync(r"C:\Elsewhere\degenview.exe"));
+        assert!(!sync(r"C:\Elsewhere\fakingview.exe"));
         assert!(reg(&["query", &full, "/v", "DisplayVersion"]).contains("1.0.0"));
         // This folder's does, once.
-        assert!(sync(r"C:\Apps\DegenView\degenview.exe"));
+        assert!(sync(r"C:\Apps\FakingView\fakingview.exe"));
         assert!(reg(&["query", &full, "/v", "DisplayVersion"]).contains("2.0.0"));
-        assert!(!sync(r"C:\Apps\DegenView\degenview.exe"));
+        assert!(!sync(r"C:\Apps\FakingView\fakingview.exe"));
         // No key at all (a portable copy) is not an error.
         reg(&["delete", &full, "/f"]);
-        assert!(!sync(r"C:\Apps\DegenView\degenview.exe"));
+        assert!(!sync(r"C:\Apps\FakingView\fakingview.exe"));
     }
 }

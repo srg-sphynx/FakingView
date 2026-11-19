@@ -603,10 +603,10 @@ fn production_env() -> Env {
 #[cfg(feature = "dev-mock-broker")]
 fn production_env() -> Env {
     let mut env = Env::default().with_network(Arc::new(BrokerNetwork));
-    if let Ok(url) = std::env::var("DEGENVIEW_MOCK_BROKER_URL") {
+    if let Ok(url) = std::env::var("FAKINGVIEW_MOCK_BROKER_URL") {
         env = env.with_loopback_base_url(url);
     }
-    if let Ok(url) = std::env::var("DEGENVIEW_MOCK_BROKER_WS_URL") {
+    if let Ok(url) = std::env::var("FAKINGVIEW_MOCK_BROKER_WS_URL") {
         env = env.with_loopback_ws_url(url);
     }
     env

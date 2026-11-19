@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=DegenView
+Name=FakingView
 Comment=Market dashboard with a local Pine Script engine
-Exec=degenview
-Icon=es.nico.degenview
+Exec=fakingview
+Icon=local.fakingview.desktop
 Terminal=false
 Categories=Office;Finance;
 Keywords=markets;charts;crypto;stocks;trading;pine;
-StartupWMClass=es.nico.degenview
+StartupWMClass=local.fakingview.desktop

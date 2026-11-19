@@ -57,6 +57,7 @@ fn clear_memory() {
     gateio::clear_catalog();
     mexc::clear_catalog();
     alpaca::clear_catalog();
+    crate::service::market::kite::clear_catalog();
     loader::clear_memory();
 }
 

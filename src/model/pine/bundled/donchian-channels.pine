@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Donchian Channels: the highest high and lowest low over the last N bars, with their midpoint.
 // A close beyond a band is a breakout.
 indicator("Donchian Channels", overlay = true)

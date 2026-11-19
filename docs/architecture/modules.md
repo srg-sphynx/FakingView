@@ -8,7 +8,7 @@ inventory.
 | Module | Owns |
 | --- | --- |
 | `main.rs`, `lib.rs` | Binary entry, and the library root: store opening, native options, and app startup |
-| `app/` | Hidden coordinator: `mod.rs` holds `DegenViewApp`, its constructor and per-frame update; children hold the rest (see `app/` layout below) |
+| `app/` | Hidden coordinator: `mod.rs` holds `FakingViewApp`, its constructor and per-frame update; children hold the rest (see `app/` layout below) |
 | `workspace/mod.rs` | One chart tab: grid, charts, drawings, fetches, and replay |
 | `host/tab/window.rs` | Window grouping, active tabs, drag/reorder/detach |
 | `native_bridge.rs` | AppKit menus, window behavior, cursor, Keychain/accessibility boundaries |
@@ -18,7 +18,7 @@ inventory.
 
 Feature hosts in `host/` (one directory per domain, see `host/` layout below) bridge pure engines,
 persistence, workers, and UI. `host/alert/runtime.rs` is the alert loop shared by the GUI fallback and
-the login-item agent (`bin/degenview-alert-agent.rs`).
+the login-item agent (`bin/fakingview-alert-agent.rs`).
 
 ## Inside a workspace
 
@@ -74,7 +74,7 @@ part. The children are grouped by domain, like `model/` and `ui/`:
 | `mcp/` | Loopback HTTP transport, auth, shared permission state, app bridge, tools, and wire types |
 | `sync/` | iCloud Sync: policy (what syncs), records, merge, outbox, id tagging and the CloudKit transport (bridge in `native/swift`); no UI |
 | `trading/` | Order entry for every venue (paper account and connected brokers) behind `TradingBackend`: drafts, previews, confirmation, valuation; no drawing code |
-| `bin/` | `degenview-alert-agent`, the login-item alert agent |
+| `bin/` | `fakingview-alert-agent`, the login-item alert agent |
 
 ## `model/` layout
 
@@ -163,7 +163,7 @@ pure result types, and `tools.rs` the tool router (`pine/` also keeps `scripts`,
 and `apply`, the script views the tools run on a worker). `transport/` holds the HTTP surface
 and what guards it: `auth`, `cancel`, `limits`, `seal`, `tls`, `tls_protect`.
 
-`app/` splits `impl DegenViewApp` by concern, each child adding an `impl` block (like `workspace/`):
+`app/` splits `impl FakingViewApp` by concern, each child adding an `impl` block (like `workspace/`):
 `tabs` (open, close, show, tab quotes, Tab Linking), `window` (the tab windows and Settings, and their viewports), `commands`
 (native menu commands, quit), `mcp` (the MCP command loop, which routes each command to its domain, and confirmation), `pine` (Pine Studio and
 scripts), `alert/` (the alert coordinator and the Alerts window), `background` (broker notices,
@@ -184,7 +184,7 @@ what a window shares with the app is a part's cheap `Clone` handle, not the app'
 | `SessionState` | `session` | `session` | When the session was last written, what was written, why the write failed | `SessionSaveError` |
 
 Cross-part work (a tick that reads the tabs and runs the alerts, an MCP command on a chart) stays on
-`DegenViewApp` and calls each part. Where locks nest, the split kept the order they were taken in:
+`FakingViewApp` and calls each part. Where locks nest, the split kept the order they were taken in:
 the Settings window takes its host, then the store, then the alert host, the MCP host, the Pine host
 or the registration, one at a time; the Alerts window takes the store, then its own state, then the
 alert, Pine or Settings host; the registration takes its runtime control before the background

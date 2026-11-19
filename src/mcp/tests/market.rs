@@ -127,20 +127,20 @@ fn the_new_tools_are_listed_only_for_the_permissions_that_unlock_them() {
     assert_eq!(
         tool_names(&url, "m-tok"),
         [
-            "degenview_get_market_candles",
-            "degenview_get_quotes",
-            "degenview_search_symbols"
+            "fakingview_get_market_candles",
+            "fakingview_get_quotes",
+            "fakingview_search_symbols"
         ]
     );
     assert_eq!(
         tool_names(&url, "l-tok"),
-        ["degenview_get_watchlist", "degenview_list_watchlists"]
+        ["fakingview_get_watchlist", "fakingview_list_watchlists"]
     );
     assert_eq!(
         tool_names(&url, "w-tok"),
-        ["degenview_create_watchlist", "degenview_update_watchlist"]
+        ["fakingview_create_watchlist", "fakingview_update_watchlist"]
     );
-    assert_eq!(tool_names(&url, "d-tok"), ["degenview_delete_watchlist"]);
+    assert_eq!(tool_names(&url, "d-tok"), ["fakingview_delete_watchlist"]);
 }
 
 #[test]
@@ -163,7 +163,7 @@ fn search_returns_the_ids_other_tools_take_and_reports_a_failing_provider() {
     let result = call(
         &url,
         "tok",
-        "degenview_search_symbols",
+        "fakingview_search_symbols",
         json!({"query": " btc ", "sources": ["binance", "coinbase", "binance"], "limit": 2}),
     );
     let found = structured(&result);
@@ -182,7 +182,7 @@ fn search_returns_the_ids_other_tools_take_and_reports_a_failing_provider() {
     let result = call(
         &url,
         "tok",
-        "degenview_search_symbols",
+        "fakingview_search_symbols",
         json!({"query": "btc", "sources": ["binance"], "limit": 1}),
     );
     assert_eq!(structured(&result)["truncated"], true);
@@ -196,7 +196,7 @@ fn bad_search_and_quote_arguments_are_refused() {
         .shared
         .set_market_search(Arc::new(|_, _| panic!("a refused search must not run")));
     let url = harness.url();
-    let search = "degenview_search_symbols";
+    let search = "fakingview_search_symbols";
     for arguments in [
         json!({"query": ""}),
         json!({"query": "   "}),
@@ -213,7 +213,7 @@ fn bad_search_and_quote_arguments_are_refused() {
             "{arguments}"
         );
     }
-    let quotes = "degenview_get_quotes";
+    let quotes = "fakingview_get_quotes";
     let many: Vec<Value> = (0..51)
         .map(|n| json!({"source": "alpaca", "symbol": format!("S{n}")}))
         .collect();
@@ -241,7 +241,7 @@ fn quotes_come_from_the_live_feed_and_the_demand_ends_with_the_call() {
     let result = call(
         &url,
         "tok",
-        "degenview_get_quotes",
+        "fakingview_get_quotes",
         json!({
             "markets": [
                 {"source": "binance", "symbol": "btcusdt"},
@@ -278,7 +278,7 @@ fn quotes_are_unavailable_until_the_app_has_a_feed() {
     let result = call(
         &harness.url(),
         "tok",
-        "degenview_get_quotes",
+        "fakingview_get_quotes",
         json!({"markets": [{"source": "binance", "symbol": "BTCUSDT"}], "wait_seconds": 0}),
     );
     assert_eq!(error_code(&result), "APP_UNAVAILABLE");
@@ -299,7 +299,7 @@ fn a_watchlist_can_be_created_edited_read_with_quotes_and_deleted() {
     harness.shared.attach_quotes(feed());
     let url = harness.url();
 
-    let listed = call(&url, "tok", "degenview_list_watchlists", json!({}));
+    let listed = call(&url, "tok", "fakingview_list_watchlists", json!({}));
     let lists = structured(&listed)["watchlists"]
         .as_array()
         .unwrap()
@@ -311,7 +311,7 @@ fn a_watchlist_can_be_created_edited_read_with_quotes_and_deleted() {
     let created = call(
         &url,
         "tok",
-        "degenview_create_watchlist",
+        "fakingview_create_watchlist",
         json!({"name": "  Majors ", "markets": [
             {"source": "binance", "symbol": "BTCUSDT"},
             {"source": "binance", "symbol": "btcusdt"},
@@ -329,7 +329,7 @@ fn a_watchlist_can_be_created_edited_read_with_quotes_and_deleted() {
     let updated = call(
         &url,
         "tok",
-        "degenview_update_watchlist",
+        "fakingview_update_watchlist",
         json!({
             "watchlist_id": id,
             "rename": "Core",
@@ -352,7 +352,7 @@ fn a_watchlist_can_be_created_edited_read_with_quotes_and_deleted() {
     let again = call(
         &url,
         "tok",
-        "degenview_update_watchlist",
+        "fakingview_update_watchlist",
         json!({"watchlist_id": id, "rename": "Core", "add": [{"source": "binance", "symbol": "BTCUSDT"}]}),
     );
     assert_eq!(structured(&again)["status"], "unchanged");
@@ -360,7 +360,7 @@ fn a_watchlist_can_be_created_edited_read_with_quotes_and_deleted() {
     let read = call(
         &url,
         "tok",
-        "degenview_get_watchlist",
+        "fakingview_get_watchlist",
         json!({"watchlist_id": id, "include_quotes": true, "wait_seconds": 1}),
     );
     let read = structured(&read);
@@ -377,7 +377,7 @@ fn a_watchlist_can_be_created_edited_read_with_quotes_and_deleted() {
     let page = call(
         &url,
         "tok",
-        "degenview_get_watchlist",
+        "fakingview_get_watchlist",
         json!({"watchlist_id": id, "offset": 1, "limit": 1}),
     );
     let page = structured(&page);
@@ -389,7 +389,7 @@ fn a_watchlist_can_be_created_edited_read_with_quotes_and_deleted() {
     let removed = call(
         &url,
         "tok",
-        "degenview_update_watchlist",
+        "fakingview_update_watchlist",
         json!({"watchlist_id": id, "remove": [{"source": "binance", "symbol": "BTCUSDT"}]}),
     );
     assert_eq!(structured(&removed)["removed"], json!(["BINANCE:BTCUSDT"]));
@@ -397,14 +397,14 @@ fn a_watchlist_can_be_created_edited_read_with_quotes_and_deleted() {
     let deleted = call(
         &url,
         "tok",
-        "degenview_delete_watchlist",
+        "fakingview_delete_watchlist",
         json!({"watchlist_id": id}),
     );
     assert_eq!(structured(&deleted)["status"], "deleted");
     let gone = call(
         &url,
         "tok",
-        "degenview_get_watchlist",
+        "fakingview_get_watchlist",
         json!({"watchlist_id": id}),
     );
     assert_eq!(error_code(&gone), "NOT_FOUND");
@@ -414,7 +414,7 @@ fn a_watchlist_can_be_created_edited_read_with_quotes_and_deleted() {
     let refused = call(
         &url,
         "tok",
-        "degenview_delete_watchlist",
+        "fakingview_delete_watchlist",
         json!({"watchlist_id": favorites}),
     );
     assert_eq!(error_code(&refused), "CONFLICT");
@@ -431,7 +431,7 @@ fn a_refused_watchlist_edit_changes_nothing() {
     let created = call(
         &url,
         "tok",
-        "degenview_create_watchlist",
+        "fakingview_create_watchlist",
         json!({"name": "Keep", "markets": [{"source": "binance", "symbol": "BTCUSDT"}]}),
     );
     let id = structured(&created)["watchlist"]["watchlist_id"]
@@ -442,7 +442,7 @@ fn a_refused_watchlist_edit_changes_nothing() {
     let refused = call(
         &url,
         "tok",
-        "degenview_update_watchlist",
+        "fakingview_update_watchlist",
         json!({
             "watchlist_id": id,
             "rename": "bad\u{7}name",
@@ -454,7 +454,7 @@ fn a_refused_watchlist_edit_changes_nothing() {
     let read = call(
         &url,
         "tok",
-        "degenview_get_watchlist",
+        "fakingview_get_watchlist",
         json!({"watchlist_id": id}),
     );
     let read = structured(&read);
@@ -475,7 +475,7 @@ fn bad_watchlist_arguments_never_reach_the_app() {
         ],
     )]);
     let url = harness.url();
-    let update = "degenview_update_watchlist";
+    let update = "fakingview_update_watchlist";
     let btc = json!([{"source": "binance", "symbol": "BTCUSDT"}]);
     for (tool, arguments) in [
         (update, json!({"watchlist_id": "1"})),
@@ -489,25 +489,25 @@ fn bad_watchlist_arguments_never_reach_the_app() {
             json!({"watchlist_id": "1", "add": [{"source": "binance", "symbol": "BTC-USD"}]}),
         ),
         (update, json!({"watchlist_id": "1", "rename": ""})),
-        ("degenview_create_watchlist", json!({"name": ""})),
+        ("fakingview_create_watchlist", json!({"name": ""})),
         (
-            "degenview_create_watchlist",
+            "fakingview_create_watchlist",
             json!({"name": "a".repeat(201)}),
         ),
         (
-            "degenview_create_watchlist",
+            "fakingview_create_watchlist",
             json!({"name": "ok", "markets": [{"source": "kalshi", "symbol": "X"}]}),
         ),
         (
-            "degenview_get_watchlist",
+            "fakingview_get_watchlist",
             json!({"watchlist_id": "1", "limit": 0}),
         ),
         (
-            "degenview_get_watchlist",
+            "fakingview_get_watchlist",
             json!({"watchlist_id": "1", "limit": 501}),
         ),
-        ("degenview_get_watchlist", json!({"watchlist_id": "-1"})),
-        ("degenview_delete_watchlist", json!({"watchlist_id": ""})),
+        ("fakingview_get_watchlist", json!({"watchlist_id": "-1"})),
+        ("fakingview_delete_watchlist", json!({"watchlist_id": ""})),
     ] {
         assert!(
             rejected(&url, "tok", tool, arguments.clone()),
@@ -515,7 +515,7 @@ fn bad_watchlist_arguments_never_reach_the_app() {
         );
     }
     // Nothing was created by any of them.
-    let listed = call(&url, "tok", "degenview_list_watchlists", json!({}));
+    let listed = call(&url, "tok", "fakingview_list_watchlists", json!({}));
     assert_eq!(
         structured(&listed)["watchlists"].as_array().unwrap().len(),
         1
@@ -538,33 +538,33 @@ fn each_watchlist_and_market_permission_gates_only_its_own_tools() {
     let id = "1";
     let tools = [
         (
-            "degenview_search_symbols",
+            "fakingview_search_symbols",
             json!({"query": "btc", "sources": ["binance"]}),
             "markets-tok",
         ),
         (
-            "degenview_get_quotes",
+            "fakingview_get_quotes",
             json!({"markets": [{"source": "binance", "symbol": "BTCUSDT"}], "wait_seconds": 0}),
             "markets-tok",
         ),
-        ("degenview_list_watchlists", json!({}), "read-tok"),
+        ("fakingview_list_watchlists", json!({}), "read-tok"),
         (
-            "degenview_get_watchlist",
+            "fakingview_get_watchlist",
             json!({"watchlist_id": id}),
             "read-tok",
         ),
         (
-            "degenview_create_watchlist",
+            "fakingview_create_watchlist",
             json!({"name": "Mine"}),
             "write-tok",
         ),
         (
-            "degenview_update_watchlist",
+            "fakingview_update_watchlist",
             json!({"watchlist_id": id, "rename": "Renamed"}),
             "write-tok",
         ),
         (
-            "degenview_delete_watchlist",
+            "fakingview_delete_watchlist",
             json!({"watchlist_id": id}),
             "delete-tok",
         ),
@@ -586,7 +586,7 @@ fn each_watchlist_and_market_permission_gates_only_its_own_tools() {
     let result = call(
         &url,
         "read-tok",
-        "degenview_get_watchlist",
+        "fakingview_get_watchlist",
         json!({"watchlist_id": id, "include_quotes": true}),
     );
     assert_eq!(error_code(&result), "PERMISSION_DENIED");
@@ -621,7 +621,7 @@ fn a_watchlist_read_is_refused_if_its_grant_is_revoked_during_the_quote_wait() {
     let created = call(
         &url,
         "tok",
-        "degenview_create_watchlist",
+        "fakingview_create_watchlist",
         json!({"name": "Waits", "markets": [{"source": "binance", "symbol": "ETHUSDT"}]}),
     );
     let id = structured(&created)["watchlist"]["watchlist_id"]
@@ -635,7 +635,7 @@ fn a_watchlist_read_is_refused_if_its_grant_is_revoked_during_the_quote_wait() {
             call(
                 &url,
                 "tok",
-                "degenview_get_watchlist",
+                "fakingview_get_watchlist",
                 json!({"watchlist_id": id, "include_quotes": true, "wait_seconds": 3}),
             )
         })
@@ -665,7 +665,7 @@ fn update_watchlist_does_not_claim_to_be_idempotent() {
         .as_array()
         .unwrap()
         .iter()
-        .find(|tool| tool["name"] == "degenview_update_watchlist")
+        .find(|tool| tool["name"] == "fakingview_update_watchlist")
         .expect("listed");
     assert_eq!(
         update["annotations"]["idempotentHint"],
@@ -705,7 +705,7 @@ fn candles_of_any_market_come_from_the_provider_with_no_chart() {
     let result = call(
         &harness.url(),
         "tok",
-        "degenview_get_market_candles",
+        "fakingview_get_market_candles",
         json!({"source": "binance", "symbol": "btcusdt", "timeframe": "1D", "limit": 3}),
     );
     assert_eq!(result["isError"], json!(false), "{result}");
@@ -739,7 +739,7 @@ fn market_candles_take_any_timeframe_and_name_it_as_the_app_does() {
     let result = call(
         &harness.url(),
         "tok",
-        "degenview_get_market_candles",
+        "fakingview_get_market_candles",
         json!({"source": "binance", "symbol": "BTCUSDT", "timeframe": "22m"}),
     );
     assert_eq!(result["isError"], json!(false), "{result}");
@@ -754,7 +754,7 @@ fn a_provider_failure_and_an_empty_answer_are_reported_not_hidden() {
         Err(ProviderError::other("Binance is down"))
     }));
     let args = json!({"source": "binance", "symbol": "BTCUSDT", "timeframe": "1H"});
-    let failed = call(&url, "tok", "degenview_get_market_candles", args.clone());
+    let failed = call(&url, "tok", "fakingview_get_market_candles", args.clone());
     assert_eq!(error_code(&failed), "APP_UNAVAILABLE");
     assert!(
         failed["structuredContent"]["message"]
@@ -765,7 +765,7 @@ fn a_provider_failure_and_an_empty_answer_are_reported_not_hidden() {
     harness
         .shared
         .set_candle_fetch(Arc::new(|_, _, _, _| Ok(Vec::new())));
-    let empty = call(&url, "tok", "degenview_get_market_candles", args);
+    let empty = call(&url, "tok", "fakingview_get_market_candles", args);
     assert_eq!(structured(&empty)["count"], 0);
     assert!(
         structured(&empty)["notes"]
@@ -784,7 +784,7 @@ fn bad_candle_requests_never_reach_the_provider() {
         panic!("a refused request must not fetch")
     }));
     let url = harness.url();
-    let tool = "degenview_get_market_candles";
+    let tool = "fakingview_get_market_candles";
     for arguments in [
         json!({"source": "binance", "symbol": "BTCUSDT", "timeframe": "30s"}),
         json!({"source": "binance", "symbol": "BTCUSDT", "timeframe": "0m"}),
@@ -822,7 +822,7 @@ fn sections_are_made_filled_moved_renamed_and_deleted_through_the_update_tool() 
     let created = call(
         &url,
         "tok",
-        "degenview_create_watchlist",
+        "fakingview_create_watchlist",
         json!({"name": "Desk", "markets": [{"source": "binance", "symbol": "BTCUSDT"}]}),
     );
     let id = structured(&created)["watchlist"]["watchlist_id"]
@@ -833,7 +833,7 @@ fn sections_are_made_filled_moved_renamed_and_deleted_through_the_update_tool() 
     let result = call(
         &url,
         "tok",
-        "degenview_update_watchlist",
+        "fakingview_update_watchlist",
         json!({
             "watchlist_id": id,
             "add_sections": ["Alts", "Stables"],
@@ -851,7 +851,7 @@ fn sections_are_made_filled_moved_renamed_and_deleted_through_the_update_tool() 
     let read = call(
         &url,
         "tok",
-        "degenview_get_watchlist",
+        "fakingview_get_watchlist",
         json!({"watchlist_id": id}),
     );
     let entries = structured(&read)["entries"].as_array().unwrap().clone();
@@ -883,7 +883,7 @@ fn sections_are_made_filled_moved_renamed_and_deleted_through_the_update_tool() 
     let result = call(
         &url,
         "tok",
-        "degenview_update_watchlist",
+        "fakingview_update_watchlist",
         json!({
             "watchlist_id": id,
             "rename_sections": [{"section": "Alts", "title": "Altcoins"}],
@@ -916,7 +916,7 @@ fn a_bad_section_changes_nothing_and_bad_section_arguments_are_refused() {
     let created = call(
         &url,
         "tok",
-        "degenview_create_watchlist",
+        "fakingview_create_watchlist",
         json!({"name": "Desk"}),
     );
     let id = structured(&created)["watchlist"]["watchlist_id"]
@@ -926,7 +926,7 @@ fn a_bad_section_changes_nothing_and_bad_section_arguments_are_refused() {
     let unknown = call(
         &url,
         "tok",
-        "degenview_update_watchlist",
+        "fakingview_update_watchlist",
         json!({
             "watchlist_id": id,
             "add_sections": ["New"],
@@ -937,7 +937,7 @@ fn a_bad_section_changes_nothing_and_bad_section_arguments_are_refused() {
     let read = call(
         &url,
         "tok",
-        "degenview_get_watchlist",
+        "fakingview_get_watchlist",
         json!({"watchlist_id": id}),
     );
     assert_eq!(
@@ -949,13 +949,13 @@ fn a_bad_section_changes_nothing_and_bad_section_arguments_are_refused() {
     call(
         &url,
         "tok",
-        "degenview_update_watchlist",
+        "fakingview_update_watchlist",
         json!({"watchlist_id": id, "add_sections": ["Same", "same"]}),
     );
     let ambiguous = call(
         &url,
         "tok",
-        "degenview_update_watchlist",
+        "fakingview_update_watchlist",
         json!({"watchlist_id": id, "add": [{"source": "binance", "symbol": "BTCUSDT", "section": "SAME"}]}),
     );
     assert_eq!(error_code(&ambiguous), "INVALID_ARGUMENT");
@@ -974,7 +974,7 @@ fn a_bad_section_changes_nothing_and_bad_section_arguments_are_refused() {
             .unwrap()
             .extend(extra.as_object().unwrap().clone());
         assert!(
-            rejected(&url, "tok", "degenview_update_watchlist", args.clone()),
+            rejected(&url, "tok", "fakingview_update_watchlist", args.clone()),
             "{args}"
         );
     }

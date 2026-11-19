@@ -79,7 +79,7 @@ Opened from a script's chip menu or pane menu (docked on the right of its chart,
 Title and close, with a script selector beside them when the chart has more than one script (two
 copies of one script read `Name` and `Name #2`); then one toolbar row: the search field and the
 bar range on the left, the logging switch and the level filter (a funnel, with a dot while a level
-is hidden) on the right. The search field and the range pill are DegenView's layout, not TradingView's.
+is hidden) on the right. The search field and the range pill are FakingView's layout, not TradingView's.
 
 - **Rows** list the messages oldest first, newest at the bottom: the time in UTC (ISO 8601 with
   milliseconds) above the text, which is gray for info, orange for a warning, red for an error.
@@ -151,7 +151,7 @@ of the script being edited, without the pane's own title or a script selector (t
 script). There "Source code"
 moves the caret in the editor you are in, and "Scroll to bar" moves the preview chart, which only
 holds the candles it fetched. The bar range is dragged on the preview chart (the chart is shown if
-it was hidden), and an arm of the debugger's "Select bar" is dropped when it is asked for. TradingView opens the pane from the editor's More menu; DegenView's
+it was hidden), and an arm of the debugger's "Select bar" is dropped when it is asked for. TradingView opens the pane from the editor's More menu; FakingView's
 Pine Studio has no such menu, so the drawer tab is its way in. The level and search options are
 the same local `pineLogs.prefs` setting as the chart's pane. Where the drawer is wide, the
 introduction puts its picture beside its steps.

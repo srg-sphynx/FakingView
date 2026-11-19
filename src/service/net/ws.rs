@@ -238,9 +238,21 @@ impl Session {
     }
 
     /// Like [`Self::run`], for a feed that also sends binary messages.
-    pub fn run_frames(&self, shutdown: &AtomicBool, mut on_frame: impl FnMut(Frame<'_>) -> bool) {
+    pub fn run_frames(&self, shutdown: &AtomicBool, on_frame: impl FnMut(Frame<'_>) -> bool) {
+        self.run_frames_while(shutdown, || true, on_frame);
+    }
+
+    /// Like [`Self::run_frames`], but lets an authenticated feed end a session when its
+    /// credentials or instrument catalog change. The owner can then build a fresh session.
+    /// Checked before each connection and read, including after a quiet read times out.
+    pub fn run_frames_while(
+        &self,
+        shutdown: &AtomicBool,
+        mut keep_running: impl FnMut() -> bool,
+        mut on_frame: impl FnMut(Frame<'_>) -> bool,
+    ) {
         let mut backoff = Backoff::new();
-        while !shutdown.load(Ordering::Acquire) {
+        while !shutdown.load(Ordering::Acquire) && keep_running() {
             if let Ok((mut socket, route)) = connect(&self.url, &self.host, self.port) {
                 let subscribed = self
                     .subscribe
@@ -248,7 +260,7 @@ impl Session {
                     .all(|message| socket.send(Message::Text(message.as_str().into())).is_ok());
                 if subscribed {
                     let mut health = Health::new(self.max_data_silence, self.keepalive, route);
-                    while !shutdown.load(Ordering::Acquire) {
+                    while !shutdown.load(Ordering::Acquire) && keep_running() {
                         match health.read(&mut socket) {
                             Ok(Some(Message::Text(text))) => {
                                 backoff.reset();
@@ -265,6 +277,9 @@ impl Session {
                             Ok(Some(Message::Close(_))) | Err(_) => break,
                             Ok(_) => {}
                         }
+                    }
+                    if !keep_running() {
+                        return;
                     }
                 }
             }
@@ -352,6 +367,51 @@ mod tests {
             false
         });
         assert_eq!(seen, ["tick"]);
+        assert_eq!(server.join().unwrap(), "subscribe");
+    }
+
+    #[test]
+    fn an_invalidated_session_never_opens_a_connection() {
+        let session = Session {
+            url: "ws://127.0.0.1:1".to_owned(),
+            host: "127.0.0.1".to_owned(),
+            port: 1,
+            subscribe: Vec::new(),
+            max_data_silence: Duration::from_secs(30),
+            keepalive: Keepalive::Frame,
+        };
+        session.run_frames_while(
+            &AtomicBool::new(false),
+            || false,
+            |_| panic!("an invalidated session must not receive frames"),
+        );
+    }
+
+    #[test]
+    fn invalidating_a_session_stops_it_before_its_next_read() {
+        let (port, server) = serve(&["first", "second"]);
+        let session = Session {
+            url: format!("ws://127.0.0.1:{port}"),
+            host: "127.0.0.1".to_owned(),
+            port,
+            subscribe: vec!["subscribe".to_owned()],
+            max_data_silence: Duration::from_secs(30),
+            keepalive: Keepalive::Frame,
+        };
+        let valid = AtomicBool::new(true);
+        let mut seen = Vec::new();
+        session.run_frames_while(
+            &AtomicBool::new(false),
+            || valid.load(Ordering::Acquire),
+            |frame| {
+                if let Frame::Text(text) = frame {
+                    seen.push(text.to_owned());
+                    valid.store(false, Ordering::Release);
+                }
+                true
+            },
+        );
+        assert_eq!(seen, ["first"]);
         assert_eq!(server.join().unwrap(), "subscribe");
     }
 

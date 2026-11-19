@@ -1,4 +1,4 @@
-use super::DegenViewApp;
+use super::FakingViewApp;
 use super::tabs::TabContent;
 use crate::service::alert::macos_notifications;
 use crate::service::sound::SystemSounder;
@@ -6,7 +6,7 @@ use eframe::egui;
 use std::sync::Arc;
 use std::time::Instant;
 
-impl DegenViewApp {
+impl FakingViewApp {
     /// Keeps quotes coming for the market each chart tab shows, and repaints the tab windows
     /// when any quote moved. One owner asks for all of them, however many tabs and windows
     /// there are: the coordinator merges demand by market, so a market a sidebar, an alert or a

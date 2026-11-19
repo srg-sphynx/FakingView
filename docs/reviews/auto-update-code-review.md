@@ -66,7 +66,7 @@ residual security consequence rather than a documentation gap.
 
 Affected: macOS, Windows, and Linux self-installing builds.
 
-Both install strategies move the running installation to `.DegenView-update/old/` and then move the
+Both install strategies move the running installation to `.FakingView-update/old/` and then move the
 new installation into its original path (`src/service/self_update/app_bundle.rs:165-175`,
 `src/service/self_update/portable_binary.rs:188-202`). If the second rename fails, rollback is
 attempted, but the rollback result is discarded. The reported error mentions only the failed new
@@ -119,7 +119,7 @@ body/timeout limits. Add a test with more than 30 ineligible releases ahead of a
 
 Affected: macOS.
 
-`DegenViewApp::new` constructs `UpdateHost`, which immediately calls `install_target`
+`FakingViewApp::new` constructs `UpdateHost`, which immediately calls `install_target`
 (`src/host/update_host.rs:116-135`, `src/app.rs:744`). On macOS that performs a write probe and runs
 `codesign -dv` through a polling helper whose timeout is 120 seconds
 (`src/service/self_update/app_bundle.rs:34-64`, `src/service/code_signature.rs:14-27`, `89-123`).
@@ -155,7 +155,7 @@ Affected: macOS, Windows, and Linux.
 
 Asset selection requires only a suffix and chooses the first match
 (`src/service/update_check.rs:127-151`); it does not require the exact
-`DegenView-<tag>-<platform>` name or uniqueness. After extraction, macOS checks bundle IDs and
+`FakingView-<tag>-<platform>` name or uniqueness. After extraction, macOS checks bundle IDs and
 executables, Windows checks the PE machine, and Linux checks the ELF class/type/machine, but none
 compares an embedded application version with `Release::version`. The release workflow's
 Cargo/tag check and fresh build make an accidental mismatch unlikely, but a stale or misnamed
@@ -184,9 +184,9 @@ Test that an available update remains visible while a failed refresh becomes due
 
 Affected: macOS and Windows.
 
-The Windows extractor asks `ZipArchive::by_name("degenview.exe")` and does not reject duplicate
+The Windows extractor asks `ZipArchive::by_name("fakingview.exe")` and does not reject duplicate
 entries with that root name (`src/service/update_archive.rs:158-183`). Linux explicitly rejects a
-duplicate `degenview`, so the two portable formats have inconsistent ambiguity handling. The macOS
+duplicate `fakingview`, so the two portable formats have inconsistent ambiguity handling. The macOS
 bundle walk and size walk use iterator flattening (`src/service/update_archive.rs:136-149`,
 `363-388`), which silently drops `read_dir` entry errors. A validation walk should fail closed when
 it cannot inspect the complete tree.
@@ -216,7 +216,7 @@ Affected: all self-installing platforms.
 
 Startup submits `cleanup_stale` to the four-worker general queue (`src/lib.rs:35-39`), while checks
 and preparation use the independent single-worker update queue (`src/host/update_host.rs:290-345`,
-`src/service/work_queue.rs:43-57`). Both may remove or create `.DegenView-update`. The initial
+`src/service/work_queue.rs:43-57`). Both may remove or create `.FakingView-update`. The initial
 15-second delay makes the race unlikely, but opening Settings triggers an immediate check, and
 there is no ordering guarantee between the queues.
 
@@ -242,7 +242,7 @@ the exact `rc.N` form accepted by release tooling. Add contract tests shared con
 
 Affected: all self-installing platforms.
 
-`is_writable` creates and then removes `.DegenView-write-test-<pid>`
+`is_writable` creates and then removes `.FakingView-write-test-<pid>`
 (`src/service/self_update/mod.rs:112-117`). If an empty directory with that name already exists,
 `create_dir` fails but `remove_dir` still deletes it. A stale collision also produces a false
 “not writable” result.

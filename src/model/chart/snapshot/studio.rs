@@ -60,7 +60,7 @@ pub enum Style {
     /// The chart as it is on screen.
     #[default]
     Chart,
-    /// Larger labels, a title block and the DegenView mark, on the proportions Size asks for.
+    /// Larger labels, a title block and the FakingView mark, on the proportions Size asks for.
     Styled,
 }
 
@@ -77,7 +77,7 @@ impl Style {
     pub const fn tooltip(self) -> &'static str {
         match self {
             Self::Chart => "The chart as it is on screen",
-            Self::Styled => "Larger labels, a title block and the DegenView mark",
+            Self::Styled => "Larger labels, a title block and the FakingView mark",
         }
     }
 }
@@ -199,7 +199,7 @@ impl Background {
 pub struct Include {
     pub indicators: bool,
     pub drawings: bool,
-    /// The DegenView mark; only a Styled image carries it.
+    /// The FakingView mark; only a Styled image carries it.
     pub branding: bool,
 }
 
@@ -328,7 +328,7 @@ impl StudioConfig {
         self.style == Style::Styled
     }
 
-    /// Whether the DegenView mark is drawn: Styled, and not switched off.
+    /// Whether the FakingView mark is drawn: Styled, and not switched off.
     pub fn shows_branding(&self) -> bool {
         self.style == Style::Styled && self.include.branding
     }

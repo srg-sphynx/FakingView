@@ -211,7 +211,7 @@ select, move, delete, every handle, save and reopen, the toolbar. Per-area suite
 write PNGs for a person to look at:
 
 ```
-DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_ -- --ignored
+FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_ -- --ignored
 ```
 
 ## Not verified, and known gaps

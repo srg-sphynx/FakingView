@@ -1008,7 +1008,7 @@ mod tests {
 
     #[test]
     fn the_cache_round_trips_and_forgets_empty_maps() {
-        let dir = std::env::temp_dir().join(format!("degenview-inputs-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("fakingview-inputs-{}", std::process::id()));
         let path = dir.join("script_preview_inputs.json");
         let mut store = InputsStore::open(Some(path.clone()));
         let mut values = InputValues::new();

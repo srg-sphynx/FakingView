@@ -241,8 +241,8 @@ mod tests {
             "POSIX path of (choose file with prompt \"Choose a CSV\" of type {\"public.plain-text\"})"
         );
         assert_eq!(
-            save_script("Export", "degenview-portfolio-transactions.csv"),
-            "POSIX path of (choose file name with prompt \"Export\" default name \"degenview-portfolio-transactions.csv\")"
+            save_script("Export", "fakingview-portfolio-transactions.csv"),
+            "POSIX path of (choose file name with prompt \"Export\" default name \"fakingview-portfolio-transactions.csv\")"
         );
     }
 
@@ -269,7 +269,7 @@ mod tests {
     #[test]
     fn a_file_over_the_limit_is_refused_unread() {
         let path =
-            std::env::temp_dir().join(format!("degenview-limit-{}.json", std::process::id()));
+            std::env::temp_dir().join(format!("fakingview-limit-{}.json", std::process::id()));
         write_text(&path, &"x".repeat(2048)).unwrap();
         assert!(read_text_up_to(&path, 4096).is_ok());
         let error = read_text_up_to(&path, 1024).unwrap_err();
@@ -291,7 +291,7 @@ mod tests {
     #[test]
     fn text_round_trips_through_a_file() {
         let path =
-            std::env::temp_dir().join(format!("degenview-dialog-{}.csv", std::process::id()));
+            std::env::temp_dir().join(format!("fakingview-dialog-{}.csv", std::process::id()));
         write_text(&path, "a,b\n1,2\n").unwrap();
         assert_eq!(read_text(&path).unwrap(), "a,b\n1,2\n");
         let _ = std::fs::remove_file(&path);

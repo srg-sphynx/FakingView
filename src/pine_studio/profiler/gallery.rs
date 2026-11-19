@@ -1,5 +1,5 @@
 //! Pictures of the profiler in the whole window, in both themes, for a person to look at. Run by
-//! hand: `DEGENVIEW_GALLERY_DIR=… cargo test --lib pine_studio::profiler_gallery -- --ignored`.
+//! hand: `FAKINGVIEW_GALLERY_DIR=… cargo test --lib pine_studio::profiler_gallery -- --ignored`.
 
 use std::time::Duration;
 

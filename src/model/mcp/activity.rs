@@ -369,7 +369,7 @@ mod tests {
             at_ms,
             client_id: client.into(),
             client_name: name.into(),
-            tool: "degenview_get_candles".into(),
+            tool: "fakingview_get_candles".into(),
             outcome,
             count: 1,
             ..McpAuditEntry::default()
@@ -575,7 +575,7 @@ mod tests {
             id: "AB12".into(),
         }];
         let mut other = call(1, "a", "A", McpAuditOutcome::Succeeded, 10);
-        other.tool = "degenview_list_alerts".into();
+        other.tool = "fakingview_list_alerts".into();
         let rows = [failed, other];
         let find = |word: &str| {
             let filter = McpActivityFilter {
@@ -589,7 +589,7 @@ mod tests {
         assert_eq!(find("  alerts "), [1]);
         assert_eq!(find("not_found"), [2]);
         assert_eq!(find("ab12"), [2]);
-        assert_eq!(find("degenview"), [2, 1]);
+        assert_eq!(find("fakingview"), [2, 1]);
         assert!(find("zzz").is_empty());
         // Blank is no search at all.
         assert_eq!(find("   "), [2, 1]);

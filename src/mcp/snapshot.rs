@@ -8,7 +8,7 @@
 use crate::mcp::bridge::{McpError, McpReply, REQUEST_TIMEOUT};
 use crate::mcp::confirm::{Confirm, Gate};
 use crate::mcp::tools::{
-    Caller, DegenViewMcp, failure, parse_chart_id, parse_workspace_id, unexpected,
+    Caller, FakingViewMcp, failure, parse_chart_id, parse_workspace_id, unexpected,
 };
 use crate::model::chart::snapshot::SnapshotScale;
 use crate::model::encoding::base64_encode;
@@ -43,7 +43,7 @@ impl Confirm for SnapshotCommand {
     }
 }
 
-pub const GET_CHART_SNAPSHOT: &str = "degenview_get_chart_snapshot";
+pub const GET_CHART_SNAPSHOT: &str = "fakingview_get_chart_snapshot";
 
 /// How long the picture is waited for. A chart takes a second or two; a loaded machine more.
 const DEADLINE: Duration = Duration::from_secs(45);
@@ -77,10 +77,10 @@ pub enum ScaleArg {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SnapshotParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts`. A market chart, not a portfolio card.
+    /// A `chart_id` from `fakingview_list_charts`. A market chart, not a portfolio card.
     #[schemars(length(max = 20))]
     pub chart_id: String,
     /// Pixels per point: `1x` (default, smaller to send) or `2x` (sharper). A very large chart is
@@ -89,10 +89,10 @@ pub struct SnapshotParams {
 }
 
 #[tool_router(router = snapshot_router, vis = "pub(super)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_get_chart_snapshot",
-        description = "A picture (PNG) of a chart exactly as DegenView draws it: candles or the chart's type, built-in indicators, every applied script's plots and trades, drawings, the last-price line, both axes and the chart's alert lines, cut at the replay position when a replay runs. Left out: the crosshair, selection, menus and everything around the chart. Orders and positions from paper trading appear only if the user included them in Settings > Snapshots. The image is returned as an image block, followed by a text block with its size and what it shows. Nothing is saved, copied or uploaded. Use it to look at the chart you are drawing on, or to check a script's output. The chart must have been drawn on screen at least once (it has a size) and have candles.",
+        name = "fakingview_get_chart_snapshot",
+        description = "A picture (PNG) of a chart exactly as FakingView draws it: candles or the chart's type, built-in indicators, every applied script's plots and trades, drawings, the last-price line, both axes and the chart's alert lines, cut at the replay position when a replay runs. Left out: the crosshair, selection, menus and everything around the chart. Orders and positions from paper trading appear only if the user included them in Settings > Snapshots. The image is returned as an image block, followed by a text block with its size and what it shows. Nothing is saved, copied or uploaded. Use it to look at the chart you are drawing on, or to check a script's output. The chart must have been drawn on screen at least once (it has a size) and have candles.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,

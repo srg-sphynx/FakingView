@@ -474,7 +474,7 @@ fn every_tool_s_sheet_is_as_wide_as_its_tab_bar_and_its_window() {
     );
 }
 
-/// The new tools' pages as pictures. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+/// The new tools' pages as pictures. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_new_pages() {

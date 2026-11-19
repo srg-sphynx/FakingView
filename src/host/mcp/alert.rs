@@ -223,7 +223,7 @@ pub fn describe(command: &AlertCommand, alerts: &AlertAccess) -> Result<Summary,
     }
 }
 
-/// Alerts one `degenview_list_price_alerts` call returns.
+/// Alerts one `fakingview_list_price_alerts` call returns.
 pub(super) const ALERT_PAGE: usize = 200;
 
 /// No further alert is accepted from a client beyond this many in total.
@@ -425,7 +425,7 @@ pub fn plan_update_alert(
     );
     if existing.condition.target().is_none() {
         return Err(McpError::Unsupported(
-            "This alert uses a condition this version of DegenView does not support".into(),
+            "This alert uses a condition this version of FakingView does not support".into(),
         ));
     }
     if percentage
@@ -517,7 +517,7 @@ pub fn plan_pause_alert(
     let alert = find_alert(host, id)?;
     if alert.state == AlertState::Unsupported {
         return Err(McpError::Unsupported(
-            "This alert uses a condition this version of DegenView does not support".into(),
+            "This alert uses a condition this version of FakingView does not support".into(),
         ));
     }
     let already = if paused {

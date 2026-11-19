@@ -10,8 +10,8 @@ pub const SOUND_NAME: &str = "Glass";
 
 pub fn is_disabled() -> bool {
     cfg!(test)
-        || std::env::var_os("DEGENVIEW_NO_NOTIFICATIONS").is_some()
-        || std::env::var_os("DEGENVIEW_NO_KEYCHAIN").is_some()
+        || std::env::var_os("FAKINGVIEW_NO_NOTIFICATIONS").is_some()
+        || std::env::var_os("FAKINGVIEW_NO_KEYCHAIN").is_some()
 }
 
 pub trait Notifier: Send + Sync {
@@ -78,7 +78,7 @@ mod platform {
     define_class!(
         // SAFETY: NSObject has no subclassing requirements and this class owns no ivars.
         #[unsafe(super = NSObject)]
-        #[name = "DegenViewNotificationDelegate"]
+        #[name = "FakingViewNotificationDelegate"]
         #[ivars = ()]
         struct NotificationDelegate;
 
@@ -107,7 +107,7 @@ mod platform {
                 completion: &DynBlock<dyn Fn()>,
             ) {
                 let _ = std::process::Command::new("/usr/bin/open")
-                    .args(["-b", "es.nico.degenview"])
+                    .args(["-b", "local.fakingview.desktop"])
                     .spawn();
                 completion.call(());
             }
@@ -192,7 +192,7 @@ mod platform {
             let content = UNMutableNotificationContent::new();
             content.setTitle(&NSString::from_str(&value.title));
             content.setBody(&NSString::from_str(&value.body));
-            content.setThreadIdentifier(&NSString::from_str("degenview-alerts"));
+            content.setThreadIdentifier(&NSString::from_str("fakingview-alerts"));
             if value.sound {
                 let sound = UNNotificationSound::soundNamed(&NSString::from_str(SOUND_NAME));
                 content.setSound(Some(&sound));

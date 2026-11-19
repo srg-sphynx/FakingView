@@ -1,11 +1,11 @@
 # Licensing
 
-DegenView is licensed under the [GNU General Public License v3.0 only](../LICENSE.md)
+FakingView is licensed under the [GNU General Public License v3.0 only](../LICENSE.md)
 (`GPL-3.0-only`).
 
 ## Fonts
 
-Two fonts are built into DegenView. They are not covered by the GPL. Each keeps its own licence, the
+Two fonts are built into FakingView. They are not covered by the GPL. Each keeps its own licence, the
 [SIL Open Font License 1.1](https://openfontlicense.org), and neither declares a Reserved Font Name. The
 licence texts are in [`assets/fonts`](../assets/fonts) and ship with every download (the macOS app's
 `Contents/Resources/Licenses`, the Flatpak's `share/licenses`, the Linux and Windows archives and the

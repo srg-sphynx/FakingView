@@ -68,6 +68,8 @@ pub enum Output {
     WatchlistCard(PortfolioCard),
     /// Open Settings on the Alpaca page; the picker stays open.
     OpenAlpacaSettings,
+    /// Open Settings on the Kite Connect page; reopen the picker after signing in.
+    OpenKiteSettings,
 }
 
 /// What the picker was opened for.
@@ -197,8 +199,9 @@ pub struct SymbolPicker {
     /// The user's watchlists, fed by the workspace while the Watchlists tab shows.
     watchlists: Vec<WatchlistGroup>,
     needs_alpaca: bool,
-    /// The Alpaca notice's button was pressed.
-    settings_requested: bool,
+    needs_kite: bool,
+    /// The provider notice's button was pressed.
+    settings_requested: Option<SettingsTarget>,
 }
 
 impl SymbolPicker {
@@ -231,7 +234,8 @@ impl SymbolPicker {
             select_all: false,
             watchlists: Vec::new(),
             needs_alpaca: false,
-            settings_requested: false,
+            needs_kite: false,
+            settings_requested: None,
         }
     }
 
@@ -405,8 +409,12 @@ impl SymbolPicker {
             select_all(ctx, search_id, &self.query);
             self.select_all = false;
         }
-        if std::mem::take(&mut self.settings_requested) {
-            output = Some(Output::OpenAlpacaSettings);
+        if let Some(target) = self.settings_requested.take() {
+            if target == SettingsTarget::Kite {
+                // Drop the cached failed search; reopening after login must ask the new session.
+                self.close();
+            }
+            output = Some(target.output());
         }
         if keys.close || clicked_outside {
             self.close();
@@ -611,6 +619,8 @@ impl SymbolPicker {
             self.venue = None;
         }
         self.ticked = None;
+        self.needs_alpaca = false;
+        self.needs_kite = false;
         self.highlight = 0;
         self.search.ask_now();
     }
@@ -618,6 +628,8 @@ impl SymbolPicker {
     fn set_venue(&mut self, venue: Option<DataSource>) {
         if self.venue != venue {
             self.venue = venue;
+            self.needs_alpaca = false;
+            self.needs_kite = false;
             self.highlight = 0;
             self.search.ask_now();
         }
@@ -764,6 +776,12 @@ impl SymbolPicker {
                     self.needs_alpaca = true;
                     return None;
                 }
+                if result.source == DataSource::Kite
+                    && !service::keychain::api_keys::kite_configured()
+                {
+                    self.needs_kite = true;
+                    return None;
+                }
                 if self.mode != PickMode::Watchlist
                     && recents::record_recent(&mut self.recents, &result)
                     && let Ok(store) = self.store.lock()
@@ -826,6 +844,7 @@ impl SymbolPicker {
             self.search.edited();
             self.highlight = 0;
             self.needs_alpaca = false;
+            self.needs_kite = false;
             self.added = None;
         }
 
@@ -1136,17 +1155,18 @@ impl SymbolPicker {
         env: &Env,
     ) -> Option<(Pick, PickKind)> {
         let mut picked = None;
-        // The Alpaca notice sits at the bottom of the list's own area, under the rows.
-        let notice = self.notice(listing);
-        let reserved = notice.as_ref().map_or(0.0, |_| NOTICE_HEIGHT + 20.0);
+        // Each provider keeps its own actionable notice, so one failure never hides another.
+        let notices = self.notices(listing);
+        let reserved = notices.len() as f32 * (NOTICE_HEIGHT + 20.0);
         let content = Rect::from_min_max(area.min, pos2(area.max.x, area.max.y - reserved));
-        if let Some(notice) = &notice {
+        for (index, notice) in notices.iter().enumerate() {
+            let top = content.bottom() + 6.0 + index as f32 * (NOTICE_HEIGHT + 20.0);
             let card = Rect::from_min_max(
-                pos2(area.left() + PADDING - 6.0, content.bottom() + 6.0),
-                pos2(area.right() - (PADDING - 6.0) - 8.0, area.bottom() - 14.0),
+                pos2(area.left() + PADDING - 6.0, top),
+                pos2(area.right() - (PADDING - 6.0) - 8.0, top + NOTICE_HEIGHT),
             );
             if show_notice(ui, card, notice) {
-                self.settings_requested = true;
+                self.settings_requested = notice.settings;
             }
         }
         let mut body = ui
@@ -1394,26 +1414,66 @@ impl SymbolPicker {
         }
     }
 
-    /// What the card under the list says, when stocks cannot be searched or opened: Alpaca keys
-    /// are missing (the search said so, or a stock was picked without them) or its search failed.
-    fn notice(&self, listing: &Listing) -> Option<Notice> {
-        let failure = listing
+    /// Provider failures stay separate. Kite comes first only in its own venue, on Stocks, or
+    /// after a recent Indian market was selected without a session.
+    fn notices(&self, listing: &Listing) -> Vec<Notice> {
+        let alpaca_failure = listing
             .errors
             .iter()
             .find(|(source, _)| *source == DataSource::Alpaca)
             .map(|(_, error)| error);
-        match failure {
+        let alpaca = match alpaca_failure {
             Some(ProviderError::MissingKey) => {
                 Some(Notice::missing_key("Stocks need an Alpaca key"))
             }
             Some(error) => Some(Notice {
                 title: "Stocks could not be searched",
                 detail: error.to_string(),
-                settings: false,
+                settings: None,
             }),
             None if self.needs_alpaca => Some(Notice::missing_key("Set up Alpaca to open a stock")),
             None => None,
+        };
+        let kite_failure = listing
+            .errors
+            .iter()
+            .find(|(source, _)| *source == DataSource::Kite)
+            .map(|(_, error)| error);
+        let kite = match kite_failure {
+            Some(error @ (ProviderError::KiteMissingKey | ProviderError::KiteSessionExpired)) => {
+                Some(Notice {
+                    title: if matches!(error, ProviderError::KiteSessionExpired) {
+                        "Renew your Kite session"
+                    } else {
+                        "Indian markets need a Kite session"
+                    },
+                    detail: error.to_string(),
+                    settings: Some(SettingsTarget::Kite),
+                })
+            }
+            Some(error) => Some(Notice {
+                title: "Indian markets could not be searched",
+                detail: error.to_string(),
+                settings: None,
+            }),
+            None if self.needs_kite => Some(Notice {
+                title: "Set up Kite to open an Indian market",
+                detail: ProviderError::KiteMissingKey.to_string(),
+                settings: Some(SettingsTarget::Kite),
+            }),
+            None => None,
+        };
+        let kite_first = self.needs_kite
+            || self.lookup().venue == Some(DataSource::Kite)
+            || (self.scope == Scope::Stocks && self.lookup().venue.is_none());
+        if kite_first {
+            [kite, alpaca]
+        } else {
+            [alpaca, kite]
         }
+        .into_iter()
+        .flatten()
+        .collect()
     }
 
     /// The keys that work here, and the button that charts ticked choices together. A narrow
@@ -1700,11 +1760,26 @@ impl Rows {
 
 const NOTICE_HEIGHT: f32 = 60.0;
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum SettingsTarget {
+    Alpaca,
+    Kite,
+}
+
+impl SettingsTarget {
+    fn output(self) -> Output {
+        match self {
+            Self::Alpaca => Output::OpenAlpacaSettings,
+            Self::Kite => Output::OpenKiteSettings,
+        }
+    }
+}
+
 /// A card under the list: a title, one line of detail and, when Settings can fix it, a button.
 struct Notice {
     title: &'static str,
     detail: String,
-    settings: bool,
+    settings: Option<SettingsTarget>,
 }
 
 impl Notice {
@@ -1713,7 +1788,7 @@ impl Notice {
             title,
             detail: "Add your free Alpaca API keys in Settings to search and chart US stocks."
                 .to_owned(),
-            settings: true,
+            settings: Some(SettingsTarget::Alpaca),
         }
     }
 }
@@ -1736,7 +1811,7 @@ fn show_notice(ui: &mut Ui, card: Rect, notice: &Notice) -> bool {
 
     let mut pressed = false;
     let mut right = card.right() - 14.0;
-    if notice.settings {
+    if notice.settings.is_some() {
         let button = Rect::from_center_size(pos2(right - 52.0, card.center().y), vec2(104.0, 30.0));
         let mut cell = ui.new_child(egui::UiBuilder::new().max_rect(button));
         pressed = widgets::sheet_button(&mut cell, "Open Settings", false, true).clicked();

@@ -417,7 +417,7 @@ pub struct AlertCandleSnapshot {
     pub low: f64,
     pub close: f64,
     pub volume: f64,
-    /// The candle size the quote was polled at, in DegenView's names (`1m`, `1h`).
+    /// The candle size the quote was polled at, in FakingView's names (`1m`, `1h`).
     pub interval: String,
 }
 

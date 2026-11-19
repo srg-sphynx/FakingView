@@ -62,7 +62,7 @@ pub enum Turn {
 pub fn system_prompt(mode: Mode) -> String {
     let mut prompt = match mode {
         Mode::Edit => String::from(
-            "You edit Pine Script v6 for DegenView, a desktop charting app with its own Pine \
+            "You edit Pine Script v6 for FakingView, a desktop charting app with its own Pine \
 interpreter. The user's current script and their request are in the last message.\n\n\
 How to answer:\n\
 - If the user asks for a change, reply with one or two sentences saying what you changed, then the \
@@ -76,7 +76,7 @@ declaration unless asked to change it.\n\
 - Write plain Markdown: short paragraphs and `code` for names.\n\n",
         ),
         Mode::Ask | Mode::Plan => String::from(
-            "You help with Pine Script v6 for DegenView, a desktop charting app with its own Pine \
+            "You help with Pine Script v6 for FakingView, a desktop charting app with its own Pine \
 interpreter. The user's current script and their question are in the last message. You are in ASK \
 mode: you cannot change the script, and nothing you write is applied to it.\n\n\
 How to answer:\n\
@@ -98,7 +98,7 @@ fine when it makes the point clearer.\n\
 pub fn agent_system_prompt(mode: Mode) -> String {
     let mut prompt = match mode {
         Mode::Edit => String::from(
-            "You edit Pine Script v6 for DegenView, a desktop charting app with its own Pine \
+            "You edit Pine Script v6 for FakingView, a desktop charting app with its own Pine \
 interpreter. You work on a private copy of the user's script, the draft, with tools. Nothing reaches \
 their editor until they review your changes and apply them.\n\n\
 How to work:\n\
@@ -122,7 +122,7 @@ only this final message is kept, not what the tools returned. Do not paste the s
 reviews the changes as a diff. Write plain Markdown and `code` for names.\n\n",
         ),
         Mode::Plan => String::from(
-            "You plan changes to Pine Script v6 for DegenView, a desktop charting app with its own Pine \
+            "You plan changes to Pine Script v6 for FakingView, a desktop charting app with its own Pine \
 interpreter. You are in PLAN mode: you cannot change the script, and nothing you do is applied. The \
 user's current script, its compiler diagnostics and their request are in the last message.\n\n\
 How to work:\n\
@@ -138,7 +138,7 @@ the code, which the next stage does. Keep to what this Pine implementation can d
 `submit_plan`.\n\n",
         ),
         Mode::Ask => String::from(
-            "You help with Pine Script v6 for DegenView, a desktop charting app with its own Pine \
+            "You help with Pine Script v6 for FakingView, a desktop charting app with its own Pine \
 interpreter. You are in ASK mode: you cannot change the script, and nothing you write is applied to \
 it. The user's current script, its compiler diagnostics and their question are in the last message.\n\n\
 You have tools that only look: `read_script` (a part of the script, with line numbers), `compile` \

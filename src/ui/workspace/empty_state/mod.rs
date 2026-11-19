@@ -357,7 +357,7 @@ mod tests {
     }
 
     /// Pictures of the page for a person to look at. Run by hand:
-    /// `DEGENVIEW_GALLERY_DIR=… cargo test --lib empty_state -- --ignored`.
+    /// `FAKINGVIEW_GALLERY_DIR=… cargo test --lib empty_state -- --ignored`.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_the_page() {

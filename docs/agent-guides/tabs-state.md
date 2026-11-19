@@ -75,7 +75,7 @@
 - Window callbacks look up content live via `TabWindowHost`/`TabRegistry`, under
   `ui.push_id(tab_id)`. Never capture content or key tab state by viewport.
 - Select/reorder/move/detach mutate `TabWindows` immediately. New and Close are `TabRequest`s for
-  `DegenViewApp::process_commands`. OS close becomes `CloseWindow`; Windows/Linux quit after the
+  `FakingViewApp::process_commands`. OS close becomes `CloseWindow`; Windows/Linux quit after the
   last window.
 
 ## Dragging and restore
@@ -104,7 +104,7 @@
   arrangement (`native_bridge::screen_layout`, macOS only; empty elsewhere = off), only once the
   arrangement is steady, so OS-forced frames are never saved. When a saved arrangement returns, or a
   gap in the 250 ms root tick shows the Mac slept, `TabWindowHost::restore_frames` (from
-  `DegenViewApp::logic`) sends `OuterPosition`/`InnerSize` to windows off by more than 1 pt, for up
+  `FakingViewApp::logic`) sends `OuterPosition`/`InnerSize` to windows off by more than 1 pt, for up
   to 6 s; skips minimized/maximized/fullscreen windows and ticks during a tab drag. Settle times
   inferred, not measured; never run on real multi-display sleep.
 - Window grouping is not persisted: restore puts all tabs in one window, sorted by old window and

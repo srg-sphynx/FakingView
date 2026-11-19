@@ -9,7 +9,7 @@ import Foundation
 final class Emitter: @unchecked Sendable {
     private let callback: DVEventCallback
     private let user: UnsafeMutableRawPointer?
-    private let queue = DispatchQueue(label: "es.nico.degenview.sync.events")
+    private let queue = DispatchQueue(label: "local.fakingview.desktop.sync.events")
     private var closed = false
 
     init(callback: @escaping DVEventCallback, user: UnsafeMutableRawPointer?) {

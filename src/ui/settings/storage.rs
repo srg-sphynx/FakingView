@@ -194,7 +194,7 @@ pub fn body(ui: &mut egui::Ui, state: &mut StorageState, actions: &mut Vec<Stora
             ui.add_space(10.0);
             status_message(
                 ui,
-                "DegenView could not find a folder to cache in, so nothing is saved between launches.",
+                "FakingView could not find a folder to cache in, so nothing is saved between launches.",
                 true,
             );
         }

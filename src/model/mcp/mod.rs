@@ -413,7 +413,7 @@ impl PermissionSet {
         Self::of(Permission::ALL)
     }
 
-    /// How many permissions of `group` this set holds that read, and that change DegenView.
+    /// How many permissions of `group` this set holds that read, and that change FakingView.
     pub fn group_access(&self, group: &str) -> GroupAccess {
         let mut access = GroupAccess::default();
         for permission in self.iter().filter(|p| p.group() == group) {
@@ -924,7 +924,7 @@ pub struct McpAuditTarget {
     pub id: String,
 }
 
-/// One row of the activity log: who asked DegenView to do what, and how it ended.
+/// One row of the activity log: who asked FakingView to do what, and how it ended.
 ///
 /// Deliberately small. It holds ids and codes, never an argument value, a message, a token or a
 /// script: the log is for answering "what did this agent do", not for replaying it.

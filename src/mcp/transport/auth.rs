@@ -64,7 +64,7 @@ fn unauthorized() -> Response {
         .into_response();
     response.headers_mut().insert(
         header::WWW_AUTHENTICATE,
-        HeaderValue::from_static(r#"Bearer realm="DegenView MCP""#),
+        HeaderValue::from_static(r#"Bearer realm="FakingView MCP""#),
     );
     response
 }

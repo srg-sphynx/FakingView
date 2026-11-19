@@ -94,8 +94,28 @@ fn defaults_and_support() {
     assert_eq!(preview.market, PreviewMarket::default_market());
     assert_eq!(preview.timeframe, Timeframe::DAY_1);
     assert!(PreviewMarket::is_supported(DataSource::Alpaca));
+    assert!(PreviewMarket::is_supported(DataSource::Kite));
     assert!(!PreviewMarket::is_supported(DataSource::Polymarket));
     assert!(!PreviewMarket::is_supported(DataSource::CoinMarketCap));
+}
+
+#[test]
+fn indian_preview_markets_and_recents_survive_reload() {
+    let shared: SharedStore = Arc::new(Mutex::new(Store::open_in_memory().unwrap()));
+    let market = PreviewMarket {
+        ticker: "NSE:INFY".into(),
+        source: DataSource::Kite,
+    };
+    {
+        let store = shared.lock().unwrap();
+        store.set_setting(MARKET_KEY, &market).unwrap();
+        store
+            .set_setting(RECENTS_KEY, &vec![market.clone()])
+            .unwrap();
+    }
+    let preview = PreviewState::load(&shared);
+    assert_eq!(preview.market, market);
+    assert_eq!(preview.recents, [market]);
 }
 
 #[test]

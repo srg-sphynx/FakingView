@@ -1,6 +1,6 @@
-# DegenView Rust architecture
+# FakingView Rust architecture
 
-DegenView is a Rust/egui market dashboard with a small native-window boundary. This page is the
+FakingView is a Rust/egui market dashboard with a small native-window boundary. This page is the
 architecture index; use the topic documents for detail.
 
 ## Layers
@@ -17,7 +17,7 @@ architecture index; use the topic documents for detail.
 | `pine/` | Pure Pine compiler, interpreter, strategy broker, debugger, profiler, and outputs |
 | `pine_studio/` | Script library, editor, preview, assistant, debugger and profiler panels |
 | `mcp/`, `host/mcp/` | Local MCP transport and app-thread bridge |
-| `bin/` | The login-item alert agent (`degenview-alert-agent`) |
+| `bin/` | The login-item alert agent (`fakingview-alert-agent`) |
 
 ## Topic map
 

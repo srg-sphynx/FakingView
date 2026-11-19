@@ -1,16 +1,16 @@
 #!/bin/sh
-# Builds the macOS disk image: DegenView.app next to an Applications shortcut, on a background that
+# Builds the macOS disk image: FakingView.app next to an Applications shortcut, on a background that
 # says to drag one onto the other.
 #
-#   tools/make-dmg.sh <path/to/DegenView.app> <out.dmg>
+#   tools/make-dmg.sh <path/to/FakingView.app> <out.dmg>
 #
 # Needs dmgbuild (`pip install dmgbuild==1.6.5`, in a venv on a Homebrew Python). It signs nothing:
 # the release workflow signs and notarizes the image afterwards, around an app that is already
 # signed, notarized and stapled. Works on the unsigned app `tools/bundle.sh` builds too.
 set -eu
 
-app="${1:?usage: make-dmg.sh <path/to/DegenView.app> <out.dmg>}"
-out="${2:?usage: make-dmg.sh <path/to/DegenView.app> <out.dmg>}"
+app="${1:?usage: make-dmg.sh <path/to/FakingView.app> <out.dmg>}"
+out="${2:?usage: make-dmg.sh <path/to/FakingView.app> <out.dmg>}"
 
 # Absolute paths first: the script moves to the repository root.
 absolute() { printf '%s/%s' "$(cd "$(dirname "$1")" && pwd)" "$(basename "$1")"; }
@@ -21,8 +21,8 @@ out=$(absolute "$out")
 cd "$(dirname "$0")/.."
 root="$PWD"
 
-if [ ! -d "$app" ] || [ "$(basename "$app")" != "DegenView.app" ]; then
-    echo "error: $app is not a DegenView.app" >&2
+if [ ! -d "$app" ] || [ "$(basename "$app")" != "FakingView.app" ]; then
+    echo "error: $app is not a FakingView.app" >&2
     exit 1
 fi
 if ! command -v dmgbuild >/dev/null 2>&1; then
@@ -39,7 +39,7 @@ tiffutil -cathidpicheck packaging/macos/dmg-background.png packaging/macos/dmg-b
 
 rm -f "$out"
 dmgbuild -s packaging/macos/dmg-settings.py \
-    -D "app=$app" -D "background=$work/background.tiff" -D "icon=$root/assets/brand/DegenView.icns" \
-    DegenView "$out"
+    -D "app=$app" -D "background=$work/background.tiff" -D "icon=$root/assets/brand/FakingView.icns" \
+    FakingView "$out"
 hdiutil verify "$out" >/dev/null
 echo "Built $out"

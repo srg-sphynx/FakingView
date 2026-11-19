@@ -281,14 +281,14 @@
   `pine_logs_view::intro` puts a picture beside its steps. Nothing outside a scroll area may exceed
   the drawer (minimum 90pt): bodies `chrome::scroll`, empty states `centered` (scrolls), scroll areas
   `min_scrolled_height(0.0)` (egui's default 64 overflows a short drawer). `drawer_tabs_tests` asserts
-  fit at five sizes; `DEGENVIEW_GALLERY_DIR` for pictures.
+  fit at five sizes; `FAKINGVIEW_GALLERY_DIR` for pictures.
 - Empty tabs: `centered` + `pine_logs_view::intro` (picture, three steps, example; see
   `drawer_intro`), never a bare text placeholder. Inputs too (`drawer_intro::inputs`,
   `drawer_tabs_tests::inputs_fit_the_drawer` at five sizes).
 - Pine Studio with no scripts (`pine_studio::library::empty_library`): detail area `centered` +
   `intro`, the two ways to begin as footer; the script picker's list a short form with the same
   picture (`empty_library::short`). No-match search stays the small "No matches" tile. Pictures: `cargo test --lib empty_library -- --ignored`
-  with `DEGENVIEW_GALLERY_DIR` set.
+  with `FAKINGVIEW_GALLERY_DIR` set.
 - Problems copy button copies all problems (errors first); right-click a row copies it or just its
   message.
 - `pine_report::show` / `report_content` (chart settings) keep the compact look; the drawer lays out
@@ -358,7 +358,7 @@
 - A run-time failure has no profile (`Profiler::finish`), only the failure, also in Problems.
 - Never close a Pine Studio tab or quit over unsaved editor text or retained drafts without the
   `unsaved` flow. Tab close starts `begin_exit(CloseTab)` and cancels close; quit/update restart use
-  `DegenViewApp::request_quit` plus the native termination intercept. Failed save cancels exit.
+  `FakingViewApp::request_quit` plus the native termination intercept. Failed save cancels exit.
   Don't Save restores saved text and calls `ScriptStore::discard_draft`.
 - `pine_studio::library::demo` seeds examples once and on demand from an empty state; deleted demos
   stay deleted. Names = filenames, no “Demo” prefix. Examples: original GPL-compatible work, zero

@@ -2,7 +2,7 @@
 //! is ([`color_at`]), so the corner masks that round the chart's corners ask the very function the
 //! backdrop was painted from and match it exactly.
 //!
-//! The colours are the picture's content, not the app's chrome: the palettes are DegenView's own
+//! The colours are the picture's content, not the app's chrome: the palettes are FakingView's own
 //! (a deep teal with a cyan glow, warm pink to orange, purple to teal through magenta, deep blue
 //! with a bright glow, charcoal with dots) and are kept deep enough for a light or dark chart
 //! card to stand out. A gradient is a vertex-coloured grid, dense enough to look smooth at 8K;

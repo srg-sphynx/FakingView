@@ -13,7 +13,7 @@ fn control(url: &str, token: &str, arguments: Value) -> Value {
     args.as_object_mut()
         .unwrap()
         .extend(arguments.as_object().unwrap().clone());
-    call(url, token, "degenview_control_replay", args)
+    call(url, token, "fakingview_control_replay", args)
 }
 
 fn rejected(url: &str, token: &str, arguments: Value) -> bool {
@@ -25,7 +25,7 @@ fn rejected(url: &str, token: &str, arguments: Value) -> bool {
         url,
         Some(token),
         "tools/call",
-        json!({"name": "degenview_control_replay", "arguments": args}),
+        json!({"name": "fakingview_control_replay", "arguments": args}),
     );
     let json = reply.json();
     json.get("error").is_some() || json["result"]["isError"] == json!(true)
@@ -35,15 +35,15 @@ fn rejected(url: &str, token: &str, arguments: Value) -> bool {
 fn reading_needs_charts_read_and_driving_needs_its_own_permission() {
     let harness = Harness::start(&[("read", "r-tok", READ), ("write", "w-tok", WRITE)]);
     let url = harness.url();
-    assert!(tool_names(&url, "r-tok").contains(&"degenview_get_replay".to_owned()));
-    assert!(!tool_names(&url, "r-tok").contains(&"degenview_control_replay".to_owned()));
-    assert_eq!(tool_names(&url, "w-tok"), ["degenview_control_replay"]);
+    assert!(tool_names(&url, "r-tok").contains(&"fakingview_get_replay".to_owned()));
+    assert!(!tool_names(&url, "r-tok").contains(&"fakingview_control_replay".to_owned()));
+    assert_eq!(tool_names(&url, "w-tok"), ["fakingview_control_replay"]);
     let denied = control(&url, "r-tok", json!({"action": "start"}));
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
     let denied = call(
         &url,
         "w-tok",
-        "degenview_get_replay",
+        "fakingview_get_replay",
         json!({"workspace_id": "1"}),
     );
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
@@ -56,7 +56,7 @@ fn a_replay_is_started_stepped_sought_and_stopped() {
     let idle = call(
         &url,
         "r-tok",
-        "degenview_get_replay",
+        "fakingview_get_replay",
         json!({"workspace_id": "1"}),
     );
     assert_eq!(idle["structuredContent"]["status"], "inactive");
@@ -119,7 +119,7 @@ fn a_replay_is_started_stepped_sought_and_stopped() {
     let read = call(
         &url,
         "r-tok",
-        "degenview_get_replay",
+        "fakingview_get_replay",
         json!({"workspace_id": "1"}),
     );
     assert_eq!(read["structuredContent"]["active"], false);
@@ -145,7 +145,7 @@ fn acting_on_a_replay_that_is_not_running_or_a_chart_that_is_not_there_is_refuse
     let missing = call(
         &url,
         "tok",
-        "degenview_control_replay",
+        "fakingview_control_replay",
         json!({"workspace_id": "7", "action": "start"}),
     );
     assert_eq!(error_code(&missing), "NOT_FOUND");

@@ -12,6 +12,7 @@ pub mod fx_rates;
 pub(in crate::service) mod gateio;
 pub(in crate::service) mod geckoterminal;
 pub(in crate::service) mod kalshi;
+pub(crate) mod kite;
 pub(in crate::service) mod kraken;
 pub mod live;
 pub(in crate::service) mod mexc;

@@ -4,6 +4,20 @@ use crate::ui::webhook::settings::WebhookTestState;
 use std::time::Instant;
 
 #[test]
+fn the_kite_deeplink_opens_its_page_and_retains_the_alpaca_route() {
+    use crate::ui::settings::window::SettingsSection;
+    let mut host = SettingsHost::default();
+    assert!(!host.is_open());
+    host.open_kite();
+    assert!(host.is_open());
+    assert_eq!(host.state.section, SettingsSection::Kite);
+    host.set_open(false);
+    host.open_alpaca();
+    assert!(host.is_open());
+    assert_eq!(host.state.section, SettingsSection::Alpaca);
+}
+
+#[test]
 fn a_test_runs_off_the_ui_thread_and_its_result_lands_later() {
     let store = Store::open_in_memory().unwrap();
     let endpoint = WebhookEndpoint {
@@ -47,7 +61,7 @@ fn a_test_runs_off_the_ui_thread_and_its_result_lands_later() {
 #[test]
 fn failed_delete_keeps_the_secret_and_reference_action() {
     let path = std::env::temp_dir().join(format!(
-        "degenview-webhook-delete-{}.sqlite",
+        "fakingview-webhook-delete-{}.sqlite",
         crate::model::watchlist::new_id()
     ));
     let store = Store::open(&path).expect("open");

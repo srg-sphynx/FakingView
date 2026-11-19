@@ -245,7 +245,7 @@ mod tests {
         let mut card = post();
         card.meta = Some(LinkMeta {
             title: "A long author name that has to be cut".into(),
-            author: "@degenview".into(),
+            author: "@fakingview".into(),
             excerpt: "The post's words, a good few of them so that they wrap and are cut.".into(),
             avatar: Some("a".repeat(64)),
             ..LinkMeta::default()

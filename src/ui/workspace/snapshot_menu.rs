@@ -393,7 +393,7 @@ mod tests {
     }
 
     /// The opened menu, written as PNGs in both themes to look at (rows fit, the new icon reads).
-    /// Run by hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_snapshot_menu -- --ignored`.
+    /// Run by hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_snapshot_menu -- --ignored`.
     #[test]
     #[ignore = "writes images for a person to look at"]
     fn gallery_of_the_snapshot_menu() {

@@ -1,11 +1,11 @@
 #!/bin/sh
-# Checks a signed DegenView.app is correctly set up for iCloud Sync, before it is notarized or
-# shipped. Usage: tools/verify-icloud.sh target/DegenView.app [Production|Development]
+# Checks a signed FakingView.app is correctly set up for iCloud Sync, before it is notarized or
+# shipped. Usage: tools/verify-icloud.sh target/FakingView.app [Production|Development]
 set -eu
 
-app="${1:?usage: verify-icloud.sh DegenView.app [Production|Development]}"
+app="${1:?usage: verify-icloud.sh FakingView.app [Production|Development]}"
 expected="${2:-Production}"
-helper="$app/Contents/Library/LoginItems/DegenViewAlertAgent.app"
+helper="$app/Contents/Library/LoginItems/FakingViewAlertAgent.app"
 failed=0
 
 fail() {
@@ -20,8 +20,8 @@ entitlements() {
 app_ents=$(entitlements "$app") || fail "the app has no entitlements (is it signed?)"
 echo "$app_ents" | grep -q "com.apple.developer.icloud-container-identifiers" \
     || fail "the app lacks the iCloud container entitlement"
-echo "$app_ents" | grep -q "iCloud.es.nico.degenview" \
-    || fail "the app's container is not iCloud.es.nico.degenview"
+echo "$app_ents" | grep -q "iCloud.local.fakingview.desktop" \
+    || fail "the app's container is not iCloud.local.fakingview.desktop"
 echo "$app_ents" | grep -q "<string>CloudKit</string>" \
     || fail "the app lacks the CloudKit service entitlement"
 echo "$app_ents" | tr -d '[:space:]' | grep -q "icloud-container-environment</key><string>$expected</string>" \
@@ -41,7 +41,7 @@ fi
 profile="$app/Contents/embedded.provisionprofile"
 if [ -f "$profile" ]; then
     decoded=$(security cms -D -i "$profile" 2>/dev/null || true)
-    echo "$decoded" | grep -q "iCloud.es.nico.degenview" \
+    echo "$decoded" | grep -q "iCloud.local.fakingview.desktop" \
         || fail "the embedded provisioning profile does not grant the iCloud container"
     # The profile lists services explicitly or with a wildcard.
     echo "$decoded" | tr -d '[:space:]' | grep -qE "icloud-services</key>(<array><string>CloudKit|<string>\*</string>)" \
@@ -53,14 +53,14 @@ fi
 # The Swift runtime comes from macOS (/usr/lib/swift); nothing Swift may be bundled, and no
 # machine-specific path (an Xcode toolchain) may be baked into the binary. The update check only
 # accepts the known executables.
-rpaths=$(otool -l "$app/Contents/MacOS/DegenView" | awk '/LC_RPATH/{getline; getline; print $2}')
+rpaths=$(otool -l "$app/Contents/MacOS/FakingView" | awk '/LC_RPATH/{getline; getline; print $2}')
 for path in $rpaths; do
     [ "$path" = "/usr/lib/swift" ] || fail "the app has an unexpected run-path: $path"
 done
 if find "$app" -name "*.dylib" -o -name "*.framework" | grep -q .; then
     fail "the app bundles a library; the update check only accepts the two known executables"
 fi
-if [ -d "$helper" ] && otool -L "$helper/Contents/MacOS/DegenViewAlertAgent" | grep -q "libswift"; then
+if [ -d "$helper" ] && otool -L "$helper/Contents/MacOS/FakingViewAlertAgent" | grep -q "libswift"; then
     fail "the login item must not link Swift"
 fi
 

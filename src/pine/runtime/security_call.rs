@@ -942,7 +942,7 @@ fn unserved_symbol_message(name: &str) -> String {
     if name.contains(':') {
         format!(
             "No data is available for symbol '{name}'. Check that the source before the colon is \
-             one DegenView reads (such as BINANCE, COINBASE or ALPACA) and that the pair is \
+             one FakingView reads (such as BINANCE, COINBASE or ALPACA) and that the pair is \
              spelled the way that source names it."
         )
     } else {

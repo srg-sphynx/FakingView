@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Six moving averages of increasing length. A fanned-out ribbon is a strong trend, a tangled one
 // is a range, and the order of the lines flips when the trend does.
 indicator("Moving Average Ribbon", overlay = true)

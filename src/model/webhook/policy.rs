@@ -100,7 +100,7 @@ pub const ALLOWED_SCHEMES: [&str; 2] = ["http", "https"];
 /// The one place that decides which webhook URLs are acceptable.
 ///
 /// Policy: `http` and `https` only, a host is required, any port. Loopback, link-local and
-/// private-network hosts are allowed on purpose: DegenView is a desktop app and the endpoints
+/// private-network hosts are allowed on purpose: FakingView is a desktop app and the endpoints
 /// are configured by its owner, and local trading bridges and dev servers are a legitimate
 /// target. This is looser than TradingView, which only reaches ports 80 and 443.
 pub fn validate_url(text: &str) -> Result<ParsedUrl, WebhookDeliveryError> {
@@ -186,7 +186,7 @@ pub const MAXIMUM_NAME_LENGTH: usize = 64;
 pub const MAXIMUM_VALUE_LENGTH: usize = 2048;
 pub const MAXIMUM_SECRET_LENGTH: usize = 2048;
 
-/// Headers DegenView or the HTTP stack own. Letting a user override them could break the
+/// Headers FakingView or the HTTP stack own. Letting a user override them could break the
 /// body's Content-Type detection or the connection itself.
 const RESERVED: [&str; 10] = [
     "content-type",
@@ -282,7 +282,7 @@ pub fn header_message(error: WebhookHeaderError) -> String {
         WebhookHeaderError::NameTooLong => {
             format!("Header names are limited to {MAXIMUM_NAME_LENGTH} characters.")
         }
-        WebhookHeaderError::Reserved => "DegenView sets this header itself.".to_owned(),
+        WebhookHeaderError::Reserved => "FakingView sets this header itself.".to_owned(),
         WebhookHeaderError::Duplicate => "This header is already set.".to_owned(),
         WebhookHeaderError::InvalidValue => {
             "Use plain letters, numbers and symbols (no line breaks).".to_owned()
@@ -873,7 +873,7 @@ mod tests {
         );
         assert_eq!(validate_secret("ünïcode ok"), None);
         assert!(secret_message(WebhookSecretError::Empty).contains("Enter"));
-        assert!(header_message(WebhookHeaderError::Reserved).contains("DegenView"));
+        assert!(header_message(WebhookHeaderError::Reserved).contains("FakingView"));
     }
 
     #[test]

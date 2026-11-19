@@ -30,7 +30,7 @@ use std::sync::{Arc, Mutex};
 
 /// The Alerts window's viewport.
 pub(in crate::app) fn alerts_viewport_id() -> egui::ViewportId {
-    egui::ViewportId::from_hash_of("degenview-alerts")
+    egui::ViewportId::from_hash_of("fakingview-alerts")
 }
 
 /// What the Alerts window keeps across frames.

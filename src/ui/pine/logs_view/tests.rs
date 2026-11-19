@@ -733,7 +733,7 @@ fn mixed_messages() -> Vec<LogEvent> {
 
 type Setup = fn(&mut LogsState, &mut LogHistory, &mut bool);
 
-/// The pane as pictures, in both themes. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+/// The pane as pictures, in both themes. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_pane() {

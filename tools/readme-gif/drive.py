@@ -1,4 +1,4 @@
-"""Play the README hero story on a running, seeded DegenView while recorder.py films its window.
+"""Play the README hero story on a running, seeded FakingView while recorder.py films its window.
 
 usage: drive.py <app pid> <window id> <out dir>
 
@@ -111,27 +111,27 @@ def draw(tool, a, b, steps=0, pause=0.11, **style):
     first = 0.1 if steps else 1.0
     spec = {"tool": tool, "a": {"time": to_iso(t0), "price": p0},
             "b": {"time": to_iso(lerp(t0, t1, first)), "price": lerp(p0, p1, first)}, **style}
-    added = mcp.call("degenview_add_drawings", {"workspace_id": WORKSPACE, "chart_id": CHART, "drawings": [spec]})
+    added = mcp.call("fakingview_add_drawings", {"workspace_id": WORKSPACE, "chart_id": CHART, "drawings": [spec]})
     drawing_id = find_id(added)
     for step in range(2, steps + 1):
         time.sleep(pause)
         f = step / steps
-        mcp.call("degenview_update_drawing", {
+        mcp.call("fakingview_update_drawing", {
             "workspace_id": WORKSPACE, "chart_id": CHART, "drawing_id": str(drawing_id),
             "b": {"time": to_iso(lerp(t0, t1, f)), "price": lerp(p0, p1, f)}})
 
 
-candles = mcp.call("degenview_get_candles", {"workspace_id": WORKSPACE, "chart_id": CHART, "limit": 140})
+candles = mcp.call("fakingview_get_candles", {"workspace_id": WORKSPACE, "chart_id": CHART, "limit": 140})
 plan = plan_drawings(candles)
-library = {s["name"]: s["script_id"] for s in mcp.call("degenview_list_pine_scripts")["scripts"]}
-add_script = lambda name: mcp.call("degenview_add_pine_script_to_chart", {
+library = {s["name"]: s["script_id"] for s in mcp.call("fakingview_list_pine_scripts")["scripts"]}
+add_script = lambda name: mcp.call("fakingview_add_pine_script_to_chart", {
     "workspace_id": WORKSPACE, "chart_id": CHART, "script_id": library[name]})
 
 recorder = subprocess.Popen([sys.executable, os.path.join(here, "recorder.py"), window, out])
 start = time.time()
 activate(); time.sleep(1.3); mark("clean")
-mcp.call("degenview_add_indicator", {"workspace_id": WORKSPACE, "chart_id": CHART, "indicator": "volume"}); mark("volume"); time.sleep(0.7)
-mcp.call("degenview_add_indicator", {"workspace_id": WORKSPACE, "chart_id": CHART, "indicator": "ema", "inputs": {"period": 20}}); mark("ema"); time.sleep(0.7)
+mcp.call("fakingview_add_indicator", {"workspace_id": WORKSPACE, "chart_id": CHART, "indicator": "volume"}); mark("volume"); time.sleep(0.7)
+mcp.call("fakingview_add_indicator", {"workspace_id": WORKSPACE, "chart_id": CHART, "indicator": "ema", "inputs": {"period": 20}}); mark("ema"); time.sleep(0.7)
 add_script("ichimoku-cloud"); mark("ichimoku"); time.sleep(1.1)
 add_script("macd"); mark("macd"); time.sleep(1.1)
 draw("trend_line", *plan["resistance"], steps=10, color="#FF5252", width=2.5, extend_right=True); mark("resistance"); time.sleep(0.5)

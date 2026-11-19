@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=DegenView
+Name=FakingView
 Comment=Market dashboard
-Exec=degenview
-Icon=degenview
+Exec=fakingview
+Icon=fakingview
 Terminal=false
 Categories=Office;Finance;

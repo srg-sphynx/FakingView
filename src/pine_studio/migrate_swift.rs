@@ -44,7 +44,7 @@ fn swift_data_dir() -> Option<PathBuf> {
         return None;
     }
     std::env::var_os("HOME")
-        .map(|home| PathBuf::from(home).join("Library/Application Support/DegenView"))
+        .map(|home| PathBuf::from(home).join("Library/Application Support/FakingView"))
 }
 
 pub(super) fn swift_scripts_dir() -> Option<PathBuf> {

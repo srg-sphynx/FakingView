@@ -24,7 +24,7 @@ impl ExitReason {
     fn consequence(self) -> &'static str {
         match self {
             Self::CloseTab => "Your changes will be lost if you close this tab without saving.",
-            Self::Quit => "Your changes will be lost if you quit DegenView without saving.",
+            Self::Quit => "Your changes will be lost if you quit FakingView without saving.",
         }
     }
 }

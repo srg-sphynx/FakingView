@@ -1,4 +1,4 @@
-//! The pure part of `degenview_get_session_stats`: a question over a chart's own candles, as the
+//! The pure part of `fakingview_get_session_stats`: a question over a chart's own candles, as the
 //! tool returns it. The counting is `model::session_stats`; this turns its answer into the
 //! result a client reads, and decides what an answer that cannot be given is called.
 

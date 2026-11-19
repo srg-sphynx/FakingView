@@ -78,7 +78,7 @@ pub fn bars() -> &'static Arc<Vec<Kline>> {
 fn symbol() -> SymbolInfo {
     SymbolInfo {
         ticker: "PREVIEW".into(),
-        ticker_id: "DEGENVIEW:PREVIEW".into(),
+        ticker_id: "FAKINGVIEW:PREVIEW".into(),
         currency: "USD".into(),
         kind: "crypto".into(),
         base_currency: None,

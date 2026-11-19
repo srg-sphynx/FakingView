@@ -245,7 +245,7 @@ fn colours_that_vanish_into_the_background_are_warned_about_and_still_allowed() 
 }
 
 #[test]
-#[ignore = "writes images for a person to look at: DEGENVIEW_GALLERY_DIR=… cargo test --lib settings_theme_editor -- --ignored"]
+#[ignore = "writes images for a person to look at: FAKINGVIEW_GALLERY_DIR=… cargo test --lib settings_theme_editor -- --ignored"]
 fn gallery() {
     if gallery_dir().is_none() {
         return;

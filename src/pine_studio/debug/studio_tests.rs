@@ -67,7 +67,8 @@ pub(in crate::pine_studio) struct Rig {
 
 impl Rig {
     pub fn new(tag: &str) -> Self {
-        let root = std::env::temp_dir().join(format!("degenview-dbg-{tag}-{}", std::process::id()));
+        let root =
+            std::env::temp_dir().join(format!("fakingview-dbg-{tag}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let shared: SharedStore = Arc::new(Mutex::new(Store::open_in_memory().unwrap()));
         Self::over(Folder(root), shared)

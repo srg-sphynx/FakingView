@@ -183,22 +183,22 @@ fn stamp(epoch_ms: i64, offset_secs: i64) -> String {
     )
 }
 
-/// `DegenView_BTCUSDT_1H_2026-10-19_1642.png`: the chart's symbol and timeframe and the local
+/// `FakingView_BTCUSDT_1H_2026-10-19_1642.png`: the chart's symbol and timeframe and the local
 /// time (`offset_secs` east of UTC). A `1M` timeframe stays upper case so it is never read as
 /// minutes.
 pub fn file_name(symbol: &str, timeframe: &str, epoch_ms: i64, offset_secs: i64) -> String {
     format!(
-        "DegenView_{}_{}_{}.png",
+        "FakingView_{}_{}_{}.png",
         name_part(symbol, "Chart"),
         name_part(timeframe, "Chart"),
         stamp(epoch_ms, offset_secs),
     )
 }
 
-/// `DegenView_Layout_2026-10-19_1642.png`: the name of an image of several charts, which has
+/// `FakingView_Layout_2026-10-19_1642.png`: the name of an image of several charts, which has
 /// no one symbol to carry.
 pub fn layout_file_name(epoch_ms: i64, offset_secs: i64) -> String {
-    format!("DegenView_Layout_{}.png", stamp(epoch_ms, offset_secs))
+    format!("FakingView_Layout_{}.png", stamp(epoch_ms, offset_secs))
 }
 
 /// `name` with `.png` on it when it has no extension of its own.
@@ -226,7 +226,7 @@ pub fn unused_name(name: &str, taken: impl Fn(&str) -> bool) -> String {
 
 /// What the post says before the link.
 pub fn share_text(title: &str, timeframe: &str) -> String {
-    format!("{title} {timeframe} chart — DegenView")
+    format!("{title} {timeframe} chart — FakingView")
 }
 
 /// X's composer, filled in with `text` and the snapshot's `link`. The link is passed as the
@@ -455,7 +455,7 @@ pub struct SnapshotPrefs {
     pub consented: Vec<String>,
 }
 
-/// The id of the provider that speaks DegenView's own protocol: what the one `host` of an older
+/// The id of the provider that speaks FakingView's own protocol: what the one `host` of an older
 /// save becomes.
 pub const SELF_HOSTED: &str = "self_hosted";
 

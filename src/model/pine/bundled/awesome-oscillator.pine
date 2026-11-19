@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Awesome Oscillator: the difference between a fast and a slow simple average of the bar's
 // midpoint. The histogram is green when it rises and red when it falls; crossing zero is a
 // momentum shift.

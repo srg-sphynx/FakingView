@@ -4,10 +4,10 @@
 
 - Only `src/mcp/` may use async: one current-thread Tokio runtime on the `mcp-server` thread for
   rmcp/axum. Keep it egui-free; `host/mcp/mod.rs` bridges stateful workspace access.
-- Tools validate and enqueue `mcp::bridge::Request`; `DegenViewApp::tick_mcp` hands it to its
+- Tools validate and enqueue `mcp::bridge::Request`; `FakingViewApp::tick_mcp` hands it to its
   domain's `host::mcp::<domain>::run` on the app thread. Tool/HTTP threads never lock
   `TabSlot`/`ChartWorkspace` or write SQLite. A domain gets the parts of the app it reaches (an
-  `McpTabs` view of the tabs, a store, a host), never `DegenViewApp`.
+  `McpTabs` view of the tabs, a store, a host), never `FakingViewApp`.
 - Authorize each call from fresh `McpShared` state. Map every tool in `tools::required_permission`
   and test direct-call denial. Unmapped routed tools never run (`call_tool` fails closed;
   `every_routed_tool_has_a_permission_and_an_unmapped_name_is_not_run` fails the build), and
@@ -42,7 +42,7 @@ In its domain (`chart`, `alert`, `pine`, `paper`, `portfolio`, `market` for watc
 Both matches are exhaustive, so a missing step does not compile. `app/mcp.rs` and
 `mcp/bridge.rs` change only for a new domain: an `McpCommand` variant (and its `from_domain!`
 entry and `McpCommand::domain` arm), its arms in the app's `run_mcp_command` and
-`confirmation_summary`, and its router in `DegenViewMcp::new`.
+`confirmation_summary`, and its router in `FakingViewMcp::new`.
 - Persist before publishing shared state. Store/log only SHA-256 token verifiers, never tokens.
   `McpShared::authenticate` carries a match across its lock gap as the client id, re-checking the
   verifier; never a list index.
@@ -60,7 +60,7 @@ entry and `McpCommand::domain` arm), its arms in the app's `run_mcp_command` and
   unsealed on purpose, so the usage save may use `replace_mcp_clients`.
 - New access-deciding field: add to `mcp::transport::seal::Sealed` plus a case in `every_trust_field_is_covered`.
 - Sealing is off in tests, every debug build (new code identity per rebuild = Keychain prompt every
-  launch), and `--release --features dev-unsealed-mcp` builds started with `DEGENVIEW_NO_KEYCHAIN`;
+  launch), and `--release --features dev-unsealed-mcp` builds started with `FAKINGVIEW_NO_KEYCHAIN`;
   other release builds ignore that variable, never rely on it there. Test with
   `McpHost::load_with_keys` and a shared `MemoryBackend`. See
   [Sealed credentials](../mcp-implementation.md#sealed-credentials).
@@ -127,7 +127,7 @@ entry and `McpCommand::domain` arm), its arms in the app's `run_mcp_command` and
   `docs/drawing-tools.md`), so the tools list, add, edit and remove on that market. Plan from `ChartWorkspace::chart_data` with `mcp::chart::data`, commit via
   `apply_planned_drawings` (pointer's path, one undo step); tool threads never read `Chart.drawings`
   or `Chart.candles`. Validate in `mcp::chart::drawings` before queueing; never edit a locked drawing.
-- `degenview_get_candles` returns the market's own candles, not constructed bars. Indicator readings
+- `fakingview_get_candles` returns the market's own candles, not constructed bars. Indicator readings
   use the drawn bars (`ChartWorkspace::constructed_bars` for Heikin Ashi, Renko etc.), never raw
   candles.
 - Search/quotes (`mcp/market/tools.rs`) run on tool threads, no bridge: `McpShared::market_search`;
@@ -182,7 +182,7 @@ entry and `McpCommand::domain` arm), its arms in the app's `run_mcp_command` and
 ## Verifying
 
 `127.0.0.1:<port>/mcp` with seeded `mcp.settings`/`mcp_client` rows, throwaway `HOME`,
-`DEGENVIEW_NO_KEYCHAIN=1` (seeded rows only load unsealed: debug build or
+`FAKINGVIEW_NO_KEYCHAIN=1` (seeded rows only load unsealed: debug build or
 `cargo build --release --features dev-unsealed-mcp`), `Authorization: Bearer ...`.
 
 See [implementation](../mcp-implementation.md) and [remaining work](../mcp-remaining-work.md).

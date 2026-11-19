@@ -18,11 +18,11 @@ const MAX_ENTRIES: usize = 2_000;
 const EXTRACT_TIMEOUT: Duration = Duration::from_secs(120);
 const POLL: Duration = Duration::from_millis(100);
 
-const BUNDLE_ID: &str = "es.nico.degenview";
-const HELPER_ID: &str = "es.nico.degenview.alert-agent";
-const MAIN_EXECUTABLE: &str = "Contents/MacOS/DegenView";
-pub(crate) const HELPER_APP: &str = "Contents/Library/LoginItems/DegenViewAlertAgent.app";
-const HELPER_EXECUTABLE: &str = "Contents/MacOS/DegenViewAlertAgent";
+const BUNDLE_ID: &str = "local.fakingview.desktop";
+const HELPER_ID: &str = "local.fakingview.desktop.alert-agent";
+const MAIN_EXECUTABLE: &str = "Contents/MacOS/FakingView";
+pub(crate) const HELPER_APP: &str = "Contents/Library/LoginItems/FakingViewAlertAgent.app";
+const HELPER_EXECUTABLE: &str = "Contents/MacOS/FakingViewAlertAgent";
 
 // MARK: Zip directory
 
@@ -168,7 +168,7 @@ fn directory_bytes(dir: &Path) -> std::io::Result<u64> {
 /// The one file a Windows update replaces: the release zip carries it at its root, next to licence
 /// texts that are not code and are left alone.
 #[cfg(any(windows, test))]
-pub const EXE_NAME: &str = "degenview.exe";
+pub const EXE_NAME: &str = "fakingview.exe";
 
 /// Inflates `EXE_NAME` from the zip in `bytes` into `dest_dir`, refusing more than
 /// `MAX_UNPACKED_BYTES`. The output name is fixed, so nothing in the archive picks where a file
@@ -186,9 +186,9 @@ pub fn extract_exe(bytes: &[u8], dest_dir: &Path) -> Result<std::path::PathBuf, 
     }
     let mut entry = archive
         .by_name(EXE_NAME)
-        .map_err(|_| "The download is not a DegenView app.".to_owned())?;
+        .map_err(|_| "The download is not a FakingView app.".to_owned())?;
     if !entry.is_file() || entry.size() > MAX_UNPACKED_BYTES {
-        return Err("The download is not a DegenView app.".to_owned());
+        return Err("The download is not a FakingView app.".to_owned());
     }
     std::fs::create_dir_all(dest_dir).map_err(|error| failed(&error))?;
     let dest = dest_dir.join(EXE_NAME);
@@ -217,20 +217,20 @@ const fn expected_machine() -> u16 {
 fn pe_machine(exe: &Path) -> Result<u16, String> {
     use std::io::{Read, Seek, SeekFrom};
 
-    let not_degenview = || "The download is not a DegenView app.".to_owned();
-    let mut file = std::fs::File::open(exe).map_err(|_| not_degenview())?;
+    let not_fakingview = || "The download is not a FakingView app.".to_owned();
+    let mut file = std::fs::File::open(exe).map_err(|_| not_fakingview())?;
     let mut dos = [0u8; 64];
-    file.read_exact(&mut dos).map_err(|_| not_degenview())?;
+    file.read_exact(&mut dos).map_err(|_| not_fakingview())?;
     if &dos[..2] != b"MZ" {
-        return Err(not_degenview());
+        return Err(not_fakingview());
     }
     let pe_at = u32::from_le_bytes([dos[0x3C], dos[0x3D], dos[0x3E], dos[0x3F]]);
     let mut pe = [0u8; 6];
     file.seek(SeekFrom::Start(pe_at.into()))
         .and_then(|_| file.read_exact(&mut pe))
-        .map_err(|_| not_degenview())?;
+        .map_err(|_| not_fakingview())?;
     if &pe[..4] != b"PE\0\0" {
-        return Err(not_degenview());
+        return Err(not_fakingview());
     }
     Ok(u16::from_le_bytes([pe[4], pe[5]]))
 }
@@ -248,9 +248,9 @@ pub fn check_exe(exe: &Path) -> Result<(), String> {
 // MARK: Linux binary
 
 /// The one file a Linux update replaces: the release tarball carries it at its root (as
-/// `./degenview`), next to the icon, `.desktop` file and licence texts, which are left alone.
+/// `./fakingview`), next to the icon, `.desktop` file and licence texts, which are left alone.
 #[cfg(any(target_os = "linux", test))]
-pub const BINARY_NAME: &str = "degenview";
+pub const BINARY_NAME: &str = "fakingview";
 
 /// Inflates `BINARY_NAME` from the gzipped tarball in `bytes` into `dest_dir` (mode 0755), refusing
 /// more than `MAX_UNPACKED_BYTES` of decompressed data in total, more than `MAX_ENTRIES` entries,
@@ -272,7 +272,7 @@ fn extract_tar_gz_binary_within(
     use std::io::Read;
 
     let failed = |error: &dyn std::fmt::Display| format!("Could not unpack the download: {error}");
-    let not_degenview = || "The download is not a DegenView app.".to_owned();
+    let not_fakingview = || "The download is not a FakingView app.".to_owned();
     if bytes.get(..2) != Some(&[0x1f, 0x8b]) {
         return Err("The download is not a valid archive.".to_owned());
     }
@@ -296,7 +296,7 @@ fn extract_tar_gz_binary_within(
             continue;
         }
         if written.is_some() || !entry.header().entry_type().is_file() {
-            return Err(not_degenview());
+            return Err(not_fakingview());
         }
         std::fs::create_dir_all(dest_dir).map_err(|e| failed(&e))?;
         let dest = dest_dir.join(BINARY_NAME);
@@ -310,7 +310,7 @@ fn extract_tar_gz_binary_within(
         }
         written = Some(dest);
     }
-    written.ok_or_else(not_degenview)
+    written.ok_or_else(not_fakingview)
 }
 
 /// The ELF `e_machine` of the running build, which an update for another CPU must not replace.
@@ -329,15 +329,15 @@ const fn expected_elf_machine() -> u16 {
 fn elf_machine(path: &Path) -> Result<u16, String> {
     use std::io::Read;
 
-    let not_degenview = || "The download is not a DegenView app.".to_owned();
+    let not_fakingview = || "The download is not a FakingView app.".to_owned();
     let mut header = [0u8; 20];
     std::fs::File::open(path)
         .and_then(|mut file| file.read_exact(&mut header))
-        .map_err(|_| not_degenview())?;
+        .map_err(|_| not_fakingview())?;
     let kind = u16::from_le_bytes([header[16], header[17]]);
     // ELF magic, ELFCLASS64, ELFDATA2LSB; ET_EXEC or ET_DYN.
     if header[..4] != *b"\x7fELF" || header[4] != 2 || header[5] != 1 || !matches!(kind, 2 | 3) {
-        return Err(not_degenview());
+        return Err(not_fakingview());
     }
     Ok(u16::from_le_bytes([header[18], header[19]]))
 }
@@ -355,10 +355,10 @@ pub fn check_elf(path: &Path) -> Result<(), String> {
 
 // MARK: Bundle layout
 
-/// The unpacked bundle must be exactly DegenView: both of its executables with our bundle ids, no
+/// The unpacked bundle must be exactly FakingView: both of its executables with our bundle ids, no
 /// other launchable file, and no link that leaves the bundle.
 pub fn check_bundle(app: &Path) -> Result<(), String> {
-    let not_degenview = || "The download is not a DegenView app.".to_owned();
+    let not_fakingview = || "The download is not a FakingView app.".to_owned();
     let helper = app.join(HELPER_APP);
     let declares = |bundle: &Path, id: &str| {
         std::fs::read_to_string(bundle.join("Contents/Info.plist"))
@@ -371,12 +371,12 @@ pub fn check_bundle(app: &Path) -> Result<(), String> {
         || !main_executable.is_file()
         || !helper_executable.is_file()
     {
-        return Err(not_degenview());
+        return Err(not_fakingview());
     }
     // If the bundle's layout changes on purpose, update the constants above.
     let expected = [main_executable, helper_executable];
     inspect(app, app, &expected)
-        .map_err(|problem| format!("The download is not a DegenView app ({problem})."))
+        .map_err(|problem| format!("The download is not a FakingView app ({problem})."))
 }
 
 fn inspect(root: &Path, dir: &Path, expected: &[std::path::PathBuf]) -> Result<(), String> {
@@ -426,7 +426,7 @@ pub(crate) mod testing {
 
     /// A bundle with the layout `tools/bundle.sh` produces; both executables contain `marker`.
     pub fn fake_app(root: &Path, marker: &str) -> PathBuf {
-        let app = root.join("DegenView.app");
+        let app = root.join("FakingView.app");
         let helper = app.join(HELPER_APP);
         for (bundle, id, executable) in [
             (&app, BUNDLE_ID, MAIN_EXECUTABLE),
@@ -485,7 +485,7 @@ mod tests {
 
     fn scratch(name: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "degenview-update-archive-{name}-{}",
+            "fakingview-update-archive-{name}-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&dir);
@@ -517,9 +517,9 @@ mod tests {
     #[test]
     fn an_ordinary_directory_passes_the_precheck() {
         let zip = directory_only_zip(&[
-            ("DegenView.app/", 0),
-            ("DegenView.app/Contents/MacOS/DegenView", 30_000_000),
-            ("__MACOSX/._DegenView.app", 100),
+            ("FakingView.app/", 0),
+            ("FakingView.app/Contents/MacOS/FakingView", 30_000_000),
+            ("__MACOSX/._FakingView.app", 100),
         ]);
         assert_eq!(precheck(&zip), Ok(()));
     }
@@ -598,9 +598,10 @@ mod tests {
         let app = fake_app(&root, "x");
         // Plain files (icon, plist) are fine, and so is a relative link inside the bundle.
         fs::create_dir_all(app.join("Contents/Resources")).unwrap();
-        fs::write(app.join("Contents/Resources/DegenView.icns"), "icon").unwrap();
+        fs::write(app.join("Contents/Resources/FakingView.icns"), "icon").unwrap();
         #[cfg(unix)]
-        std::os::unix::fs::symlink("DegenView.icns", app.join("Contents/Resources/alias")).unwrap();
+        std::os::unix::fs::symlink("FakingView.icns", app.join("Contents/Resources/alias"))
+            .unwrap();
         assert_eq!(check_bundle(&app), Ok(()));
         let _ = fs::remove_dir_all(root);
     }
@@ -753,8 +754,8 @@ mod tests {
         let method = zip::CompressionMethod::Stored;
         for entries in [
             vec![("README.md", &b"x"[..])],
-            vec![("DegenView/degenview.exe", &exe[..])],
-            vec![("DEGENVIEW.EXE", &exe[..])],
+            vec![("FakingView/fakingview.exe", &exe[..])],
+            vec![("FAKINGVIEW.EXE", &exe[..])],
         ] {
             let zip = make_zip(&entries, method);
             assert!(extract_exe(&zip, &root.join("out")).is_err(), "{entries:?}");
@@ -790,13 +791,14 @@ mod tests {
         let _ = fs::remove_dir_all(root);
     }
 
-    /// Needs a real release zip: `DEGENVIEW_TEST_WINDOWS_ZIP=<path> cargo test -- --ignored
+    /// Needs a real release zip: `FAKINGVIEW_TEST_WINDOWS_ZIP=<path> cargo test -- --ignored
     /// a_real_windows_release_zip_unpacks`. Reads the PE machine directly rather than `check_exe`,
     /// which compares with the CPU of the machine running the test.
     #[test]
     #[ignore = "needs a downloaded release zip"]
     fn a_real_windows_release_zip_unpacks() {
-        let path = std::env::var("DEGENVIEW_TEST_WINDOWS_ZIP").expect("DEGENVIEW_TEST_WINDOWS_ZIP");
+        let path =
+            std::env::var("FAKINGVIEW_TEST_WINDOWS_ZIP").expect("FAKINGVIEW_TEST_WINDOWS_ZIP");
         let zip = fs::read(path).unwrap();
         precheck(&zip).unwrap();
         let root = scratch("real-windows-zip");
@@ -847,10 +849,10 @@ mod tests {
         // The release tarball is made with `tar -czf ... -C pkg .`: every name starts with `./`.
         let targz = make_targz(&[
             ("./", b"", Kind::File),
-            ("./degenview.desktop", b"[Desktop Entry]", Kind::File),
-            ("./degenview", &elf, Kind::File),
+            ("./fakingview.desktop", b"[Desktop Entry]", Kind::File),
+            ("./fakingview", &elf, Kind::File),
             ("./licenses/FONTS.md", b"fonts", Kind::File),
-            ("./degenview.png", b"png", Kind::File),
+            ("./fakingview.png", b"png", Kind::File),
         ]);
         let path = extract_tar_gz_binary(&targz, &root.join("out")).unwrap();
         assert_eq!(fs::read(&path).unwrap(), elf);
@@ -865,7 +867,7 @@ mod tests {
             );
         }
         // A tarball without the leading `./` works too.
-        let plain = make_targz(&[("degenview", &elf, Kind::File)]);
+        let plain = make_targz(&[("fakingview", &elf, Kind::File)]);
         assert!(extract_tar_gz_binary(&plain, &root.join("plain")).is_ok());
         let _ = fs::remove_dir_all(root);
     }
@@ -876,13 +878,13 @@ mod tests {
         let elf = fake_elf(expected_elf_machine());
         for entries in [
             vec![("./README.md", &b"x"[..], Kind::File)],
-            vec![("./bin/degenview", &elf[..], Kind::File)],
-            vec![("./DEGENVIEW", &elf[..], Kind::File)],
+            vec![("./bin/fakingview", &elf[..], Kind::File)],
+            vec![("./FAKINGVIEW", &elf[..], Kind::File)],
             vec![
-                ("./degenview", &elf[..], Kind::File),
-                ("degenview", &elf[..], Kind::File),
+                ("./fakingview", &elf[..], Kind::File),
+                ("fakingview", &elf[..], Kind::File),
             ],
-            vec![("./degenview", &b""[..], Kind::Symlink)],
+            vec![("./fakingview", &b""[..], Kind::Symlink)],
         ] {
             let targz = make_targz(&entries);
             assert!(extract_tar_gz_binary(&targz, &root.join("out")).is_err());
@@ -897,7 +899,7 @@ mod tests {
         let root = scratch("tar-unsafe");
         let elf = fake_elf(expected_elf_machine());
         for name in ["../evil", "/etc/passwd", "./a/../../b"] {
-            let targz = make_targz(&[("./degenview", &elf, Kind::File), (name, b"x", Kind::File)]);
+            let targz = make_targz(&[("./fakingview", &elf, Kind::File), (name, b"x", Kind::File)]);
             assert!(
                 extract_tar_gz_binary(&targz, &root.join("out")).is_err(),
                 "{name}"
@@ -933,10 +935,10 @@ mod tests {
         for entries in [
             vec![
                 ("./filler", &filler[..], Kind::File),
-                ("./degenview", &elf[..], Kind::File),
+                ("./fakingview", &elf[..], Kind::File),
             ],
             vec![
-                ("./degenview", &elf[..], Kind::File),
+                ("./fakingview", &elf[..], Kind::File),
                 ("./filler", &filler[..], Kind::File),
             ],
         ] {
@@ -980,14 +982,14 @@ mod tests {
         let _ = fs::remove_dir_all(root);
     }
 
-    /// Needs a real release tarball: `DEGENVIEW_TEST_LINUX_TARBALL=<path> cargo test -- --ignored
+    /// Needs a real release tarball: `FAKINGVIEW_TEST_LINUX_TARBALL=<path> cargo test -- --ignored
     /// a_real_linux_release_tarball_unpacks`. The CPU is read from the file name (`-arm64` or
     /// `-x64`); `check_elf` is not used because it compares with the machine running the test.
     #[test]
     #[ignore = "needs a downloaded release tarball"]
     fn a_real_linux_release_tarball_unpacks() {
         let path =
-            std::env::var("DEGENVIEW_TEST_LINUX_TARBALL").expect("DEGENVIEW_TEST_LINUX_TARBALL");
+            std::env::var("FAKINGVIEW_TEST_LINUX_TARBALL").expect("FAKINGVIEW_TEST_LINUX_TARBALL");
         let expected = if path.contains("arm64") { 0xB7 } else { 0x3E };
         let targz = fs::read(&path).unwrap();
         let root = scratch("real-linux-tarball");

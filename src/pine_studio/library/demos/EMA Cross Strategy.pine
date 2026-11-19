@@ -1,5 +1,5 @@
 //@version=6
-// Example script bundled with DegenView. Edit it freely.
+// Example script bundled with FakingView. Edit it freely.
 // Long-only EMA crossover with an ATR-based stop and target. Apply it to a chart
 // and open the Scripts tab to see the backtest report. Past results say nothing
 // about the future.

@@ -1,5 +1,5 @@
 //! Pictures of the Portfolio pages at several window sizes, for a person to look at. Run by hand:
-//! `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib portfolio_gallery -- --ignored`.
+//! `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib portfolio_gallery -- --ignored`.
 
 use crate::model::DataSource;
 use crate::model::portfolio::format::PortfolioValueFormatter;

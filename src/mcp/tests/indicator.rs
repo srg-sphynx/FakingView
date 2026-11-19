@@ -38,21 +38,21 @@ fn the_indicator_tools_are_listed_only_for_their_permissions() {
     assert_eq!(
         tool_names(&url, "r-tok"),
         [
-            "degenview_get_candles",
-            "degenview_get_indicator_values",
-            "degenview_get_session_stats"
+            "fakingview_get_candles",
+            "fakingview_get_indicator_values",
+            "fakingview_get_session_stats"
         ]
     );
     let write = tool_names(&url, "w-tok");
     assert!(
-        write.contains(&"degenview_remove_indicator".to_owned()),
+        write.contains(&"fakingview_remove_indicator".to_owned()),
         "{write:?}"
     );
     assert!(
-        write.contains(&"degenview_add_indicator".to_owned()),
+        write.contains(&"fakingview_add_indicator".to_owned()),
         "{write:?}"
     );
-    assert!(!write.contains(&"degenview_get_indicator_values".to_owned()));
+    assert!(!write.contains(&"fakingview_get_indicator_values".to_owned()));
 }
 
 #[test]
@@ -61,7 +61,7 @@ fn values_come_back_aligned_with_the_bars_and_warm() {
     let result = call(
         &harness.url(),
         "tok",
-        "degenview_get_indicator_values",
+        "fakingview_get_indicator_values",
         with(json!({"limit": 5, "indicators": ["rsi", "ema"], "ema_period": 9})),
     );
     assert_eq!(result["isError"], json!(false), "{result}");
@@ -90,7 +90,7 @@ fn values_come_back_aligned_with_the_bars_and_warm() {
     let page = call(
         &harness.url(),
         "tok",
-        "degenview_get_indicator_values",
+        "fakingview_get_indicator_values",
         with(json!({"limit": 3, "before": first, "indicators": ["bollinger"]})),
     );
     let page = &page["structuredContent"];
@@ -108,7 +108,7 @@ fn values_come_back_aligned_with_the_bars_and_warm() {
 fn bad_value_requests_and_unknown_charts_are_refused() {
     let harness = Harness::start(&[("c", "tok", CANDLES)]);
     let url = harness.url();
-    let tool = "degenview_get_indicator_values";
+    let tool = "fakingview_get_indicator_values";
     for extra in [
         json!({"indicators": []}),
         json!({"indicators": ["volume"]}),
@@ -134,7 +134,7 @@ fn bad_value_requests_and_unknown_charts_are_refused() {
 fn removing_an_indicator_needs_its_own_permission_and_reaches_the_app() {
     let harness = Harness::start(&[("write", "w-tok", INDICATORS), ("read", "r-tok", CANDLES)]);
     let url = harness.url();
-    let tool = "degenview_remove_indicator";
+    let tool = "fakingview_remove_indicator";
     let denied = call(&url, "r-tok", tool, with(json!({"indicator": "rsi"})));
     assert_eq!(error_code(&denied), "PERMISSION_DENIED");
     let result = call(&url, "w-tok", tool, with(json!({"indicator": "rsi"})));

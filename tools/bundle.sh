@@ -3,22 +3,22 @@ set -eu
 
 cd "$(dirname "$0")/.."
 CARGO_BIN="${CARGO_BIN:-cargo}"
-identity="${DEGENVIEW_CODESIGN_IDENTITY:-}"
-access_group="${DEGENVIEW_KEYCHAIN_ACCESS_GROUP:-}"
+identity="${FAKINGVIEW_CODESIGN_IDENTITY:-}"
+access_group="${FAKINGVIEW_KEYCHAIN_ACCESS_GROUP:-}"
 # keychain-access-groups is a restricted entitlement: macOS kills a signed build at launch unless
 # a provisioning profile that grants it is embedded in each bundle.
-app_profile="${DEGENVIEW_APP_PROFILE:-}"
-helper_profile="${DEGENVIEW_HELPER_PROFILE:-}"
-# iCloud Sync is opt-in: set DEGENVIEW_ICLOUD=1 to compile the CloudKit bridge and sign the app with
+app_profile="${FAKINGVIEW_APP_PROFILE:-}"
+helper_profile="${FAKINGVIEW_HELPER_PROFILE:-}"
+# iCloud Sync is opt-in: set FAKINGVIEW_ICLOUD=1 to compile the CloudKit bridge and sign the app with
 # the iCloud entitlements. The app profile must then grant them (see docs/icloud-sync.md); without
 # the profile macOS kills the signed app at launch. The helper never gets iCloud entitlements.
-icloud="${DEGENVIEW_ICLOUD:-}"
-icloud_environment="${DEGENVIEW_ICLOUD_ENVIRONMENT:-Production}"
+icloud="${FAKINGVIEW_ICLOUD:-}"
+icloud_environment="${FAKINGVIEW_ICLOUD_ENVIRONMENT:-Production}"
 aps_environment=production
-# A development build (DEGENVIEW_DEV_BUILD=1, signed with an Apple Development identity and a Mac
+# A development build (FAKINGVIEW_DEV_BUILD=1, signed with an Apple Development identity and a Mac
 # Development profile) talks to CloudKit's Development environment, where record types can be
 # created. Debug assertions make the app expect that environment; a release never has them.
-if [ -n "${DEGENVIEW_DEV_BUILD:-}" ]; then
+if [ -n "${FAKINGVIEW_DEV_BUILD:-}" ]; then
     icloud=1
     icloud_environment=Development
     aps_environment=development
@@ -36,51 +36,61 @@ for value in "$identity" "$access_group" "$app_profile" "$helper_profile"; do
     [ -n "$value" ] && signing_vars=$((signing_vars + 1))
 done
 if [ "$signing_vars" -ne 0 ] && [ "$signing_vars" -ne 4 ]; then
-    echo "DEGENVIEW_CODESIGN_IDENTITY, DEGENVIEW_KEYCHAIN_ACCESS_GROUP, DEGENVIEW_APP_PROFILE and DEGENVIEW_HELPER_PROFILE must be supplied together" >&2
+    echo "FAKINGVIEW_CODESIGN_IDENTITY, FAKINGVIEW_KEYCHAIN_ACCESS_GROUP, FAKINGVIEW_APP_PROFILE and FAKINGVIEW_HELPER_PROFILE must be supplied together" >&2
     exit 1
 fi
 
 features=""
 [ -n "$icloud" ] && features="--features icloud"
 # The release workflow compiles first, before the signing certificate is imported, so the build
-# scripts of the dependency graph never run with it available; it then sets DEGENVIEW_SKIP_BUILD.
+# scripts of the dependency graph never run with it available; it then sets FAKINGVIEW_SKIP_BUILD.
 # --locked: the build must use Cargo.lock as committed, never resolve anything new.
-if [ -z "${DEGENVIEW_SKIP_BUILD:-}" ]; then
-    "$CARGO_BIN" build --release --locked $features --bin degenview --bin degenview-alert-agent
-elif [ ! -x target/release/degenview ] || [ ! -x target/release/degenview-alert-agent ]; then
-    echo "DEGENVIEW_SKIP_BUILD is set but target/release has no built binaries" >&2
+if [ -z "${FAKINGVIEW_SKIP_BUILD:-}" ]; then
+    "$CARGO_BIN" build --release --locked $features --bin fakingview --bin fakingview-alert-agent
+elif [ ! -x target/release/fakingview ] || [ ! -x target/release/fakingview-alert-agent ]; then
+    echo "FAKINGVIEW_SKIP_BUILD is set but target/release has no built binaries" >&2
     exit 1
 fi
 
-app="target/DegenView.app"
-helper="$app/Contents/Library/LoginItems/DegenViewAlertAgent.app"
-executable="$app/Contents/MacOS/DegenView"
-helper_executable="$helper/Contents/MacOS/DegenViewAlertAgent"
+app="target/FakingView.app"
+helper="$app/Contents/Library/LoginItems/FakingViewAlertAgent.app"
+executable="$app/Contents/MacOS/FakingView"
+helper_executable="$helper/Contents/MacOS/FakingViewAlertAgent"
 
 rm -rf "$app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 mkdir -p "$helper/Contents/MacOS" "$helper/Contents/Resources"
-cp target/release/degenview "$executable"
-cp target/release/degenview-alert-agent "$helper_executable"
-cp assets/brand/DegenView.icns "$app/Contents/Resources/DegenView.icns"
+cp target/release/fakingview "$executable"
+cp target/release/fakingview-alert-agent "$helper_executable"
+cp assets/brand/FakingView.icns "$app/Contents/Resources/FakingView.icns"
 # The fonts compiled into the app are under the SIL OFL, which wants its text and the copyright
 # notice to travel with every copy of them.
 mkdir -p "$app/Contents/Resources/Licenses"
+cp LICENSE.md "$app/Contents/Resources/Licenses/GPL-3.0.txt"
+if [ -f THIRD_PARTY_NOTICES.md ]; then
+    cp THIRD_PARTY_NOTICES.md "$app/Contents/Resources/Licenses/THIRD_PARTY_NOTICES.md"
+fi
+if [ -f docs/getting-started.md ]; then
+    cp docs/getting-started.md "$app/Contents/Resources/Getting-Started.md"
+fi
+if [ -f docs/app-specs.md ]; then
+    cp docs/app-specs.md "$app/Contents/Resources/App-Specs.md"
+fi
 cp assets/fonts/OFL-JetBrainsMono.txt assets/fonts/OFL-NotoSansSymbols2.txt "$app/Contents/Resources/Licenses/"
 cp assets/fonts/README.md "$app/Contents/Resources/Licenses/FONTS.md"
 # The helper shares the app icon: Login Items settings and its notifications show the bundle icon.
-cp assets/brand/DegenView.icns "$helper/Contents/Resources/DegenView.icns"
+cp assets/brand/FakingView.icns "$helper/Contents/Resources/FakingView.icns"
 
 cat > "$app/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleName</key><string>DegenView</string>
-  <key>CFBundleDisplayName</key><string>DegenView</string>
-  <key>CFBundleIdentifier</key><string>es.nico.degenview</string>
-  <key>CFBundleExecutable</key><string>DegenView</string>
-  <key>CFBundleIconFile</key><string>DegenView.icns</string>
+  <key>CFBundleName</key><string>FakingView</string>
+  <key>CFBundleDisplayName</key><string>FakingView</string>
+  <key>CFBundleIdentifier</key><string>local.fakingview.desktop</string>
+  <key>CFBundleExecutable</key><string>FakingView</string>
+  <key>CFBundleIconFile</key><string>FakingView.icns</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleVersion</key><string>__VERSION__</string>
   <key>CFBundleShortVersionString</key><string>__VERSION__</string>
@@ -95,11 +105,11 @@ cat > "$helper/Contents/Info.plist" <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleName</key><string>DegenView Alert Agent</string>
-  <key>CFBundleDisplayName</key><string>DegenView Alert Agent</string>
-  <key>CFBundleIdentifier</key><string>es.nico.degenview.alert-agent</string>
-  <key>CFBundleExecutable</key><string>DegenViewAlertAgent</string>
-  <key>CFBundleIconFile</key><string>DegenView.icns</string>
+  <key>CFBundleName</key><string>FakingView Alert Agent</string>
+  <key>CFBundleDisplayName</key><string>FakingView Alert Agent</string>
+  <key>CFBundleIdentifier</key><string>local.fakingview.desktop.alert-agent</string>
+  <key>CFBundleExecutable</key><string>FakingViewAlertAgent</string>
+  <key>CFBundleIconFile</key><string>FakingView.icns</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleVersion</key><string>__VERSION__</string>
   <key>CFBundleShortVersionString</key><string>__VERSION__</string>
@@ -123,7 +133,7 @@ if [ -n "$identity" ]; then
         bundle_id="$2"
         template="tools/entitlements.plist"
         # Only the app carries iCloud; the login item has no CloudKit and its profile cannot grant it.
-        if [ -n "$icloud" ] && [ "$bundle_id" = "es.nico.degenview" ]; then
+        if [ -n "$icloud" ] && [ "$bundle_id" = "local.fakingview.desktop" ]; then
             template="tools/entitlements-app.plist"
         fi
         entitlements="target/$bundle_id.entitlements"
@@ -136,8 +146,8 @@ if [ -n "$identity" ]; then
         codesign --force --options runtime --timestamp --entitlements "$entitlements" \
             --sign "$identity" "$bundle"
     }
-    sign_bundle "$helper" es.nico.degenview.alert-agent
-    sign_bundle "$app" es.nico.degenview
+    sign_bundle "$helper" local.fakingview.desktop.alert-agent
+    sign_bundle "$app" local.fakingview.desktop
     codesign --verify --deep --strict --verbose=2 "$app"
     if [ -n "$icloud" ]; then
         ./tools/verify-icloud.sh "$app" "$icloud_environment"

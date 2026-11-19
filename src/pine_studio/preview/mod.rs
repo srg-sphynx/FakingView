@@ -68,6 +68,7 @@ impl PreviewMarket {
                 | DataSource::CoinGecko
                 | DataSource::DexScreener
                 | DataSource::Alpaca
+                | DataSource::Kite
         )
     }
 
@@ -167,8 +168,8 @@ pub struct PreviewState {
     picking_range: bool,
     /// The bars that were dragged over (open times, ms), until the Logs tab takes them.
     picked_range: Option<(i64, i64)>,
-    /// The picker asked to open Settings (Stocks need Alpaca keys).
-    pending_settings: bool,
+    /// The picker asked to open a provider's credential settings.
+    pending_settings: Option<DataSource>,
 }
 
 fn inputs_path() -> Option<std::path::PathBuf> {

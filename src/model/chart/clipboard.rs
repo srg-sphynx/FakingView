@@ -1,6 +1,6 @@
 //! What Copy puts on the clipboard and Paste accepts: a versioned, bounded envelope of drawings.
 //!
-//! The text is `degenview-clipboard/v1` on its own line, then JSON. Anything else on the system
+//! The text is `fakingview-clipboard/v1` on its own line, then JSON. Anything else on the system
 //! clipboard (a price, a URL, a different version) is refused before a byte of it is trusted, and
 //! every drawing inside is checked the way a saved chart's rows are, so a hostile or corrupt
 //! payload cannot put a non-finite price, a rogue vertex count or a ruler on a chart.
@@ -10,7 +10,7 @@
 use crate::model::drawings::{self, Anchor, Drawing, MAX_POINTS};
 use serde::{Deserialize, Serialize};
 
-const HEADER: &str = "degenview-clipboard/v1\n";
+const HEADER: &str = "fakingview-clipboard/v1\n";
 const VERSION: u32 = 1;
 const KIND: &str = "drawings";
 /// The longest payload decoded: far above any hand-drawn selection, far below a memory problem.
@@ -21,14 +21,14 @@ pub const MAX_DRAWINGS: usize = 500;
 /// Why a payload was refused, in words a toast can show.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
 pub enum ClipError {
-    /// Nothing DegenView wrote.
-    #[error("The clipboard holds no DegenView drawings.")]
+    /// Nothing FakingView wrote.
+    #[error("The clipboard holds no FakingView drawings.")]
     NotDrawings,
     /// Larger than [`MAX_BYTES`].
     #[error("The copied drawings are too large to paste.")]
     TooLarge,
-    /// A DegenView payload this version cannot read.
-    #[error("These drawings come from a different version of DegenView.")]
+    /// A FakingView payload this version cannot read.
+    #[error("These drawings come from a different version of FakingView.")]
     Unsupported,
     /// Readable but empty or holding a drawing that cannot be drawn.
     #[error("The copied drawings are damaged and were not pasted.")]
@@ -200,7 +200,7 @@ mod tests {
     fn a_copy_round_trips_through_text() {
         let original = clip();
         let text = original.encode();
-        assert!(text.starts_with("degenview-clipboard/v1\n"));
+        assert!(text.starts_with("fakingview-clipboard/v1\n"));
         assert_eq!(DrawingClip::decode(&text), Ok(original));
     }
 
@@ -230,7 +230,7 @@ mod tests {
 
     #[test]
     fn damaged_and_unsupported_payloads_are_refused() {
-        let header = "degenview-clipboard/v1\n";
+        let header = "fakingview-clipboard/v1\n";
         assert_eq!(
             DrawingClip::decode(&format!("{header}not json")),
             Err(ClipError::Invalid)

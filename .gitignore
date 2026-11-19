@@ -1,4 +1,10 @@
 /target
+/dist
+/.env
+/.env.*
+!/.env.example
+*.p12
+*.provisionprofile
 /target-*
 /packaging/flatpak/cargo-sources.json
 /.DS_Store

@@ -86,6 +86,8 @@ pub enum WorkspaceAction {
     OpenWebhookSettings,
     /// Open Settings on the Alpaca page (the symbol picker's "Stocks need an Alpaca key" notice).
     OpenAlpacaSettings,
+    /// Open Settings on Kite Connect to create or renew the market-data session.
+    OpenKiteSettings,
     /// Open Settings on the Brokers page (the live trading panel).
     OpenBrokerSettings,
     /// Open Settings on the Snapshots page (the camera menu's "Configure Snapshots…").

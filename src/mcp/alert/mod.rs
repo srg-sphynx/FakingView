@@ -127,7 +127,7 @@ impl AlertCommandOutcome {
                 "The price alert was deleted before this change could be applied; nothing was changed".into(),
             ),
             Reason::Changed => McpError::Conflict(
-                "The price alert was changed by another request or in DegenView before this change could be applied; nothing was changed. Read it again and retry".into(),
+                "The price alert was changed by another request or in FakingView before this change could be applied; nothing was changed. Read it again and retry".into(),
             ),
         }
     }

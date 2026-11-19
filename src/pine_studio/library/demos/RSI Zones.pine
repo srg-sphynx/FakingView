@@ -1,5 +1,5 @@
 //@version=6
-// Example script bundled with DegenView. Edit it freely.
+// Example script bundled with FakingView. Edit it freely.
 // RSI in its own pane. The background tints while RSI is overbought or oversold.
 indicator("RSI Zones", overlay = false)
 

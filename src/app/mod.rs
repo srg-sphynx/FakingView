@@ -75,6 +75,7 @@ enum AppAction {
     OpenPineSource(crate::model::pine::logs_view::SourceTarget),
     /// Open Settings on the Alpaca page.
     OpenAlpacaSettings,
+    OpenKiteSettings,
     OpenBrokerSettings,
     /// Open Settings on the AI Assistant page.
     OpenAiSettings,
@@ -124,7 +125,7 @@ enum AppAction {
     },
 }
 
-pub struct DegenViewApp {
+pub struct FakingViewApp {
     tabs: TabState,
     store: SharedStore,
     watchlist: Arc<Mutex<WatchlistStore>>,
@@ -165,7 +166,7 @@ pub struct DegenViewApp {
     root_hidden: bool,
 }
 
-impl DegenViewApp {
+impl FakingViewApp {
     pub fn new(
         creation: &eframe::CreationContext<'_>,
         store: SharedStore,
@@ -272,7 +273,7 @@ impl DegenViewApp {
             let ctx = creation.egui_ctx.clone();
             let backups = crate::store::data_dir()
                 .map(|dir| dir.join("SyncBackups"))
-                .unwrap_or_else(|| std::env::temp_dir().join("DegenViewSyncBackups"));
+                .unwrap_or_else(|| std::env::temp_dir().join("FakingViewSyncBackups"));
             crate::host::sync::SyncHost::new(
                 store.clone(),
                 sync_factory,
@@ -400,7 +401,7 @@ impl DegenViewApp {
     }
 }
 
-impl eframe::App for DegenViewApp {
+impl eframe::App for FakingViewApp {
     /// Clear where windows round their corners (`ui::window::corners`); otherwise eframe's default.
     fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
         if crate::ui::window::chrome::rounded_corners() {

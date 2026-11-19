@@ -172,7 +172,7 @@ pub fn rows(inputs: &Inputs, filter: &str) -> Vec<Row> {
                 return (id != 0).then(|| Row {
                     key: Key::Drawing(id),
                     label: format!("{NEWER} {number}"),
-                    detail: "Update DegenView to see it".to_owned(),
+                    detail: "Update FakingView to see it".to_owned(),
                     shown: None,
                     locked: None,
                     tool: None,
@@ -392,7 +392,7 @@ mod tests {
             .find(|row| row.key == Key::Drawing(9))
             .expect("listed");
         assert_eq!(row.label, "From a newer version 1");
-        assert_eq!(row.detail, "Update DegenView to see it");
+        assert_eq!(row.detail, "Update FakingView to see it");
         // It cannot be hidden, locked, restyled or given a tool's icon: only deleted.
         assert_eq!((row.shown, row.locked, row.tool), (None, None, None));
         // It sits where it was stacked, and the drawings around it are numbered as before.

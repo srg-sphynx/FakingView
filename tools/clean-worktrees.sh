@@ -74,7 +74,7 @@ in_use() {
         return 0
     fi
     command -v lsof >/dev/null 2>&1 || return 1
-    for f in target/debug/.cargo-lock target/release/.cargo-lock target/debug/degenview target/release/degenview; do
+    for f in target/debug/.cargo-lock target/release/.cargo-lock target/debug/fakingview target/release/fakingview; do
         if [ -e "$1/$f" ] && [ -n "$(lsof -t "$1/$f" 2>/dev/null)" ]; then
             return 0
         fi

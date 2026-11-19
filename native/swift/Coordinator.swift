@@ -24,13 +24,13 @@ private struct Staged {
 final class Coordinator: NSObject, CKSyncEngineDelegate, @unchecked Sendable {
     private let containerIdentifier: String
     private let emitter: Emitter
-    private let recordType = "DegenViewSyncRecord"
+    private let recordType = "FakingViewSyncRecord"
 
     private let lock = NSLock()
     private var staged: [CKRecord.ID: Staged] = [:]
     private var container: CKContainer?
     private var engine: CKSyncEngine?
-    private var zoneID = CKRecordZone.ID(zoneName: "DegenViewZone", ownerName: CKCurrentUserDefaultName)
+    private var zoneID = CKRecordZone.ID(zoneName: "FakingViewZone", ownerName: CKCurrentUserDefaultName)
 
     private let commands: AsyncStream<Data>
     private let commandSink: AsyncStream<Data>.Continuation
@@ -60,7 +60,7 @@ final class Coordinator: NSObject, CKSyncEngineDelegate, @unchecked Sendable {
                 self.emitter.emit(["event": "network", "available": available])
             }
         }
-        monitor.start(queue: DispatchQueue(label: "es.nico.degenview.sync.network"))
+        monitor.start(queue: DispatchQueue(label: "local.fakingview.desktop.sync.network"))
     }
 
     func submit(_ command: Data) {
@@ -105,7 +105,7 @@ final class Coordinator: NSObject, CKSyncEngineDelegate, @unchecked Sendable {
     }
 
     private func start(_ command: [String: Any]) async {
-        let zoneName = command["zone"] as? String ?? "DegenViewZone"
+        let zoneName = command["zone"] as? String ?? "FakingViewZone"
         let identifier = command["container"] as? String ?? containerIdentifier
         let saved = (command["engine_state"] as? String).flatMap { Data(base64Encoded: $0) }
         let state = saved.flatMap { try? JSONDecoder().decode(CKSyncEngine.State.Serialization.self, from: $0) }
@@ -138,7 +138,7 @@ final class Coordinator: NSObject, CKSyncEngineDelegate, @unchecked Sendable {
             NSApplication.shared.registerForRemoteNotifications()
             DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                 NSLog(
-                    "DegenView sync: registered for remote notifications = %@",
+                    "FakingView sync: registered for remote notifications = %@",
                     NSApplication.shared.isRegisteredForRemoteNotifications ? "yes" : "no")
             }
         }
@@ -232,7 +232,7 @@ final class Coordinator: NSObject, CKSyncEngineDelegate, @unchecked Sendable {
         // A user-initiated group: the engine's own scheduling treats a background app's fetches as
         // discretionary and can skip the network for minutes.
         let group = CKOperationGroup()
-        group.name = "DegenView fetch"
+        group.name = "FakingView fetch"
         group.defaultConfiguration.qualityOfService = .userInitiated
         do {
             try await engine.fetchChanges(CKSyncEngine.FetchChangesOptions(scope: .all, operationGroup: group))

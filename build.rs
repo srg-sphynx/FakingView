@@ -4,32 +4,32 @@ fn main() {
     // Embed the app icon in the Windows executable (Explorer, taskbar, shortcuts).
     #[cfg(windows)]
     {
-        println!("cargo:rerun-if-changed=assets/brand/DegenView.ico");
+        println!("cargo:rerun-if-changed=assets/brand/FakingView.ico");
         winresource::WindowsResource::new()
-            .set_icon("assets/brand/DegenView.ico")
+            .set_icon("assets/brand/FakingView.ico")
             .compile()
             .expect("embed Windows icon");
     }
     swift_bridge();
 }
 
-/// Exposes `DEGENVIEW_BUILD_ID` to the crate: the short commit hash the build was made from, with
+/// Exposes `FAKINGVIEW_BUILD_ID` to the crate: the short commit hash the build was made from, with
 /// `-dirty` when the tree had uncommitted changes so a local build never claims to be a clean
 /// commit. A release is built from its tag's commit, so every release gets its own id.
 /// Debug builds are `dev` and do not look at git at all.
-/// `DEGENVIEW_BUILD_ID` in the environment overrides it; with no git (a source tarball) it is
+/// `FAKINGVIEW_BUILD_ID` in the environment overrides it; with no git (a source tarball) it is
 /// `unknown`. Informational only: Settings > About shows it.
 fn build_id() {
     use std::process::Command;
 
-    println!("cargo:rerun-if-env-changed=DEGENVIEW_BUILD_ID");
+    println!("cargo:rerun-if-env-changed=FAKINGVIEW_BUILD_ID");
     // A debug build (`cargo run`, `cargo test`) is a development build: it says so instead of
     // naming a commit. Following the checked-out commit made every commit or branch switch re-run
     // this script and recompile the whole library (~2 min) before the next test run.
     if std::env::var("PROFILE").is_ok_and(|profile| profile != "release")
-        && std::env::var_os("DEGENVIEW_BUILD_ID").is_none()
+        && std::env::var_os("FAKINGVIEW_BUILD_ID").is_none()
     {
-        println!("cargo:rustc-env=DEGENVIEW_BUILD_ID=dev");
+        println!("cargo:rustc-env=FAKINGVIEW_BUILD_ID=dev");
         return;
     }
     let git = |args: &[&str]| {
@@ -50,7 +50,7 @@ fn build_id() {
     {
         println!("cargo:rerun-if-changed={path}");
     }
-    let id = std::env::var("DEGENVIEW_BUILD_ID")
+    let id = std::env::var("FAKINGVIEW_BUILD_ID")
         .ok()
         .map(|id| id.trim().to_owned())
         .filter(|id| !id.is_empty() && !id.contains(char::is_whitespace))
@@ -62,10 +62,10 @@ fn build_id() {
             Some(if dirty { format!("{hash}-dirty") } else { hash })
         })
         .unwrap_or_else(|| "unknown".to_owned());
-    println!("cargo:rustc-env=DEGENVIEW_BUILD_ID={id}");
+    println!("cargo:rustc-env=FAKINGVIEW_BUILD_ID={id}");
 }
 
-/// Exposes `DEGENVIEW_BUILD_TIME_MS`: when the build ran, as epoch milliseconds, or
+/// Exposes `FAKINGVIEW_BUILD_TIME_MS`: when the build ran, as epoch milliseconds, or
 /// `SOURCE_DATE_EPOCH` (seconds) when a reproducible build sets it. Settings > About prefers the
 /// executable's modification time, but a Flatpak installs every file with a modification time of
 /// 1 Jan 1970, so it falls back to this when the file claims to be older than the build.
@@ -82,11 +82,11 @@ fn build_time() {
             u64::try_from(since.as_millis()).ok()
         })
         .unwrap_or(0);
-    println!("cargo:rustc-env=DEGENVIEW_BUILD_TIME_MS={millis}");
+    println!("cargo:rustc-env=FAKINGVIEW_BUILD_TIME_MS={millis}");
 }
 
 /// Compiles the CloudKit bridge (`native/swift`) into a static library and links it into the
-/// `degenview` binary only: the background alert agent shares the library crate but not CloudKit.
+/// `fakingview` binary only: the background alert agent shares the library crate but not CloudKit.
 ///
 /// Only with the `icloud` feature, and only when building *for* macOS. `cfg(target_os)` in a
 /// build script describes the machine running the build, so the target is read from Cargo's
@@ -141,7 +141,7 @@ fn swift_bridge() {
         .expect("run xcrun --show-sdk-path");
     let sdk = String::from_utf8_lossy(&sdk.stdout).trim().to_string();
 
-    let link = |arg: String| println!("cargo:rustc-link-arg-bin=degenview={arg}");
+    let link = |arg: String| println!("cargo:rustc-link-arg-bin=fakingview={arg}");
     link(format!("-L{}", out.display()));
     link("-ldvsync".into());
     // The Swift runtime ships with macOS; link against the SDK's stubs and find it at run time.

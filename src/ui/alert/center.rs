@@ -341,13 +341,13 @@ pub fn runtime_badge(health: &AlertRuntimeHealth) -> (&'static str, Tone, &'stat
         (
             "Background agent active",
             Tone::Good,
-            "Alerts keep being checked when DegenView is closed.",
+            "Alerts keep being checked when FakingView is closed.",
         )
     } else {
         (
             "Foreground evaluation only",
             Tone::Warning,
-            "Alerts are only checked while DegenView is open.",
+            "Alerts are only checked while FakingView is open.",
         )
     }
 }
@@ -556,7 +556,7 @@ fn header(
                 "Notifications are turned off",
                 Some(
                     "Alerts still fire and are logged here, but macOS will not show them. \
-                     Allow DegenView in System Settings.",
+                     Allow FakingView in System Settings.",
                 ),
                 Some("Open Settings"),
             ) {
@@ -1210,7 +1210,7 @@ fn history_row(
                     Id::new(("alert-event-delayed", event_id)),
                     Sense::hover(),
                 )
-                .on_hover_text("Seen late: the price crossed while DegenView was not watching.");
+                .on_hover_text("Seen late: the price crossed while FakingView was not watching.");
             width + 6.0
         },
     );

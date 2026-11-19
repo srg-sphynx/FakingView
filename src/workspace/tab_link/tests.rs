@@ -212,7 +212,7 @@ fn a_symbol_that_loads_is_accepted_and_one_the_user_left_is_forgotten() {
     );
 }
 
-/// One app tick over a few workspaces: what `DegenViewApp::tick_tab_links` does.
+/// One app tick over a few workspaces: what `FakingViewApp::tick_tab_links` does.
 fn tick(
     hub: &mut crate::model::tab::link::LinkHub,
     table: &crate::model::tab::link::LinkTable,

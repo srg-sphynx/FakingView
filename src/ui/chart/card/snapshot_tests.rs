@@ -649,12 +649,12 @@ fn snapshot_cost() {
 // MARK: A look at the new tools
 
 /// The lines, channels and pitchforks on a chart, written as PNGs for a person to look at.
-/// Run by hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery -- --ignored`.
+/// Run by hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery -- --ignored`.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_lines_channels_and_pitchforks() {
     use crate::model::{Anchor, Placement};
-    let Some(dir) = std::env::var_os("DEGENVIEW_GALLERY_DIR") else {
+    let Some(dir) = std::env::var_os("FAKINGVIEW_GALLERY_DIR") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);
@@ -918,12 +918,12 @@ fn pattern_sets() -> Vec<(&'static str, Tool, Vec<crate::model::Anchor>)> {
 }
 
 /// The chart patterns, Elliott waves and cycles on a chart, written as PNGs for a person to look at.
-/// Run by hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery -- --ignored`.
+/// Run by hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery -- --ignored`.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_patterns_waves_and_cycles() {
     use crate::ui::theme::{self, AppTheme};
-    let Some(dir) = std::env::var_os("DEGENVIEW_GALLERY_DIR") else {
+    let Some(dir) = std::env::var_os("FAKINGVIEW_GALLERY_DIR") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);
@@ -1061,12 +1061,12 @@ fn every_fibonacci_and_gann_tool_snapshots_as_it_draws() {
 }
 
 /// The Fibonacci and Gann tools on a chart, written as PNGs for a person to look at.
-/// Run by hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_fib -- --ignored`.
+/// Run by hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_fib -- --ignored`.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_fibonacci_and_gann_tools() {
     use crate::ui::theme::{self, AppTheme};
-    let Some(dir) = std::env::var_os("DEGENVIEW_GALLERY_DIR") else {
+    let Some(dir) = std::env::var_os("FAKINGVIEW_GALLERY_DIR") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);
@@ -1203,12 +1203,12 @@ fn forecast_drawings() -> Vec<(&'static str, Drawing)> {
 }
 
 /// The forecasting, volume and measurement tools on a chart, written as PNGs for a person to look
-/// at. Run by hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_forecast -- --ignored`.
+/// at. Run by hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_forecast -- --ignored`.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_forecast_volume_and_measurement_tools() {
     use crate::ui::theme::{self, AppTheme};
-    let Some(dir) = std::env::var_os("DEGENVIEW_GALLERY_DIR") else {
+    let Some(dir) = std::env::var_os("FAKINGVIEW_GALLERY_DIR") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);
@@ -1247,13 +1247,13 @@ fn gallery_of_the_forecast_volume_and_measurement_tools() {
 }
 
 /// The text and note tools on a chart, written as PNGs for a person to look at.
-/// Run by hand: `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery -- --ignored`.
+/// Run by hand: `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery -- --ignored`.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_text_and_note_tools() {
     use crate::model::{Anchor, DrawingStyle};
     use crate::ui::theme::{self, AppTheme};
-    let Some(dir) = std::env::var_os("DEGENVIEW_GALLERY_DIR") else {
+    let Some(dir) = std::env::var_os("FAKINGVIEW_GALLERY_DIR") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);
@@ -1348,7 +1348,7 @@ fn gallery_of_the_two_point_notes() {
     use crate::model::drawings::style::Emoji;
     use crate::model::{Anchor, DrawingStyle};
     use crate::ui::theme::{self, AppTheme};
-    let Some(dir) = std::env::var_os("DEGENVIEW_GALLERY_DIR") else {
+    let Some(dir) = std::env::var_os("FAKINGVIEW_GALLERY_DIR") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);
@@ -1470,7 +1470,7 @@ fn gallery_of_the_table() {
     use crate::model::annotation::table::ScreenAnchor;
     use crate::model::{Anchor, DrawingStyle, Geometry};
     use crate::ui::theme::{self, AppTheme};
-    let Some(dir) = std::env::var_os("DEGENVIEW_GALLERY_DIR") else {
+    let Some(dir) = std::env::var_os("FAKINGVIEW_GALLERY_DIR") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);
@@ -1575,7 +1575,7 @@ fn gallery_of_the_image() {
     use crate::ui::theme::{self, AppTheme};
     use std::collections::HashMap;
     use std::sync::Arc;
-    let Some(dir) = std::env::var_os("DEGENVIEW_GALLERY_DIR") else {
+    let Some(dir) = std::env::var_os("FAKINGVIEW_GALLERY_DIR") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);
@@ -1645,7 +1645,7 @@ fn gallery_of_the_cards() {
     use crate::model::annotation::image_content::Content;
     use crate::model::annotation::link_card::{Link, LinkCard, LinkMeta};
     use crate::ui::theme::{self, AppTheme};
-    let Some(dir) = std::env::var_os("DEGENVIEW_GALLERY_DIR") else {
+    let Some(dir) = std::env::var_os("FAKINGVIEW_GALLERY_DIR") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);
@@ -1678,7 +1678,7 @@ fn gallery_of_the_cards() {
     };
     let long_meta = LinkMeta {
         title: "BTC range break: what to watch next".into(),
-        author: "@degenview".into(),
+        author: "@fakingview".into(),
         excerpt: "Price reclaimed the range high on rising volume. A retest of that level would confirm the move.".into(),
         fetched_at_ms: 1,
         avatar: Some(picture.clone()),

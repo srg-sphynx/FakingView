@@ -18,17 +18,17 @@ build first, then a notarized Developer ID build.
 ## 0. Blockers: prove these first
 
 - [x] **Developer ID signing.** Build a throwaway signed and notarized build
-  (`DEGENVIEW_ICLOUD=1 ./tools/bundle.sh`, then `tools/verify-icloud.sh target/DegenView.app Production`).
+  (`FAKINGVIEW_ICLOUD=1 ./tools/bundle.sh`, then `tools/verify-icloud.sh target/FakingView.app Production`).
   It must launch (not be killed by macOS), the entitlements and embedded profile must match, and it must
   use the Production CloudKit environment. If this fails, the design needs a different fetch path.
   *Done 2026-10-21: notarized builds launch and sync on two Macs in Production.*
-- [x] **Apple setup.** iCloud (CloudKit) and Push Notifications enabled on the `es.nico.degenview` App ID.
-  Container `iCloud.es.nico.degenview` exists and is assigned. `MACOS_PROFILE_APP` regenerated.
+- [x] **Apple setup.** iCloud (CloudKit) and Push Notifications enabled on the `local.fakingview.desktop` App ID.
+  Container `iCloud.local.fakingview.desktop` exists and is assigned. `MACOS_PROFILE_APP` regenerated.
 - [x] **CloudKit schema.** *(Checked directly 2026-10-22 with `tools/check-cloudkit-schema.sh`: Production
   and Development schemas are identical and Production has the sync record and its five plain fields.
   Re-run it before any release that changes the record and after every deploy.)*
 - [ ] **Release path.** First build is a hyphenated prerelease (the updater ignores those). Install it on a
-  clean Mac first. Repo variable `DEGENVIEW_ICLOUD` stays off until the profile is in place.
+  clean Mac first. Repo variable `FAKINGVIEW_ICLOUD` stays off until the profile is in place.
 - [ ] **CI.** macOS and Linux checks green on the PR. *(Both were still running after the force-push of
   `cfdea06` on 2026-10-21; the PR merges cleanly.)*
 
@@ -47,7 +47,7 @@ build first, then a notarized Developer ID build.
   it means copying the file back by hand.)* Scripts, alerts, portfolios and paper accounts still merge.
 - [x] A4: join with **Don't sync**. Nothing changes, nothing uploads. *(Verified: sync off, held records
   cleared, local lists intact, nothing uploaded.)*
-- [x] A5: enable against an empty iCloud. No local data is deleted. *(Verified: "iCloud has no DegenView
+- [x] A5: enable against an empty iCloud. No local data is deleted. *(Verified: "iCloud has no FakingView
   data yet", Start Syncing uploaded the Mac's lists, nothing local changed.)*
 - [x] Quit the app mid-first-sync and restart. The step is idempotent. *(Restarted at the join prompt
   several times: the prompt came back and nothing was applied or lost.)*

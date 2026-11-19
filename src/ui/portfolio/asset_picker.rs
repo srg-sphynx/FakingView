@@ -194,6 +194,9 @@ impl AssetPickerState {
 
     /// Selects a recent market on the section that owns its source, switching to it.
     fn pick_recent(&mut self, result: SearchResult) {
+        if result.source == DataSource::Kite {
+            return;
+        }
         self.select_tab(if result.source == DataSource::Alpaca {
             PickerTab::Stocks
         } else {
@@ -292,6 +295,9 @@ pub fn show(
             .ok()
             .map(|store| recents::load_recents(&store))
             .unwrap_or_default();
+        state
+            .recents
+            .retain(|recent| recent.source != DataSource::Kite);
     }
     state.receive();
     if state.is_due(Instant::now()) {

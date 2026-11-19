@@ -21,7 +21,7 @@ impl Store {
                 account_bound_ms INTEGER,
                 -- Reserved: never assigned a value (only cleared). Kept so an older build's row reads.
                 dataset_id TEXT,
-                zone_name TEXT NOT NULL DEFAULT 'DegenViewZone',
+                zone_name TEXT NOT NULL DEFAULT 'FakingViewZone',
                 categories TEXT NOT NULL DEFAULT '{}',
                 initial_sync_done INTEGER NOT NULL DEFAULT 0,
                 engine_state BLOB,

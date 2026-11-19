@@ -1,7 +1,7 @@
-"""Seed a throwaway DegenView data directory: one BTCUSDT 1D chart, an MCP client, two Pine scripts.
+"""Seed a throwaway FakingView data directory: one BTCUSDT 1D chart, an MCP client, two Pine scripts.
 
 usage: seed.py <HOME>      (the app must have run once so its tables exist, and must be closed)
-The MCP token comes from DEGENVIEW_RECORD_TOKEN, the port from DEGENVIEW_RECORD_PORT.
+The MCP token comes from FAKINGVIEW_RECORD_TOKEN, the port from FAKINGVIEW_RECORD_PORT.
 """
 
 import hashlib
@@ -12,9 +12,9 @@ import sqlite3
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-data = os.path.join(sys.argv[1], "Library/Application Support/es.nico.degenview")
-token = os.environ["DEGENVIEW_RECORD_TOKEN"]
-port = int(os.environ.get("DEGENVIEW_RECORD_PORT", "8791"))
+data = os.path.join(sys.argv[1], "Library/Application Support/local.fakingview.desktop")
+token = os.environ["FAKINGVIEW_RECORD_TOKEN"]
+port = int(os.environ.get("FAKINGVIEW_RECORD_PORT", "8791"))
 
 PERMISSIONS = [
     "charts.read", "charts.create", "charts.indicators.write", "charts.pine_instances.write",
@@ -34,7 +34,7 @@ view = {"id": 1, "name": "BTC analysis", "timeframe": "Day", "created_at_ms": 17
 client = {"id": "recorder", "name": "recorder", "verifier": hashlib.sha256(token.encode()).hexdigest(),
           "permissions": PERMISSIONS, "createdAtMs": 1700000000000}
 
-db = sqlite3.connect(os.path.join(data, "degenview.sqlite"))
+db = sqlite3.connect(os.path.join(data, "fakingview.sqlite"))
 for table, row in (("tab", tab), ("saved_view", view)):
     db.execute(f"insert or replace into {table}(id, position, payload) values(?, 0, ?)", ("1", json.dumps(row)))
 db.execute("insert or replace into mcp_client(id, position, payload) values(?, 0, ?)", ("recorder", json.dumps(client)))

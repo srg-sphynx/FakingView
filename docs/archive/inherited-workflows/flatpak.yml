@@ -15,11 +15,11 @@ on:
         type: boolean
         default: true
       bundle-prefix:
-        description: "Start of each bundle's file name; the CPU label and .flatpak follow, e.g. DegenView-v0.1.0-linux"
+        description: "Start of each bundle's file name; the CPU label and .flatpak follow, e.g. FakingView-v0.1.0-linux"
         type: string
         required: true
       branch:
-        description: "Flatpak branch the bundle's ref carries (app/es.nico.degenview/<arch>/<branch>): stable or beta for a release, master for the pull request check"
+        description: "Flatpak branch the bundle's ref carries (app/local.fakingview.desktop/<arch>/<branch>): stable or beta for a release, master for the pull request check"
         type: string
         default: master
 
@@ -63,21 +63,21 @@ jobs:
           version=$(awk '/^\[/ { in_package = ($0 == "[package]") } in_package && /^version = "/ { gsub(/^version = "|"$/, ""); print; exit }' Cargo.toml)
           case "$version" in *-*) type=' type="development"' ;; *) type="" ;; esac
           sed -i "s|<release version=\"0.0.0\" date=\"1970-01-01\"/>|<release version=\"${version}\" date=\"$(date -u +%F)\"${type}/>|" \
-            "$MANIFEST_DIR/es.nico.degenview.metainfo.xml"
-          sed -i "s|DEGENVIEW_BUILD_ID: unknown|DEGENVIEW_BUILD_ID: $(git rev-parse --short=9 HEAD)|" \
-            "$MANIFEST_DIR/es.nico.degenview.yml"
-          grep -n "<release " "$MANIFEST_DIR/es.nico.degenview.metainfo.xml"
-          grep -n "DEGENVIEW_BUILD_ID" "$MANIFEST_DIR/es.nico.degenview.yml"
-          ! grep -qF 'version="0.0.0"' "$MANIFEST_DIR/es.nico.degenview.metainfo.xml"
-          ! grep -qF 'BUILD_ID: unknown' "$MANIFEST_DIR/es.nico.degenview.yml"
+            "$MANIFEST_DIR/local.fakingview.desktop.metainfo.xml"
+          sed -i "s|FAKINGVIEW_BUILD_ID: unknown|FAKINGVIEW_BUILD_ID: $(git rev-parse --short=9 HEAD)|" \
+            "$MANIFEST_DIR/local.fakingview.desktop.yml"
+          grep -n "<release " "$MANIFEST_DIR/local.fakingview.desktop.metainfo.xml"
+          grep -n "FAKINGVIEW_BUILD_ID" "$MANIFEST_DIR/local.fakingview.desktop.yml"
+          ! grep -qF 'version="0.0.0"' "$MANIFEST_DIR/local.fakingview.desktop.metainfo.xml"
+          ! grep -qF 'BUILD_ID: unknown' "$MANIFEST_DIR/local.fakingview.desktop.yml"
 
       - name: Validate the launcher and the AppStream metadata
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends appstream desktop-file-utils
-          desktop-file-validate "$MANIFEST_DIR/es.nico.degenview.desktop"
+          desktop-file-validate "$MANIFEST_DIR/local.fakingview.desktop.desktop"
           # No network: the screenshot lives on `main` and may not exist yet on a new branch.
-          appstreamcli validate --pedantic --no-net "$MANIFEST_DIR/es.nico.degenview.metainfo.xml"
+          appstreamcli validate --pedantic --no-net "$MANIFEST_DIR/local.fakingview.desktop.metainfo.xml"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
@@ -117,7 +117,7 @@ jobs:
         with:
           bundle: ${{ inputs.bundle-prefix }}-${{ matrix.label }}.flatpak
           arch: ${{ matrix.arch }}
-          manifest-path: ${{ env.MANIFEST_DIR }}/es.nico.degenview.yml
+          manifest-path: ${{ env.MANIFEST_DIR }}/local.fakingview.desktop.yml
           branch: ${{ inputs.branch }}
           repository-url: https://dl.flathub.org/repo/flathub.flatpakrepo
           cache: false
@@ -125,9 +125,9 @@ jobs:
           save-cache: false
           upload-artifact: false
 
-      # The release job downloads every `DegenView-*` artifact into dist/.
+      # The release job downloads every `FakingView-*` artifact into dist/.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: DegenView-linux-${{ matrix.label }}-flatpak
+          name: FakingView-linux-${{ matrix.label }}-flatpak
           path: ${{ inputs.bundle-prefix }}-${{ matrix.label }}.flatpak
           if-no-files-found: error

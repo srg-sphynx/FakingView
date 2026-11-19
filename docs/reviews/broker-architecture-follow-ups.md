@@ -47,7 +47,7 @@ the crate's types (`LiveOrder`, `ProductSpec`), because editing in place is a br
 ### 3. Process-wide service locators (P2): fixed
 
 Done: `BrokerHost::global/install` and `TradingHub::global/install` and their test hooks are deleted.
-`DegenViewApp` owns `Arc<TradingHub>`, gives it to each window through `WindowEnv`, each workspace
+`FakingViewApp` owns `Arc<TradingHub>`, gives it to each window through `WindowEnv`, each workspace
 takes it with `set_trading_hub`, and Settings reads it from `SettingsInput`. Tests build a hub and hand
 it in. The workspace and Settings still reach `BrokerHost` through `hub.brokers()` until the reads in
 item 2 move.

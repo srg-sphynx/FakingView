@@ -10,11 +10,13 @@ use crate::ui::{kit, theme, window::update_indicator};
 use eframe::egui::{self, Color32, Rect, Sense, Stroke, StrokeKind, Ui, Vec2, pos2, vec2};
 use std::time::{Duration, UNIX_EPOCH};
 
-pub const NAME: &str = "DegenView";
+pub const NAME: &str = "FakingView";
 pub use crate::host::update::VERSION;
 pub const LICENSE: &str = "GPL-3.0-only";
-pub const REPOSITORY_URL: &str = "https://github.com/degenview/degenview";
-pub const DONATION_URL: &str = crate::ui::window::tab_bar::COFFEE_URL;
+pub const REPOSITORY_URL: &str = "https://github.com/srg-sphynx/FakingView";
+pub const SUPPORT_URL: &str = crate::ui::window::tab_bar::SUPPORT_URL;
+pub const NOTICES_URL: &str =
+    "https://github.com/srg-sphynx/FakingView/blob/main/THIRD_PARTY_NOTICES.md";
 pub const DOCS_URL: &str = crate::ui::window::tab_bar::DOCS_URL;
 const COPYRIGHT: &str = "Copyright © 2026 Nico Oelgart. Licensed under GPL-3.0-only.";
 
@@ -40,7 +42,7 @@ fn build_time_ms() -> Option<i64> {
         .and_then(|metadata| metadata.modified().ok())
         .and_then(|modified| modified.duration_since(UNIX_EPOCH).ok())
         .and_then(|since| i64::try_from(since.as_millis()).ok());
-    pick_build_time(modified, env!("DEGENVIEW_BUILD_TIME_MS").parse().ok())
+    pick_build_time(modified, env!("FAKINGVIEW_BUILD_TIME_MS").parse().ok())
 }
 
 /// The file's time when it is at least as new as the stamp from compiling, else the stamp. A copy
@@ -72,7 +74,7 @@ pub fn header_subtitle(build_ms: Option<i64>) -> String {
     }
 }
 
-/// One line for bug reports: "DegenView 0.1.0 (59d2aa59f) · built 11 Oct 2026 at 02:14".
+/// One line for bug reports: "FakingView 0.1.0 (59d2aa59f) · built 11 Oct 2026 at 02:14".
 pub fn clipboard_summary(build_ms: Option<i64>) -> String {
     match build_ms {
         Some(ms) => {
@@ -165,8 +167,8 @@ pub fn show(ui: &mut Ui, updates: &UpdateHost) -> Outcome {
                                 ui,
                                 egui::include_image!("../../../assets/brand/docs.svg"),
                                 Color32::from_rgb(24, 23, 23),
-                                "Documentation",
-                                "User guide for every feature",
+                                "User guide",
+                                "Installation, Kite setup and charting",
                                 DOCS_URL,
                             );
                             divider(ui);
@@ -174,18 +176,36 @@ pub fn show(ui: &mut Ui, updates: &UpdateHost) -> Outcome {
                                 ui,
                                 egui::include_image!("../../../assets/brand/github.svg"),
                                 Color32::from_rgb(24, 23, 23),
-                                "GitHub",
-                                "Source code, issues and releases",
+                                "Source code",
+                                "FakingView repository and contributors",
                                 REPOSITORY_URL,
                             );
                             divider(ui);
                             link_row(
                                 ui,
-                                egui::include_image!("../../../assets/brand/buymeacoffee.png"),
-                                Color32::WHITE,
-                                "Support DegenView",
-                                "Buy me a coffee. It keeps development going",
-                                DONATION_URL,
+                                egui::include_image!("../../../assets/brand/docs.svg"),
+                                Color32::from_rgb(24, 23, 23),
+                                "Releases & downloads",
+                                "Download FakingView for macOS",
+                                crate::service::update::check::RELEASES_URL,
+                            );
+                            divider(ui);
+                            link_row(
+                                ui,
+                                egui::include_image!("../../../assets/brand/github.svg"),
+                                Color32::from_rgb(24, 23, 23),
+                                "Report an issue",
+                                "Bug reports and feature requests",
+                                SUPPORT_URL,
+                            );
+                            divider(ui);
+                            link_row(
+                                ui,
+                                egui::include_image!("../../../assets/brand/docs.svg"),
+                                Color32::from_rgb(24, 23, 23),
+                                "Legal & third-party notices",
+                                "Licenses and copyright acknowledgments",
+                                NOTICES_URL,
                             );
                         });
                         ui.add_space(24.0);
@@ -240,34 +260,34 @@ fn card(view: &UpdateView) -> Card {
             Glyph::Spinner,
         ),
         Phase::UpToDate => (
-            "DegenView is up to date".to_owned(),
+            "FakingView is up to date".to_owned(),
             format!("You're on the latest version, {VERSION}."),
             UP_TO_DATE,
             Glyph::Icon(Icon::Check),
         ),
         Phase::Available { version, note, .. } => (
-            format!("DegenView {version} is available"),
+            format!("FakingView {version} is available"),
             note.clone()
                 .unwrap_or_else(|| format!("You're on version {VERSION}.")),
             kit::ORANGE,
             Glyph::Icon(Icon::ArrowUp),
         ),
         Phase::Installing(progress) => (
-            "Updating DegenView…".to_owned(),
+            "Updating FakingView…".to_owned(),
             progress.stage.label().to_owned(),
             kit::ORANGE,
             Glyph::Spinner,
         ),
         Phase::Ready { version } => (
-            format!("DegenView {version} is ready"),
-            "Restart DegenView to finish updating.".to_owned(),
+            format!("FakingView {version} is ready"),
+            "Restart FakingView to finish updating.".to_owned(),
             kit::ORANGE,
             Glyph::Icon(Icon::Cycle),
         ),
         Phase::InstallFailed {
             version, message, ..
         } => (
-            format!("Couldn't update to DegenView {version}"),
+            format!("Couldn't update to FakingView {version}"),
             message.clone(),
             kit::RED,
             Glyph::Mark("!"),
@@ -934,12 +954,28 @@ mod tests {
         assert_eq!(header_subtitle(None), format!("Version {VERSION}"));
         assert_eq!(
             clipboard_summary(None),
-            format!("DegenView {VERSION} ({BUILD_ID})")
+            format!("FakingView {VERSION} ({BUILD_ID})")
         );
         assert_eq!(
             clipboard_summary(Some(ms)),
-            format!("DegenView {VERSION} ({BUILD_ID}) · built 11 Oct 2026 at 02:14")
+            format!("FakingView {VERSION} ({BUILD_ID}) · built 11 Oct 2026 at 02:14")
         );
+    }
+
+    #[test]
+    fn project_links_do_not_send_users_to_another_projects_support() {
+        assert_eq!(REPOSITORY_URL, "https://github.com/srg-sphynx/FakingView");
+        for url in [
+            DOCS_URL,
+            SUPPORT_URL,
+            NOTICES_URL,
+            crate::service::update::check::RELEASES_URL,
+        ] {
+            assert!(
+                url.starts_with("https://github.com/srg-sphynx/FakingView/"),
+                "{url}"
+            );
+        }
     }
 
     #[test]
@@ -1030,7 +1066,7 @@ mod tests {
             url: String::new(),
             message: "Checksum mismatch.".to_owned(),
         }));
-        assert_eq!(failed.headline, "Couldn't update to DegenView 9.9.9");
+        assert_eq!(failed.headline, "Couldn't update to FakingView 9.9.9");
         assert_eq!(failed.detail, "Checksum mismatch.");
         assert_eq!(failed.tint, kit::RED);
         assert_eq!(card(&view(Phase::UpToDate)).tint, UP_TO_DATE);

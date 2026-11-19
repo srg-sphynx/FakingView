@@ -25,7 +25,7 @@ pub const SIDEBAR_WIDTH: f32 = 224.0;
 /// The Settings window: the sidebar and a 616-point page.
 pub const WINDOW_SIZE: Vec2 = Vec2::new(840.0, 600.0);
 /// The smallest the window can be made: tall enough for every sidebar row.
-pub const MIN_SIZE: Vec2 = Vec2::new(520.0, 480.0);
+pub const MIN_SIZE: Vec2 = Vec2::new(520.0, 500.0);
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub enum SettingsSection {
@@ -33,6 +33,7 @@ pub enum SettingsSection {
     Appearance,
     PineStudio,
     Alpaca,
+    Kite,
     Brokers,
     CoinMarketCap,
     Ai,
@@ -47,10 +48,11 @@ pub enum SettingsSection {
 }
 
 impl SettingsSection {
-    pub const ALL: [Self; 14] = [
+    pub const ALL: [Self; 15] = [
         Self::Appearance,
         Self::PineStudio,
         Self::Alpaca,
+        Self::Kite,
         Self::Brokers,
         Self::CoinMarketCap,
         Self::Ai,
@@ -76,6 +78,7 @@ impl SettingsSection {
             Self::Appearance => "Appearance",
             Self::PineStudio => "Pine Studio",
             Self::Alpaca => "Alpaca",
+            Self::Kite => "Kite Connect",
             Self::Brokers => "Brokers",
             Self::CoinMarketCap => "CoinMarketCap",
             Self::Ai => "AI Assistant",
@@ -96,6 +99,7 @@ impl SettingsSection {
             Self::Appearance => Color32::from_rgb(94, 92, 230),
             Self::PineStudio => Color32::from_rgb(172, 142, 104),
             Self::Alpaca => Color32::from_rgb(255, 159, 10),
+            Self::Kite => Color32::from_rgb(190, 113, 77),
             Self::Brokers => Color32::from_rgb(255, 112, 67),
             Self::CoinMarketCap => Color32::from_rgb(10, 132, 255),
             Self::Ai => Color32::from_rgb(255, 214, 10),
@@ -116,6 +120,7 @@ impl SettingsSection {
             Self::Appearance => "appearance",
             Self::PineStudio => "pinestudio",
             Self::Alpaca => "alpaca",
+            Self::Kite => "kite",
             Self::Brokers => "brokers",
             Self::CoinMarketCap => "coinmarketcap",
             Self::Ai => "ai",
@@ -293,7 +298,7 @@ impl NotificationSwitch {
                 "Evaluate armed alerts and deliver them when their conditions are met."
             }
             Self::Sound => "Play an alert sound when a notification is delivered.",
-            Self::InAppBanners => "Show alerts inside DegenView while the app is open.",
+            Self::InAppBanners => "Show alerts inside FakingView while the app is open.",
             Self::MacosNotifications => {
                 "Send alerts through Notification Center, including in the background."
             }
@@ -336,6 +341,7 @@ impl SettingsSection {
             Self::Appearance => Icon::Paintbrush,
             Self::PineStudio => Icon::AngleBrackets,
             Self::Alpaca => Icon::ChartLine,
+            Self::Kite => Icon::ChartLine,
             Self::Brokers => Icon::ArrowLeftRight,
             Self::CoinMarketCap => Icon::Gauge,
             Self::Ai => Icon::Sparkles,
@@ -415,7 +421,7 @@ pub fn show(
             page_shell(
                 &mut page,
                 section,
-                "Choose how DegenView looks across every window and chart.",
+                "Choose how FakingView looks across every window and chart.",
                 |ui| {
                     if let Some(theme) =
                         crate::ui::settings::appearance::body(ui, crate::ui::theme::choice())
@@ -444,8 +450,16 @@ pub fn show(
             page_shell(
                 &mut page,
                 section,
-                "Connect Alpaca to chart US stocks and ETFs in DegenView.",
+                "Connect Alpaca to chart US stocks and ETFs in FakingView.",
                 |ui| api_keys::alpaca_body(ui, &mut state.api_keys, store),
+            );
+        }
+        SettingsSection::Kite => {
+            page_shell(
+                &mut page,
+                section,
+                "Connect Zerodha Kite to chart Indian markets with your daily session.",
+                |ui| crate::ui::settings::kite::body(ui, &mut state.api_keys.kite),
             );
         }
         SettingsSection::Brokers => {
@@ -488,7 +502,7 @@ pub fn show(
             page_shell(
                 &mut page,
                 section,
-                "Route DegenView's connections through a proxy, such as the one your VPN or network sets.",
+                "Route FakingView's connections through a proxy, such as the one your VPN or network sets.",
                 |ui| {
                     crate::ui::settings::network::body(
                         ui,
@@ -504,7 +518,7 @@ pub fn show(
             page_shell(
                 &mut page,
                 section,
-                "Choose how DegenView delivers price alerts and check on background delivery.",
+                "Choose how FakingView delivers price alerts and check on background delivery.",
                 |ui| notifications_page(ui, input, &mut actions),
             );
         }
@@ -523,7 +537,7 @@ pub fn show(
             page_shell(
                 &mut page,
                 section,
-                "Let AI assistants and automation on this Mac inspect DegenView, with permissions you control.",
+                "Let AI assistants and automation on this Mac inspect FakingView, with permissions you control.",
                 |ui| mcp::body(ui, &mut state.mcp, &input.mcp, &mut mcp_actions),
             );
             actions.extend(mcp_actions.into_iter().map(SettingsAction::Mcp));
@@ -799,7 +813,7 @@ fn notifications_page(ui: &mut egui::Ui, input: &SettingsInput, actions: &mut Ve
     section(
         ui,
         "Background agent",
-        Some("Keeps alerts evaluating while DegenView is closed."),
+        Some("Keeps alerts evaluating while FakingView is closed."),
         |ui| {
             let health = input.health;
             card(ui, |ui| {
@@ -881,7 +895,7 @@ fn notifications_page(ui: &mut egui::Ui, input: &SettingsInput, actions: &mut Ve
             ui.add_space(10.0);
             ui.add(
                 egui::Label::new(kit::text(
-                    "If the background item is disabled or unavailable, alerts keep evaluating while DegenView is open.",
+                    "If the background item is disabled or unavailable, alerts keep evaluating while FakingView is open.",
                     kit::size::CAPTION + 0.5,
                     kit::REGULAR,
                     theme::text_secondary(),
@@ -949,7 +963,7 @@ mod tests {
     }
 
     /// The Appearance page (theme and tab tiles) and the headers of Notifications and Snapshots,
-    /// drawn in both themes; with `DEGENVIEW_GALLERY_DIR` set they are written out to look at.
+    /// drawn in both themes; with `FAKINGVIEW_GALLERY_DIR` set they are written out to look at.
     #[test]
     fn the_appearance_page_and_the_green_headers_draw_in_both_themes() {
         use crate::ui::render_tests::{Screen, gallery_dir};
@@ -965,7 +979,7 @@ mod tests {
                     page_shell(
                         &mut page,
                         SettingsSection::Appearance,
-                        "Choose how DegenView looks.",
+                        "Choose how FakingView looks.",
                         |ui| {
                             crate::ui::settings::appearance::body(ui, theme::choice());
                             ui.add_space(22.0);

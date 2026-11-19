@@ -24,7 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 CACHE_DIR = os.path.join(ROOT, ".pine-corpus")
 MANIFEST = os.path.join(ROOT, "src", "pine", "corpus", "manifest.json")
 
-USER_AGENT = "Mozilla/5.0 (DegenView pine-corpus fetcher; local compatibility testing)"
+USER_AGENT = "Mozilla/5.0 (FakingView pine-corpus fetcher; local compatibility testing)"
 REQUEST_DELAY = 1.0
 MAX_PAGES = 20
 SUPPORTED_VERSION = 6

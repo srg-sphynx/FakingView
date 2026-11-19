@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Parabolic SAR: a trailing stop that accelerates toward price. Dots below the bars mean the
 // trend is up, dots above mean it is down; a flip is a reversal signal.
 indicator("Parabolic SAR", overlay = true)

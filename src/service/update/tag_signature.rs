@@ -1,32 +1,20 @@
-//! Checks that a release's git tag was signed by the DegenView maintainer before the updater
-//! downloads anything.
+//! Release-tag signature checks for automatic installation.
 //!
-//! Tags are SSH-signed (`git tag -s`) and GitHub verifies the signature when the tag is pushed,
-//! reporting `verification { verified, reason }` on the tag object. That alone only says "signed by
-//! a key registered on *some* GitHub account", so the tag's tagger must also be the maintainer's
-//! identity: GitHub only reports `valid` when the signing key belongs to an account that owns the
-//! tagger's email, which makes the email trustworthy on a verified tag. A repository write token
-//! cannot add a signing key to the maintainer's account, so it cannot forge a signed *tag*. (A
-//! user-level `gh` OAuth token with the `admin:ssh_signing_key` scope can: keep that scope off any
-//! token a developer machine or an agent session holds, and sign tags with a hardware-backed key.)
-//!
-//! The trust anchor is therefore GitHub's account and key registry, not a key baked into the app,
-//! and rotating the signing key means registering the new one on the account. The signature
-//! vouches for "this tag names this commit", not for the files attached to the release. Immutable
-//! releases lock a published release's assets and its tag name, but a token that can create
-//! releases could still publish its own assets for a signed tag that has no release yet (while the
-//! workflow builds, or after a failed run). macOS has a second check, the Developer ID signature;
-//! Windows and Linux have none beyond this and the GitHub digest (see
-//! `docs/agent-guides/releases-updates.md`).
+//! FakingView currently has no configured release-signing identity and installs no downloaded
+//! update automatically. Its release pages remain available for manual downloads. The verifier
+//! fails closed before networking until a separate reviewed signing policy establishes its own
+//! trust anchors. Signature-rule tests use an explicitly supplied historical fixture identity;
+//! no external project's maintainer identity is inherited by the application.
 
 use crate::service::net::http::{self, Retry};
 use crate::service::update::check::github_headers;
 use serde::Deserialize;
 
-/// Tagger emails accepted on a verified tag. `tools/release.sh` and the release workflow check the
-/// same identity.
-const MAINTAINER_EMAILS: &[&str] = &["nicoswd@gmail.com"];
-const API: &str = "https://api.github.com/repos/degenview/degenview/git";
+/// Tagger emails accepted for installation, intentionally unconfigured for this release.
+// No release-signing identity is inherited from another project. Manual downloads remain
+// available while FakingView establishes its own reviewed signing policy.
+const MAINTAINER_EMAILS: &[&str] = &[];
+const API: &str = "https://api.github.com/repos/srg-sphynx/FakingView/git";
 
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum TagError {
@@ -34,7 +22,7 @@ pub enum TagError {
     #[error("This release's tag is not signed.")]
     Unsigned,
     /// Signed, but GitHub does not accept the signature or the tagger is not the maintainer.
-    #[error("This release's tag is not signed by the DegenView maintainer.")]
+    #[error("This release's tag is not signed by the FakingView maintainer.")]
     NotTrusted,
     /// Signed, but for a different tag or a non-commit target.
     #[error("This release's tag signature belongs to another tag.")]
@@ -83,6 +71,9 @@ struct VerificationDto {
 /// Blocking: two GETs. `Ok` only when `tag` is an annotated tag GitHub verified, tagged by the
 /// maintainer.
 pub fn verify_release_tag(tag: &str) -> Result<(), TagError> {
+    if MAINTAINER_EMAILS.is_empty() {
+        return Err(TagError::NotTrusted);
+    }
     verify_release_tag_at(API, tag)
 }
 
@@ -123,6 +114,14 @@ fn network_error(error: http::Error) -> TagError {
 }
 
 fn evaluate(tag: &str, object: &TagDto) -> Result<(), TagError> {
+    evaluate_with_maintainers(tag, object, MAINTAINER_EMAILS)
+}
+
+fn evaluate_with_maintainers(
+    tag: &str,
+    object: &TagDto,
+    maintainers: &[&str],
+) -> Result<(), TagError> {
     let Some(verification) = &object.verification else {
         return Err(TagError::Unsigned);
     };
@@ -138,7 +137,7 @@ fn evaluate(tag: &str, object: &TagDto) -> Result<(), TagError> {
         return Err(TagError::WrongTag);
     }
     let maintainer = object.tagger.as_ref().is_some_and(|tagger| {
-        MAINTAINER_EMAILS
+        maintainers
             .iter()
             .any(|email| email.eq_ignore_ascii_case(&tagger.email))
     });
@@ -162,29 +161,28 @@ mod tests {
         serde_json::from_value(json).unwrap()
     }
 
-    /// The release workflow refuses to build a tag by anyone else, so its identity and the one the
-    /// app trusts must be the same.
     #[test]
-    fn the_workflow_and_the_app_trust_the_same_maintainer() {
-        let workflow = include_str!("../../../.github/workflows/release.yml");
-        let emails: Vec<&str> = workflow
-            .lines()
-            .filter_map(|line| line.trim().strip_prefix("MAINTAINER_EMAIL:"))
-            .map(str::trim)
-            .collect();
-        assert!(!emails.is_empty(), "release.yml names no MAINTAINER_EMAIL");
-        for email in emails {
-            assert!(
-                MAINTAINER_EMAILS
-                    .iter()
-                    .any(|trusted| trusted.eq_ignore_ascii_case(email)),
-                "{email} is trusted by release.yml but not by the app"
-            );
-        }
+    fn a_local_build_inherits_no_external_release_signing_identity() {
+        assert!(MAINTAINER_EMAILS.is_empty());
+        assert_eq!(
+            super::evaluate("v0.1.2", &tag(|_| {})),
+            Err(TagError::NotTrusted)
+        );
+        assert_eq!(verify_release_tag("v0.1.2"), Err(TagError::NotTrusted));
+        assert_eq!(
+            API,
+            "https://api.github.com/repos/srg-sphynx/FakingView/git"
+        );
+    }
+
+    // The recorded response tests the signature rules with an explicit fixture-only identity.
+    // It is not a trust anchor for production FakingView releases.
+    fn evaluate(tag: &str, object: &TagDto) -> Result<(), TagError> {
+        evaluate_with_maintainers(tag, object, &["nicoswd@gmail.com"])
     }
 
     #[test]
-    fn the_real_v0_1_2_tag_is_trusted() {
+    fn a_verified_historical_fixture_is_valid_with_its_explicit_test_identity() {
         assert_eq!(evaluate("v0.1.2", &tag(|_| {})), Ok(()));
     }
 
@@ -262,12 +260,5 @@ mod tests {
                 Err(TagError::WrongTag)
             );
         }
-    }
-
-    /// Hits GitHub: `cargo test -- --ignored the_published_tag`.
-    #[test]
-    #[ignore = "queries GitHub"]
-    fn the_published_tag_verifies_live() {
-        assert_eq!(verify_release_tag("v0.1.2"), Ok(()));
     }
 }

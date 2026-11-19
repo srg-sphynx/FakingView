@@ -1,4 +1,4 @@
-//! Network proxy support. One setting, [`ProxyConfig`], says whether DegenView follows the
+//! Network proxy support. One setting, [`ProxyConfig`], says whether FakingView follows the
 //! system's proxy (the default), uses one the user typed, or connects directly. [`resolve`]
 //! turns it into the proxy in force and where it came from, [`current`] keeps that for the whole
 //! process and rebuilds the HTTP agents when it changes, [`tunnel`] carries the WebSocket

@@ -3,7 +3,7 @@
 
 use super::{PreviewMarket, PreviewState};
 use crate::model::DataSource;
-use crate::service::keychain::api_keys::alpaca_configured;
+use crate::service::keychain::api_keys::{alpaca_configured, kite_configured};
 use crate::service::work_queue::{self, PendingAll};
 use crate::service::{self, SearchResult};
 use crate::ui::icons::{self, Icon};
@@ -40,6 +40,23 @@ enum AssetType {
     Stock,
 }
 
+impl AssetType {
+    fn for_source(source: DataSource) -> Self {
+        if matches!(source, DataSource::Alpaca | DataSource::Kite) {
+            Self::Stock
+        } else {
+            Self::Crypto
+        }
+    }
+
+    fn sources(self) -> Vec<DataSource> {
+        match self {
+            Self::Crypto => CRYPTO_SOURCES.to_vec(),
+            Self::Stock => vec![DataSource::Kite, DataSource::Alpaca],
+        }
+    }
+}
+
 pub(super) struct Picker {
     asset: AssetType,
     crypto_text: String,
@@ -56,11 +73,7 @@ pub(super) struct Picker {
 impl Picker {
     fn new(current: &PreviewMarket) -> Self {
         Self {
-            asset: if current.source == DataSource::Alpaca {
-                AssetType::Stock
-            } else {
-                AssetType::Crypto
-            },
+            asset: AssetType::for_source(current.source),
             crypto_text: String::new(),
             stock_text: String::new(),
             last_edit: None,
@@ -177,7 +190,7 @@ fn picker_ui(ui: &mut Ui, preview: &mut PreviewState) -> Option<PreviewMarket> {
     let recents: Vec<PreviewMarket> = preview
         .recents
         .iter()
-        .filter(|m| (m.source == DataSource::Alpaca) == (picker.asset == AssetType::Stock))
+        .filter(|m| AssetType::for_source(m.source) == picker.asset)
         .cloned()
         .collect();
     let query_empty = picker.text().trim().is_empty();
@@ -208,7 +221,7 @@ fn picker_ui(ui: &mut Ui, preview: &mut PreviewState) -> Option<PreviewMarket> {
 
     let placeholder = match picker.asset {
         AssetType::Crypto => "Search coins and tokens, e.g. BTC, ETH, PEPE",
-        AssetType::Stock => "Search US stocks and ETFs, e.g. AAPL, Tesla",
+        AssetType::Stock => "Search India and US markets, e.g. NSE:INFY, AAPL",
     };
     let field_id = Id::new("script-preview-search");
     let searching = picker.search.is_some();
@@ -272,16 +285,26 @@ fn picker_ui(ui: &mut Ui, preview: &mut PreviewState) -> Option<PreviewMarket> {
         |ui| {
             ui.set_min_height(BODY_HEIGHT);
             ui.spacing_mut().item_spacing.y = 0.0;
-            if picker.asset == AssetType::Stock && !alpaca_configured() {
+            if picker.asset == AssetType::Stock && !alpaca_configured() && !kite_configured() {
                 if kit::notice_card(
                     ui,
                     Icon::TriangleFill,
                     theme::YELLOW,
-                    "Stocks need Alpaca market data",
+                    "Indian markets need a Kite session",
+                    Some("Sign in with your daily Kite Connect credentials in Settings."),
+                    Some("Open Settings"),
+                ) {
+                    preview.pending_settings = Some(DataSource::Kite);
+                }
+                if kit::notice_card(
+                    ui,
+                    Icon::TriangleFill,
+                    theme::YELLOW,
+                    "US stocks need Alpaca market data",
                     Some("Add your Alpaca API keys in Settings."),
                     Some("Open Settings"),
                 ) {
-                    preview.pending_settings = true;
+                    preview.pending_settings = Some(DataSource::Alpaca);
                 }
                 return;
             }
@@ -507,10 +530,7 @@ fn drive_search(picker: &mut Picker, ctx: &egui::Context) {
         picker.results.clear();
         return;
     }
-    let sources: Vec<DataSource> = match picker.asset {
-        AssetType::Crypto => CRYPTO_SOURCES.to_vec(),
-        AssetType::Stock => vec![DataSource::Alpaca],
-    };
+    let sources = picker.asset.sources();
     let searches = sources.into_iter().map(|source| {
         let query = query.clone();
         work_queue::start_search(source, Some(ctx), move || {
@@ -520,4 +540,29 @@ fn drive_search(picker: &mut Picker, ctx: &egui::Context) {
         })
     });
     picker.search = Some(PendingAll::new(searches));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn indian_markets_share_the_stock_category_and_are_searched_first() {
+        assert_eq!(AssetType::for_source(DataSource::Kite), AssetType::Stock);
+        assert_eq!(AssetType::for_source(DataSource::Alpaca), AssetType::Stock);
+        assert_eq!(
+            AssetType::for_source(DataSource::Binance),
+            AssetType::Crypto
+        );
+        assert_eq!(
+            AssetType::Stock.sources(),
+            [DataSource::Kite, DataSource::Alpaca]
+        );
+        assert!(!AssetType::Crypto.sources().contains(&DataSource::Kite));
+        let picker = Picker::new(&PreviewMarket {
+            ticker: "NSE:INFY".into(),
+            source: DataSource::Kite,
+        });
+        assert_eq!(picker.asset, AssetType::Stock);
+    }
 }

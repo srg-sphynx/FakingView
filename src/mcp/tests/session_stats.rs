@@ -1,4 +1,4 @@
-//! `degenview_get_session_stats` over a real loopback socket. The stub app serves thirty daily
+//! `fakingview_get_session_stats` over a real loopback socket. The stub app serves thirty daily
 //! bars for workspace 1, chart 2.
 
 use super::{Harness, call, error_code, rpc, tool_names};
@@ -7,7 +7,7 @@ use serde_json::{Value, json};
 
 const CANDLES: &[Permission] = &[Permission::ChartsCandlesRead];
 const READ: &[Permission] = &[Permission::ChartsRead];
-const TOOL: &str = "degenview_get_session_stats";
+const TOOL: &str = "fakingview_get_session_stats";
 
 fn ask(extra: Value) -> Value {
     let mut args = json!({"workspace_id": "1", "chart_id": "2", "outcome": "day_up"});

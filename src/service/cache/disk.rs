@@ -13,7 +13,7 @@
 //!
 //! File names are always generated (a hash or a constant), never taken from a URL or a ticker, so
 //! nothing a provider returns can name a path. Writes are atomic (temporary file + rename).
-//! Clearing removes only the three directories above, so pointing `DEGENVIEW_CACHE_DIR` at a
+//! Clearing removes only the three directories above, so pointing `FAKINGVIEW_CACHE_DIR` at a
 //! shared folder can never delete anything else.
 
 use sha2::{Digest, Sha256};
@@ -409,7 +409,7 @@ pub(crate) mod testing {
         pub fn new() -> Self {
             static COUNTER: AtomicU64 = AtomicU64::new(0);
             let directory = std::env::temp_dir().join(format!(
-                "degenview-cache-test-{}-{}",
+                "fakingview-cache-test-{}-{}",
                 std::process::id(),
                 COUNTER.fetch_add(1, Ordering::Relaxed)
             ));

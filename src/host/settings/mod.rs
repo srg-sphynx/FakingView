@@ -108,6 +108,12 @@ impl SettingsHost {
         self.open = true;
     }
 
+    /// Opens Settings on Kite Connect without reading credentials on the UI thread.
+    pub fn open_kite(&mut self) {
+        self.state.section = crate::ui::settings::window::SettingsSection::Kite;
+        self.open = true;
+    }
+
     /// Opens Settings on the Brokers page (the live trading panel's "Open Settings").
     pub fn open_brokers(&mut self) {
         self.state.section = crate::ui::settings::window::SettingsSection::Brokers;
@@ -305,7 +311,7 @@ impl SettingsHost {
         self.state.network.status = Some(match report {
             ApplyReport::PasswordSaved => StatusMessage::ok(crate::platform::saved_securely()),
             ApplyReport::PasswordNotKept(error) => StatusMessage::error(format!(
-                "The password could not be saved for later ({}). It works until you quit DegenView.",
+                "The password could not be saved for later ({}). It works until you quit FakingView.",
                 error.0
             )),
         });

@@ -446,7 +446,7 @@ pub fn plan_edit(
         })
         .ok_or_else(|| {
             McpError::NotFound(format!(
-                "No drawing {} on this chart (see degenview_list_drawings)",
+                "No drawing {} on this chart (see fakingview_list_drawings)",
                 edit.drawing_id
             ))
         })?;
@@ -458,7 +458,7 @@ pub fn plan_edit(
     })?;
     if current.locked() {
         return Err(McpError::Conflict(format!(
-            "Drawing {} is locked; unlock it in DegenView first",
+            "Drawing {} is locked; unlock it in FakingView first",
             edit.drawing_id
         )));
     }
@@ -522,12 +522,12 @@ pub fn plan_remove(existing: &[Drawing], ids: &[u64]) -> Result<Vec<DrawingComma
             .find(|drawing| drawing.id() == *id && !drawing.is_ruler() && drawing.tool().is_some())
             .ok_or_else(|| {
                 McpError::NotFound(format!(
-                    "No drawing {id} on this chart (see degenview_list_drawings)"
+                    "No drawing {id} on this chart (see fakingview_list_drawings)"
                 ))
             })?;
         if drawing.locked() {
             return Err(McpError::Conflict(format!(
-                "Drawing {id} is locked; unlock it in DegenView first. Nothing was removed"
+                "Drawing {id} is locked; unlock it in FakingView first. Nothing was removed"
             )));
         }
         seen.push(*id);

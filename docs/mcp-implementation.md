@@ -1,10 +1,10 @@
-# Implement a Secure MCP Server for DegenView (Rust)
+# Implement a Secure MCP Server for FakingView (Rust)
 
 ## Objective
 
-Implement a production-quality **Model Context Protocol (MCP) server** inside the native macOS DegenView trading application.
+Implement a production-quality **Model Context Protocol (MCP) server** inside the native macOS FakingView trading application.
 
-The server must allow authorized MCP clients, including AI assistants and automation tools, to inspect and control selected DegenView functionality.
+The server must allow authorized MCP clients, including AI assistants and automation tools, to inspect and control selected FakingView functionality.
 
 The initial supported capabilities are:
 
@@ -21,9 +21,9 @@ The initial supported capabilities are:
 
 **Security, explicit user consent, and fine-grained permissions are mandatory.**
 
-The server must be disabled by default and controllable through **DegenView Settings → MCP Server**.
+The server must be disabled by default and controllable through **FakingView Settings → MCP Server**.
 
-This is a local-first feature. Do not expose DegenView to the public internet.
+This is a local-first feature. Do not expose FakingView to the public internet.
 
 ---
 
@@ -190,13 +190,13 @@ Credentials can be supplied through the launch environment or another secure loc
 
 Typically use bearer-token authorization, with standardized OAuth-based authorization and discovery for interoperable protected HTTP deployments.
 
-For DegenView, use a pragmatic local-first approach:
+For FakingView, use a pragmatic local-first approach:
 
 **Initial implementation**
 
 - Loopback-only HTTP.
 - High-entropy, locally generated bearer credentials.
-- Explicit user authorization through DegenView Settings.
+- Explicit user authorization through FakingView Settings.
 - No unauthenticated tool access.
 - No token in URLs.
 - No token in application logs.
@@ -241,7 +241,7 @@ that expects OAuth discovery will not work with it.
   key file loosened by a restore or a plain `cp` is put back to owner-only when it is loaded, a link or
   non-regular file is refused, and the file is always written through a freshly created temporary file
   (the mode asked for only applies to a file being created). The whole read, make and save runs under an
-  exclusive lock on `mcp-tls.lock` in the same directory, so two DegenView processes starting together
+  exclusive lock on `mcp-tls.lock` in the same directory, so two FakingView processes starting together
   adopt one certificate (without it, one failed and another could present a certificate that was not the
   one saved). The lock waits up to five seconds and then says another instance holds it; it is released
   when its holder exits or crashes.
@@ -276,7 +276,7 @@ that expects OAuth discovery will not work with it.
   list carries a "Remote" mark. The Address and Endpoint rows show where the server listens.
 - Reading permissions. A set is shown as one capsule and a line ("Read only · All 8 areas", "Read &
   write · Changes Charts, Price Alerts · reads 1 more area"), not a capsule per area, and a permission
-  row has no Read/Write tag: only one that can change DegenView carries a small amber dot. Pills and
+  row has no Read/Write tag: only one that can change FakingView carries a small amber dot. Pills and
   badges take their colours from `Tone::text/fill/edge` (a faint plate, a legible shade, a hairline),
   never the bare system colour as text.
 - Approval. A credential with `remote_allowed` is asked about every command that changes anything, and
@@ -366,7 +366,7 @@ Settings
 └── About
 ```
 
-Match DegenView's existing settings styling.
+Match FakingView's existing settings styling.
 
 Conceptual layout:
 
@@ -553,7 +553,7 @@ Permission Enforcement
 MCP Tool Adapter
     │
     ▼
-DegenView Application Command Layer
+FakingView Application Command Layer
     │
     ├── Workspace operations
     ├── Indicator operations
@@ -617,7 +617,7 @@ Keep shared models independent of the HTTP server library.
 
 # 11. Respect the current concurrency model
 
-DegenView does not currently have a general async runtime.
+FakingView does not currently have a general async runtime.
 
 Do not let MCP networking block the UI thread.
 
@@ -634,7 +634,7 @@ MCP network worker
 Validated command + response channel
        │
        ▼
-DegenViewApp / shared application host
+FakingViewApp / shared application host
        │
        ▼
 Domain operation
@@ -720,27 +720,27 @@ Use stable, descriptive MCP tool names.
 Prefer:
 
 ```text
-degenview_list_workspaces
-degenview_list_charts
-degenview_add_chart
+fakingview_list_workspaces
+fakingview_list_charts
+fakingview_add_chart
 
-degenview_list_indicators
-degenview_add_indicator
+fakingview_list_indicators
+fakingview_add_indicator
 
-degenview_list_price_alerts
-degenview_create_price_alert
-degenview_pause_price_alert
-degenview_resume_price_alert
-degenview_delete_price_alert
+fakingview_list_price_alerts
+fakingview_create_price_alert
+fakingview_pause_price_alert
+fakingview_resume_price_alert
+fakingview_delete_price_alert
 
-degenview_list_pine_scripts
-degenview_get_pine_script
-degenview_update_pine_script
-degenview_compile_pine_script
-degenview_get_pine_inputs
-degenview_get_pine_styles
-degenview_get_pine_report
-degenview_list_pine_alerts
+fakingview_list_pine_scripts
+fakingview_get_pine_script
+fakingview_update_pine_script
+fakingview_compile_pine_script
+fakingview_get_pine_inputs
+fakingview_get_pine_styles
+fakingview_get_pine_report
+fakingview_list_pine_alerts
 ```
 
 Keep names stable and tool schemas versionable.
@@ -765,7 +765,7 @@ These would unnecessarily bypass application boundaries.
 Implement:
 
 ```text
-degenview_list_workspaces
+fakingview_list_workspaces
 ```
 
 Return identifiers for available chart workspaces.
@@ -800,7 +800,7 @@ Only chart workspaces should be valid targets for chart creation.
 Implement:
 
 ```text
-degenview_list_charts
+fakingview_list_charts
 ```
 
 Input:
@@ -834,7 +834,7 @@ Use bounded responses.
 Implement:
 
 ```text
-degenview_add_chart
+fakingview_add_chart
 ```
 
 Example:
@@ -874,7 +874,7 @@ A chart creation request must not modify unrelated workspaces.
 Implement:
 
 ```text
-degenview_list_indicators
+fakingview_list_indicators
 ```
 
 Return indicators actually supported by the current application.
@@ -912,7 +912,7 @@ Do not maintain an independent MCP-only indicator catalog.
 Implement:
 
 ```text
-degenview_add_indicator
+fakingview_add_indicator
 ```
 
 Example:
@@ -948,14 +948,14 @@ If the existing model supports only one instance of a particular built-in indica
 
 # 19. Applied Pine indicators
 
-DegenView also supports chart-applied Pine scripts through `PineInstance`.
+FakingView also supports chart-applied Pine scripts through `PineInstance`.
 
 Do not conflate built-in indicators with Pine scripts.
 
 Provide a separate operation if appropriate:
 
 ```text
-degenview_add_pine_script_to_chart
+fakingview_add_pine_script_to_chart
 ```
 
 This operation should:
@@ -995,11 +995,11 @@ Do not create MCP-specific alert persistence or crossing logic.
 Expose:
 
 ```text
-degenview_list_price_alerts
-degenview_create_price_alert
-degenview_pause_price_alert
-degenview_resume_price_alert
-degenview_delete_price_alert
+fakingview_list_price_alerts
+fakingview_create_price_alert
+fakingview_pause_price_alert
+fakingview_resume_price_alert
+fakingview_delete_price_alert
 ```
 
 These operations must use the existing host's mutation pathway.
@@ -1096,7 +1096,7 @@ For automation retries, use idempotent behavior where possible.
 
 # 24. Pine Script architecture
 
-DegenView implements its own TradingView-compatible Pine Script language and runtime.
+FakingView implements its own TradingView-compatible Pine Script language and runtime.
 
 The MCP server must use this implementation:
 
@@ -1141,7 +1141,7 @@ Do not introduce a second Pine parser, validator, interpreter, or indicator calc
 Implement:
 
 ```text
-degenview_list_pine_scripts
+fakingview_list_pine_scripts
 ```
 
 Return metadata such as:
@@ -1180,7 +1180,7 @@ Do not read files outside the Pine Studio's managed script library.
 Implement:
 
 ```text
-degenview_get_pine_script
+fakingview_get_pine_script
 ```
 
 Input:
@@ -1221,7 +1221,7 @@ Bound source size and validate encoding.
 Implement:
 
 ```text
-degenview_update_pine_script
+fakingview_update_pine_script
 ```
 
 Example:
@@ -1291,13 +1291,13 @@ Require a separate explicit save/apply action where supported.
 Implement:
 
 ```text
-degenview_compile_pine_script
+fakingview_compile_pine_script
 ```
 
 and/or:
 
 ```text
-degenview_get_pine_diagnostics
+fakingview_get_pine_diagnostics
 ```
 
 Use the existing Pine compiler pipeline.
@@ -1369,7 +1369,7 @@ Avoid running untrusted or unexpectedly expensive source on the UI thread.
 Implement:
 
 ```text
-degenview_get_pine_inputs
+fakingview_get_pine_inputs
 ```
 
 Input:
@@ -1423,7 +1423,7 @@ Do not maintain a separate MCP-only input parser.
 Implement:
 
 ```text
-degenview_get_pine_styles
+fakingview_get_pine_styles
 ```
 
 Pine style options are not identical to Pine inputs.
@@ -1453,7 +1453,7 @@ Return style options actually supported by the application.
 
 If style definitions depend on a compiled script or a specific applied instance, require the appropriate script/instance identifier.
 
-Do not invent TradingView style controls that DegenView cannot currently render.
+Do not invent TradingView style controls that FakingView cannot currently render.
 
 ---
 
@@ -1462,8 +1462,8 @@ Do not invent TradingView style controls that DegenView cannot currently render.
 Expose:
 
 ```text
-degenview_list_chart_pine_instances
-degenview_get_pine_instance
+fakingview_list_chart_pine_instances
+fakingview_get_pine_instance
 ```
 
 Return:
@@ -1486,7 +1486,7 @@ Do not conflate script identity with instance identity.
 
 # 34. Pine alerts
 
-DegenView supports Pine alert subscriptions through:
+FakingView supports Pine alert subscriptions through:
 
 ```text
 host::pine::subscription
@@ -1497,7 +1497,7 @@ store::pine
 Implement read-only inspection initially:
 
 ```text
-degenview_list_pine_alerts
+fakingview_list_pine_alerts
 ```
 
 Return:
@@ -1526,7 +1526,7 @@ Creating or modifying Pine alert subscriptions can be added later under separate
 Implement:
 
 ```text
-degenview_get_pine_report
+fakingview_get_pine_report
 ```
 
 Support strategy scripts using the existing Pine broker emulator.
@@ -1638,13 +1638,13 @@ In addition to tools, consider exposing read-only MCP resources.
 Examples:
 
 ```text
-degenview://workspaces
-degenview://workspace/{id}/charts
-degenview://pine/scripts
-degenview://pine/scripts/{id}
-degenview://pine/scripts/{id}/diagnostics
-degenview://pine/scripts/{id}/inputs
-degenview://pine/scripts/{id}/styles
+fakingview://workspaces
+fakingview://workspace/{id}/charts
+fakingview://pine/scripts
+fakingview://pine/scripts/{id}
+fakingview://pine/scripts/{id}/diagnostics
+fakingview://pine/scripts/{id}/inputs
+fakingview://pine/scripts/{id}/styles
 ```
 
 Use MCP resource templates if supported by the chosen SDK.
@@ -1919,7 +1919,7 @@ Do not automatically generate a permissive credential at startup.
 
 # 49. Multi-window behavior
 
-DegenView uses multiple native windows and `TabSlot` objects.
+FakingView uses multiple native windows and `TabSlot` objects.
 
 MCP commands must target stable workspace/chart IDs.
 
@@ -1979,7 +1979,7 @@ Explicitly avoid:
 - A second general application event loop.
 - A parallel database mutation path.
 
-MCP is an interface to DegenView, not a separate trading application.
+MCP is an interface to FakingView, not a separate trading application.
 
 ---
 
@@ -2211,7 +2211,7 @@ Run MCP protocol tests, authorization tests, concurrency tests, and end-to-end t
 
 The implementation is complete when the following works:
 
-1. Launch DegenView with MCP disabled.
+1. Launch FakingView with MCP disabled.
 2. Confirm the server does not listen on any port.
 3. Open Settings → MCP Server.
 4. Enable the server.
@@ -2242,7 +2242,7 @@ The implementation is complete when the following works:
 29. Confirm all subsequent requests using that credential fail.
 30. Disable the MCP server.
 31. Confirm the listener is stopped and queued mutations cannot execute afterward.
-32. Restart DegenView and verify settings, permissions, and application state persist correctly.
+32. Restart FakingView and verify settings, permissions, and application state persist correctly.
 
 ---
 
@@ -2273,10 +2273,10 @@ Verify all of the following:
 - No MCP operation blocks the UI thread.
 - No background request holds application locks while waiting for UI execution.
 - Server disablement immediately prevents new authorized work.
-- All state changes remain visible in DegenView's normal UI.
+- All state changes remain visible in FakingView's normal UI.
 - No duplicate application subsystem is introduced.
 
-The final result should be a secure, maintainable MCP integration that lets AI assistants interact with DegenView's existing charting, alerts, and TradingView-compatible Pine Script functionality while keeping the user in control of exactly what each client can access and modify.
+The final result should be a secure, maintainable MCP integration that lets AI assistants interact with FakingView's existing charting, alerts, and TradingView-compatible Pine Script functionality while keeping the user in control of exactly what each client can access and modify.
 
 ---
 
@@ -2303,14 +2303,14 @@ Do not mark the implementation complete if security controls, authorization test
 
 A client's `verifier` is an unsalted SHA-256 of its bearer token. That is fine against a leaked
 database (the token is 256 random bits), but it proves nothing about who wrote the row: anyone who
-can write `degenview.sqlite` can pick a token, store its hash with every permission, enable the
+can write `fakingview.sqlite` can pick a token, store its hash with every permission, enable the
 server, and connect after the next launch. The database is an ordinary file in the user's data
 directory, so "can write the file" is a much weaker position than "can read the Keychain".
 
-**What is sealed.** An HMAC-SHA-256 (`mcp::transport::seal`, domain `degenview.mcp.seal.v1`) over the JSON of
+**What is sealed.** An HMAC-SHA-256 (`mcp::transport::seal`, domain `fakingview.mcp.seal.v1`) over the JSON of
 `enabled`, `port`, `require_confirmation`, the global cap and, in stored order, each client's `id`, `name`, `verifier`,
 `permissions` and `created_at_ms`. Not `last_used_ms`: it changes every half minute and decides
-nothing. The key is 32 random bytes in the Keychain (`es.nico.degenview.mcp`, `seal-key-v1`), created
+nothing. The key is 32 random bytes in the Keychain (`local.fakingview.desktop.mcp`, `seal-key-v1`), created
 on first use. The seal is the local-only setting `mcp.seal`; none of this syncs.
 
 **On load** (`McpHost::check_seal`):
@@ -2352,7 +2352,7 @@ disk behind the running app is overwritten instead of being sealed in.
   before the first launch of a sealing build. Everything after is protected.
 - Is off in unit tests and in every debug build (each rebuild has a new code identity, so the
   Keychain would prompt for the key on every launch), and in a `--release --features
-  dev-unsealed-mcp` build started with `DEGENVIEW_NO_KEYCHAIN=1`. A debug build run against the
+  dev-unsealed-mcp` build started with `FAKINGVIEW_NO_KEYCHAIN=1`. A debug build run against the
   real data directory drops the seal on its next MCP write, so a later sealed build refuses those
   credentials until "Reset MCP Access". A distributed build ignores the variable: otherwise any process that can
   write the database could launch the app with it set, plant a credential and skip the seal.

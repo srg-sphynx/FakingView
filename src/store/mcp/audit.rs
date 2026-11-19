@@ -1,4 +1,4 @@
-//! The MCP activity log: what agents asked DegenView to do and how each call ended.
+//! The MCP activity log: what agents asked FakingView to do and how each call ended.
 //!
 //! One append-only table, newest rows kept. It is local to this Mac on purpose (see
 //! `sync::record::policy`): it describes what happened *here*, and no other device should inherit or
@@ -103,7 +103,7 @@ mod tests {
             at_ms: 1_000 + n as i64,
             client_id: "c1".into(),
             client_name: "Claude".into(),
-            tool: "degenview_list_charts".into(),
+            tool: "fakingview_list_charts".into(),
             count: 1,
             ..McpAuditEntry::default()
         }

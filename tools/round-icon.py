@@ -8,9 +8,9 @@ corner radius as the macOS code (22.3% of the side); the art fills the canvas, w
     pip install pillow
     tools/round-icon.py
 
-Reads  assets/brand/DegenView-512.png (the square master, kept for macOS)
-Writes assets/brand/DegenView-512-rounded.png (the window icon, the Flatpak and tarball icon)
-       assets/brand/DegenView.ico (the Windows executable's icon: 16 to 256 px)
+Reads  assets/brand/FakingView-512.png (the square master, kept for macOS)
+Writes assets/brand/FakingView-512-rounded.png (the window icon, the Flatpak and tarball icon)
+       assets/brand/FakingView.ico (the Windows executable's icon: 16 to 256 px)
 """
 from pathlib import Path
 
@@ -35,11 +35,11 @@ def rounded(master: Image.Image, side: int) -> Image.Image:
 
 
 def main() -> None:
-    master = Image.open(BRAND / "DegenView-512.png")
-    rounded(master, 512).save(BRAND / "DegenView-512-rounded.png", optimize=True)
+    master = Image.open(BRAND / "FakingView-512.png")
+    rounded(master, 512).save(BRAND / "FakingView-512-rounded.png", optimize=True)
     layers = [rounded(master, size) for size in ICO_SIZES]
     layers[-1].save(
-        BRAND / "DegenView.ico",
+        BRAND / "FakingView.ico",
         format="ICO",
         sizes=[(size, size) for size in ICO_SIZES],
         append_images=layers[:-1],

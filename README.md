@@ -1,168 +1,161 @@
 <div align="center">
 
-# DegenView: the free, open source TradingView alternative
+<img src="assets/brand/FakingView-512-rounded.png" width="104" height="104" alt="FakingView app icon">
 
-Charts for crypto, stocks and prediction markets, with Pine Script v6 that runs on your own machine.
-No account. No subscription.
+# FakingView
 
-[![Latest release](https://img.shields.io/github/v/release/degenview/degenview?include_prereleases&label=release)](https://github.com/degenview/degenview/releases)
-[![Downloads](https://img.shields.io/github/downloads/degenview/degenview/total)](https://github.com/degenview/degenview/releases)
-[![Stars](https://img.shields.io/github/stars/degenview/degenview)](https://github.com/degenview/degenview/stargazers)
-[![License](https://img.shields.io/github/license/degenview/degenview)](LICENSE.md)
-![Platforms](https://img.shields.io/badge/macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
+**A native market workspace for Indian markets, charts and Pine Script.**
 
-[Website](https://degenview.app) · [Download](#download) · [Docs](https://docs.degenview.app) · [Compare with TradingView](https://degenview.app/tradingview-alternative/)
+Connect your own Zerodha Kite Connect session. Explore price history, follow streaming quotes,
+write indicators and keep your workspace on your Mac.
 
-<br>
+[![Release](https://img.shields.io/github/v/release/srg-sphynx/FakingView?include_prereleases&label=preview)](https://github.com/srg-sphynx/FakingView/releases)
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0--only-737b87)](LICENSE.md)
+![Rust](https://img.shields.io/badge/built_with-Rust-737b87)
+![macOS](https://img.shields.io/badge/macOS-14%2B_%C2%B7_Apple_Silicon-737b87)
 
-![DegenView showing a BTCUSDT candlestick chart with a volume panel, RSI, EMA, a Pine overlay and a MACD pane](assets/screenshots/hero.png)
+[Download](https://github.com/srg-sphynx/FakingView/releases) ·
+[Getting started](docs/getting-started.md) ·
+[App specs](docs/app-specs.md) ·
+[Report an issue](https://github.com/srg-sphynx/FakingView/issues)
 
 </div>
 
-## Why DegenView
+![FakingView chart workspace](assets/screenshots/fakingview-hero.png)
 
-- **Free and open source.** GPL-3.0, no paywalled features.
-- **No account.** Install it and start charting.
-- **Private.** Your scripts, alerts, watchlists and portfolios stay on your device.
-- **Native and fast.** Built in Rust for macOS, Windows and Linux.
+*The production chart renderer with deterministic sample candles and indicators. Sample data, not a live Indian market feed.*
 
-## Features
+## What you can do
 
-### Markets
-
-- **Crypto** from Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, CoinGecko and on-chain DEX pairs, searchable side by side.
-- **US stocks and ETFs** through Alpaca. A free key is all you need.
-- **Prediction markets** from Polymarket and Kalshi, charted as probabilities.
-- **Market-wide gauges** such as Crypto Fear and Greed and Altcoin Season.
-- **Live prices** streamed in real time, with watchlists and a quick symbol search on `⌘K` or `Ctrl+K`.
-
-### Charting
-
-- **18 chart types** including Candles, Heikin Ashi, Renko, Kagi, Line Break and Point and Figure.
-- **80+ drawing tools**: trend lines, channels, Fibonacci, Gann, chart patterns, Elliott waves, position and forecast tools, notes and more.
-- **25+ indicators** with a searchable picker and live previews.
-- **Compare** any number of markets on one chart, in percent or log scale.
-- **Flexible layouts**: grids of charts, colour-linked tabs, saved layouts and chart templates.
-- **Bar replay**: step back in time and trade the market again with no lookahead.
-- **Screenshot Studio** for sharp chart images you can copy, save or share.
-
-### Pine Script
-
-Write TradingView-style Pine Script v6 and run it locally. Nothing is uploaded.
-
-- **Pine Studio** with a script library, a smart editor and a live preview chart.
-- **Step debugger** and **profiler** to find bugs and slow lines fast.
-- **20 bundled Pine indicators** such as Ichimoku Cloud, MACD, VWAP and Stochastic.
-- **Vibe-code your indicators.** Describe what you want in plain English and the AI assistant writes, compiles and fixes the script for you, using your own API key.
-- **Editor themes** to match your taste.
-
-| Step debugger | Profiler |
-| :---: | :---: |
-| ![Pine Studio paused on a breakpoint, with variables, watches and the call stack](assets/screenshots/pine-debugger.png) | ![Pine Studio profiler showing per-line time bars and the hottest lines and blocks](assets/screenshots/pine-profiler.png) |
-
-### Alerts
-
-- **Price alerts** that cross above or below a level, once or repeating.
-- **Pine alerts** fired by your own scripts.
-- **Notifications** in the app and on your desktop, plus **webhooks** to reach other tools.
-- **Background alerts on macOS**, even after you quit the app.
-
-### Trading and portfolio
-
-- **Paper trading** with market, limit and stop orders, shown right on the chart.
-- **Portfolios** with a transaction ledger, profit and loss, allocation and history.
-- **Multiple currencies**: USD, EUR, GBP, JPY, CHF and BTC.
-- **CSV import and export**, including CoinMarketCap exports.
-
-### MCP server
-
-Let an AI assistant or automation tool work with DegenView through the [Model Context Protocol](https://modelcontextprotocol.io).
-
-- **Read** charts, candles, indicator values, quotes, watchlists and portfolios.
-- **Change** charts, timeframes, indicators, drawings and watchlists.
-- **Vibe-code from your own AI tool**: write Pine scripts, check them and put them on a chart.
-- **Manage** price alerts and paper trades.
-- **Stay in control**: off by default, local only and permission based. Deletes and orders wait for your approval in the app.
-
-### Extras
-
-- **Session statistics** that show how often gaps fill, prior-day levels break and weekdays behave, with sample sizes.
-- **Light and dark themes**, and sessions that come back as you left them.
-
-## Download
-
-Get the latest build from the [releases page](https://github.com/degenview/degenview/releases) or pick your platform.
-
-| Platform | Install |
+| Workspace | Capabilities |
 | --- | --- |
-| **macOS** (Apple Silicon and Intel) | Open the `.dmg` and drag DegenView to Applications, or use Homebrew |
-| **Windows** (x64 and ARM64) | Run the `-setup.exe`, or unzip the portable `.zip` |
-| **Linux** (x64 and arm64) | Use the `.tar.gz` or the Flatpak bundle |
+| Indian market data | Search exchange-qualified instruments; load historical OHLCV; follow WebSocket watchlist quotes with REST fallback |
+| Charting | 18 chart types, 80+ drawing tools, multiple charts, overlays, saved layouts, custom timeframes and bar replay |
+| Indicators | Native studies and 20 bundled Pine indicators, with a searchable catalog and live previews |
+| Pine Studio | Local editor, script library, chart previews, step debugger and profiler |
+| Watchlists | Multiple lists, sections, sorting, flags, price changes, sparklines and text import/export |
+| Alerts | Price and Pine alerts, app notifications and optional webhooks |
+| Automation | Optional local MCP server with separate read/write permissions and confirmation for sensitive actions |
+| Other markets | Crypto, US equities through Alpaca, prediction markets and market-wide gauges |
 
-DegenView updates itself from inside the app.
+FakingView is a native Rust application using egui and macOS AppKit integration. It runs locally;
+there is no FakingView cloud account to create. Market-data providers and optional integrations
+have their own accounts, credentials and terms.
 
-<details>
-<summary>Homebrew</summary>
+## Start in three steps
 
-```bash
-brew install --cask degenview/degenview/degenview      # latest final release
-brew install --cask degenview/degenview/degenview@rc   # latest release candidate
+1. Download the **macOS Apple Silicon** app from [Releases](https://github.com/srg-sphynx/FakingView/releases),
+   extract it and move `FakingView.app` to Applications.
+2. Open **Settings → Kite Connect**. Enter your personal API key, complete Kite's browser sign-in
+   and create the daily session using the returned request token and your API secret.
+3. Press **⌘K**, select Kite Connect and search `NSE:INFY`, `BSE:INFY` or `NSE:NIFTY 50`.
+   Open a chart or add an instrument to a watchlist.
+
+The [complete guide](docs/getting-started.md) covers installation, token renewal, the first chart,
+watchlists, Pine Studio and troubleshooting. Kite market-data access is required; a working API
+login alone does not establish historical or streaming-data entitlement.
+
+## Built for your own Kite session
+
+![Kite Connect settings in FakingView](assets/screenshots/fakingview-kite-settings.png)
+
+*The unconfigured connection form, rendered by the application's own UI. No account credentials are shown.*
+
+- **Daily sign-in:** use Kite's browser login and exchange its short-lived `request_token` inside
+  the app. An existing access token can also be entered directly.
+- **Secure storage:** the API key and access token use macOS Keychain. The API secret and request
+  token are used for the exchange and are not saved in the database or a configuration file.
+- **Stable instruments:** `NSE:INFY` and `BSE:INFY` remain separate markets. The current instrument
+  directory refreshes daily in Indian time so recycled derivative tokens are not saved as identity.
+- **Correct time handling:** minute timestamps retain their true instant; daily bars keep the
+  Indian trading date. Larger intraday bars use the app's UTC aggregation boundaries.
+- **Bounded requests:** shared rate limits, page limits, response limits and typed session/rate-limit
+  errors keep failures visible.
+
+See [Kite integration details](docs/kite-connect.md) for supported exchanges, request limits,
+timestamp rules and protocol references.
+
+## Charts and scripts
+
+Use Candles, Hollow Candles, Bars, High-Low Bars, Volume Candles, Line, Line with Markers, Step
+Line, Area, HLC Area, Baseline, Columns, Heikin Ashi, Renko, Line Break, Kagi, Point & Figure or
+Range. Add trend lines, Fibonacci and Gann tools, patterns, notes, measurements and other drawings.
+Compare markets, save a layout or replay historical bars.
+
+![Pine Studio in FakingView](assets/screenshots/fakingview-pine-studio.png)
+
+*The production Pine Studio view with a local example script and deterministic sample bars, not live market data.*
+
+Pine Studio runs scripts locally and includes a debugger and profiler. Its Pine Script v6-style
+runtime is an independent implementation with documented compatibility boundaries; it is not a
+promise of identical behavior for every script. Optional AI assistance sends the requested context
+to the provider you configure with your own key.
+
+## Preview-release boundaries
+
+The first FakingView release is **0.1.0-beta.1**, targeting **macOS 14 or newer on Apple Silicon**.
+It is a preview release without an Apple Developer ID signature or notarization. The project
+includes Windows, Linux and Intel macOS code and packaging, but those platforms are not claimed
+as verified by this local build.
+
+For Kite specifically:
+
+- **Live WebSocket ticks update watchlists. Chart candles refresh through the historical REST API.**
+  The app does not manufacture complete candles from a late tick subscription.
+- **Kite is read-only market data.** It adds no Kite order entry. INR instruments are excluded from
+  the USD portfolio and paper-trading paths.
+- Indian holiday calendars, contract multipliers and exchange-specific Pine session semantics are
+  not yet modeled. Pine metadata reports INR and an unknown contract kind rather than guessing.
+- Daily tokens expire. A stale or closed-session quote is not evidence of an actively trading market.
+- Live account authentication, data entitlement and a market-hours stream still need verification
+  with your own Kite account; no account credentials are shipped.
+
+Unsigned local bundles evaluate alerts in the foreground. Background Login Items and optional
+iCloud support require separate Apple signing and entitlement setup. Automatic in-app replacement
+is disabled; download a new FakingView release to update.
+
+## Build and verify
+
+Install Rust **1.95 or newer** and the Xcode command line tools, then:
+
+```sh
+git clone https://github.com/srg-sphynx/FakingView.git
+cd FakingView
+cargo test --locked
+cargo clippy --locked --all-targets --all-features -- -D warnings
+cargo fmt --all -- --check
+./tools/bundle.sh
+open target/FakingView.app
 ```
 
-</details>
+The release binary is `target/release/fakingview`; the Finder bundle is `target/FakingView.app`.
+See [BUILDING.md](BUILDING.md) for platform and signing details and
+[CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow.
 
-<details>
-<summary>Linux notes</summary>
+The release verification recorded **7,841 passing tests, no failures and 131 optional
+ignored tests**, plus formatting, Clippy, visual galleries and a native launch check. These are
+bounded checks, not a claim that every feature or external service is bug-free.
+The [verification report](docs/verification.md) explains what was exercised.
 
-Unpack the tarball and add a launcher and icon:
+## Documentation
 
-```bash
-install -Dm755 degenview "$HOME/.local/bin/degenview"
-install -Dm644 degenview.png "$HOME/.local/share/icons/hicolor/512x512/apps/degenview.png"
-install -Dm644 degenview.desktop "$HOME/.local/share/applications/degenview.desktop"
-```
+- [Getting started and troubleshooting](docs/getting-started.md)
+- [Application specifications](docs/app-specs.md)
+- [Kite Connect implementation and limitations](docs/kite-connect.md)
+- [Architecture and subsystem map](docs/architecture.md)
+- [Chart types](docs/chart-types.md) · [Indicators](docs/indicator-picker.md) · [Pine debugger](docs/pine-debugger.md)
+- [MCP interface](docs/mcp-implementation.md)
+- [Release process](docs/releasing.md) · [Changelog](CHANGELOG.md)
 
-Or install the sandboxed Flatpak:
+Repository artwork: [GitHub social preview](assets/social/github-social-preview.png) ·
+[Square social card](assets/social/social-card-square.png).
 
-```bash
-flatpak install --user DegenView-<tag>-linux-<x64|arm64>.flatpak
-flatpak run es.nico.degenview
-```
+## License and independence
 
-Flatpak bundles do not update themselves, so download the next one from the releases page.
-Linux needs glibc 2.35 or newer. On an older distro, use the Flatpak.
+FakingView is an independently maintained project. It is not sponsored or endorsed by Zerodha,
+TradingView or the authors of its third-party components. Product and service names identify
+compatible services and remain their owners' marks.
 
-</details>
-
-<details>
-<summary>Windows notes</summary>
-
-The installer needs no admin rights and keeps your data when you remove it. It is not signed yet,
-so SmartScreen may ask you to approve the first launch.
-
-</details>
-
-Want to build it yourself? See [BUILDING.md](BUILDING.md).
-
-## Learn more
-
-- [User guide](https://docs.degenview.app) for markets, charts, Pine Studio, alerts and more
-- [BUILDING.md](BUILDING.md) to build from source and package a release
-- [Architecture](docs/architecture.md) for contributors
-
-DegenView is an independent project and is not affiliated with TradingView.
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=degenview%2Fdegenview&type=date&legend=top-right">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=degenview/degenview&type=date&theme=dark&legend=bottom-right" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=degenview/degenview&type=date&legend=bottom-right" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=degenview/degenview&type=date&legend=bottom-right" />
- </picture>
-</a>
-
-## License
-
-DegenView is licensed under the [GNU General Public License v3.0 only](LICENSE.md) (`GPL-3.0-only`).
-The two fonts built into the app keep their own licences, see [Licensing](docs/licensing.md).
+The application is licensed under [GPL-3.0-only](LICENSE.md). Copyright notices, code provenance
+and third-party acknowledgements are retained in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Bundled fonts retain the [SIL Open Font License](docs/licensing.md).

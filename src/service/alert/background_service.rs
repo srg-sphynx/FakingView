@@ -4,7 +4,7 @@
 use crate::model::alert::AlertServiceState;
 
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
-pub const AGENT_BUNDLE_ID: &str = "es.nico.degenview.alert-agent";
+pub const AGENT_BUNDLE_ID: &str = "local.fakingview.desktop.alert-agent";
 
 /// Only the macOS login item reports the first four.
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
@@ -83,7 +83,7 @@ mod platform {
         Some(
             contents
                 .join("Library/LoginItems")
-                .join("DegenViewAlertAgent.app/Contents/Info.plist"),
+                .join("FakingViewAlertAgent.app/Contents/Info.plist"),
         )
     }
 

@@ -43,11 +43,11 @@ const SETTINGS_BUTTON_WIDTH: f32 = 34.0;
 const LINK_BUTTON_WIDTH: f32 = 30.0;
 /// The user guide. Linked from Settings ▸ About on every platform and, on macOS, from the Help
 /// menu.
-pub const DOCS_URL: &str = "https://docs.degenview.app";
-/// The project's GitHub organisation and the maintainer's Buy Me a Coffee page, linked from the
-/// strip's right end on every platform and, on macOS, from the Help menu too.
-pub const GITHUB_URL: &str = "https://github.com/degenview";
-pub const COFFEE_URL: &str = "https://buymeacoffee.com/nicoswd";
+pub const DOCS_URL: &str =
+    "https://github.com/srg-sphynx/FakingView/blob/main/docs/getting-started.md";
+/// Project source and issue support, linked from the strip and the native Help menu.
+pub const GITHUB_URL: &str = "https://github.com/srg-sphynx/FakingView";
+pub const SUPPORT_URL: &str = "https://github.com/srg-sphynx/FakingView/issues";
 /// The hairline between two tabs at rest.
 const SEPARATOR_HEIGHT: f32 = 16.0;
 const TAB_GAP: f32 = 2.0;
@@ -172,7 +172,7 @@ fn settings_button_width() -> f32 {
     }
 }
 
-/// Room the GitHub and coffee buttons take at the strip's right end, left of the window buttons.
+/// Room the GitHub and documentation buttons take at the strip's right end, left of the window buttons.
 const LINKS_WIDTH: f32 = LINK_BUTTON_WIDTH * 2.0 + 6.0;
 
 /// What one frame of the strip produced.
@@ -377,7 +377,7 @@ impl TabBar<'_> {
             }
         }
 
-        // Two gray links at the far right: the project on GitHub, and a coffee for its maker.
+        // Two gray links at the far right: source code and the setup guide.
         let links = [
             (
                 "View project on GitHub",
@@ -386,12 +386,10 @@ impl TabBar<'_> {
                 14.0,
             ),
             (
-                "Support this project by buying me a coffee",
-                COFFEE_URL,
-                egui::include_image!("../../../../assets/brand/coffee.svg"),
-                // The cup fills about three quarters of its 24 grid, where the GitHub mark
-                // fills all of its box, so it is drawn larger to look the same size.
-                19.0,
+                "Read the FakingView guide",
+                DOCS_URL,
+                egui::include_image!("../../../../assets/brand/docs.svg"),
+                14.0,
             ),
         ];
         for (index, (name, url, logo, size)) in links.into_iter().enumerate() {

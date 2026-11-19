@@ -1,5 +1,5 @@
 use super::AppAction;
-use super::DegenViewApp;
+use super::FakingViewApp;
 use super::now_ms;
 use super::tabs::TabContent;
 use crate::host::settings::SettingsHost;
@@ -14,7 +14,7 @@ use crate::store::scripts::hash_source;
 use crate::ui::window::tab_bar;
 use eframe::egui;
 
-impl DegenViewApp {
+impl FakingViewApp {
     pub(super) fn process_commands(&mut self, ctx: &egui::Context) {
         native_bridge::set_edit_menu(
             self.with_focused_pine_studio(|pine| pine.edit_menu())
@@ -71,8 +71,8 @@ impl DegenViewApp {
                 NativeCommand::OpenGitHub => {
                     ctx.open_url(egui::OpenUrl::new_tab(tab_bar::GITHUB_URL));
                 }
-                NativeCommand::OpenCoffee => {
-                    ctx.open_url(egui::OpenUrl::new_tab(tab_bar::COFFEE_URL));
+                NativeCommand::OpenSupport => {
+                    ctx.open_url(egui::OpenUrl::new_tab(tab_bar::SUPPORT_URL));
                 }
                 NativeCommand::Quit => self.request_quit(ctx),
                 NativeCommand::SaveCurrentLayout => {
@@ -120,6 +120,9 @@ impl DegenViewApp {
                 AppAction::OpenPineSource(target) => self.open_pine_source(ctx, &target),
                 AppAction::OpenAlpacaSettings => {
                     self.open_settings_page(ctx, SettingsHost::open_alpaca);
+                }
+                AppAction::OpenKiteSettings => {
+                    self.open_settings_page(ctx, SettingsHost::open_kite);
                 }
                 AppAction::OpenBrokerSettings => {
                     self.open_settings_page(ctx, SettingsHost::open_brokers);

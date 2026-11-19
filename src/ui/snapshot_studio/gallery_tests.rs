@@ -1,5 +1,5 @@
 //! The Studio's images written as PNGs for a person to look at. Run by hand:
-//! `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_studio -- --ignored`.
+//! `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_studio -- --ignored`.
 
 use super::capture::{Capture, LayoutCapture};
 use super::compose::{self, Target};

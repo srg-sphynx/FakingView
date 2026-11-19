@@ -1,4 +1,4 @@
-//! `degenview_get_session_stats`: how often something happened on the days a chart covers, with
+//! `fakingview_get_session_stats`: how often something happened on the days a chart covers, with
 //! its sample size and a 95% interval. A read of the chart's own candles, like the indicator
 //! values, so it needs the candles permission and changes nothing.
 
@@ -6,7 +6,7 @@ use crate::mcp::bridge::{McpReply, REQUEST_TIMEOUT};
 use crate::mcp::chart::ChartCommand;
 use crate::mcp::session_stats::{Query, SessionStatsResult};
 use crate::mcp::tools::{
-    Caller, DegenViewMcp, failure, invalid, parse_chart_id, parse_workspace_id, unexpected,
+    Caller, FakingViewMcp, failure, invalid, parse_chart_id, parse_workspace_id, unexpected,
 };
 use crate::model::mcp::Permission;
 use crate::model::session_stats::{Filter, Outcome, Side, WeekdaySet};
@@ -16,7 +16,7 @@ use rmcp::{tool, tool_router};
 use schemars::JsonSchema;
 use serde::Deserialize;
 
-pub const GET_SESSION_STATS: &str = "degenview_get_session_stats";
+pub const GET_SESSION_STATS: &str = "fakingview_get_session_stats";
 
 /// The largest gap, in percent, a filter may name; a bigger one is a typo for a fraction.
 const MAX_GAP_PCT: f64 = 1000.0;
@@ -66,10 +66,10 @@ impl SideArg {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SessionStatsParams {
-    /// A `workspace_id` from `degenview_list_workspaces`.
+    /// A `workspace_id` from `fakingview_list_workspaces`.
     #[schemars(length(max = 20))]
     pub workspace_id: String,
-    /// A `chart_id` from `degenview_list_charts`.
+    /// A `chart_id` from `fakingview_list_charts`.
     #[schemars(length(max = 20))]
     pub chart_id: String,
     /// What to count. `gap_fill`: the day's range touched the previous close (days that gapped
@@ -135,9 +135,9 @@ fn query(params: &SessionStatsParams) -> Result<Query, CallToolResult> {
 }
 
 #[tool_router(router = session_stats_router, vis = "pub(in crate::mcp)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_get_session_stats",
+        name = "fakingview_get_session_stats",
         description = "Count how often something happened on the days a chart's bars cover, as P(outcome | conditions): for example how often a gap was filled on Tuesdays that gapped up 0.1% to 0.6%. Returns the qualifying days `n`, the days it happened on `hits`, the `estimate` with a 95% Wilson interval, the older half against the newer half, a row per year and, on 1H bars, the bar a gap was filled or a first-bar range was broken in. A day is a US stock's regular session (New York) or, for any other market, the UTC date; a gap is the day's open against the previous day's close, so a market that trades round the clock has almost none. Works on the 1H and 1D timeframes and on the market's own candles up to the replay position. These are historical frequencies with sample sizes, never predictions: say `n` and the interval whenever you quote the estimate, and treat a condition picked after looking at the data as overfit.",
         annotations(
             read_only_hint = true,

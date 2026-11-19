@@ -38,6 +38,27 @@ impl QuoteSocket {
         products: Vec<String>,
         sender: Sender<StreamTick>,
     ) -> Option<Self> {
+        if source == DataSource::Kite {
+            let shutdown = Arc::new(AtomicBool::new(false));
+            let thread_shutdown = Arc::clone(&shutdown);
+            let thread_products = products.clone();
+            std::thread::spawn(move || {
+                crate::service::market::live::kite::run(
+                    &thread_products,
+                    &thread_shutdown,
+                    |product_id, quote| {
+                        sender
+                            .send(StreamTick {
+                                source,
+                                product_id,
+                                quote,
+                            })
+                            .is_ok()
+                    },
+                );
+            });
+            return Some(Self { shutdown, products });
+        }
         let (session, parse): (Session, Parser) = match source {
             DataSource::Coinbase => (coinbase::session(&products), coinbase::parse_tick),
             DataSource::Okx => (okx::session(&products), okx::parse_tick),

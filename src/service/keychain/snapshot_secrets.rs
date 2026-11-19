@@ -7,7 +7,7 @@
 //! the camera menu, which asks every frame, reads cached state; until the answer is in a secret is
 //! [`SecretState::Checking`]. A secret's value is read only when an upload needs it, on the
 //! upload's worker, so a user who never shares a snapshot is never prompted, and the cache is
-//! never locked while the storage is. Under `DEGENVIEW_NO_KEYCHAIN` (and on platforms with no
+//! never locked while the storage is. Under `FAKINGVIEW_NO_KEYCHAIN` (and on platforms with no
 //! secure storage) it lives in memory for the session; a field's environment variable stands in
 //! when nothing is saved.
 
@@ -19,7 +19,7 @@ use crate::service::webhook::delivery::SecretStoreError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, OnceLock};
 
-const SERVICE: &str = "es.nico.degenview.snapshots";
+const SERVICE: &str = "local.fakingview.desktop.snapshots";
 const SCOPE: Scope = Scope {
     service: SERVICE,
     shared_group: false,

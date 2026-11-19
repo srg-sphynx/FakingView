@@ -291,7 +291,7 @@ fn a_script_with_an_illegal_file_name_is_kept_not_applied() {
 
 fn temp_store(tag: &str) -> (ScriptStore, std::path::PathBuf) {
     let root = std::env::temp_dir().join(format!(
-        "degenview-sync-scripts-{tag}-{}-{}",
+        "fakingview-sync-scripts-{tag}-{}-{}",
         std::process::id(),
         ScriptStore::fresh_id()
     ));

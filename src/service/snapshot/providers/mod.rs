@@ -453,7 +453,7 @@ mod tests {
                         field.is_secret(),
                         "{env}: only a secret has an environment stand-in"
                     );
-                    assert!(env.starts_with("DEGENVIEW_"), "{env}");
+                    assert!(env.starts_with("FAKINGVIEW_"), "{env}");
                 }
             }
         }

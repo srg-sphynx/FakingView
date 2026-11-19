@@ -173,10 +173,10 @@ pub fn gate_command(
                 Err(McpError::ConfirmationRequired(info))
             }
             Err(OpenError::ClientFull) => Err(McpError::ResourceLimit(
-                "Too many approvals from this client are waiting. Ask the user to answer them in DegenView first".into(),
+                "Too many approvals from this client are waiting. Ask the user to answer them in FakingView first".into(),
             )),
             Err(OpenError::Full) => Err(McpError::ResourceLimit(
-                "Too many approvals are waiting in DegenView. Ask the user to answer them first".into(),
+                "Too many approvals are waiting in FakingView. Ask the user to answer them first".into(),
             )),
         }
     };
@@ -711,7 +711,7 @@ mod tests {
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].kind, McpAuditKind::Confirmation);
         assert_eq!(rows[0].outcome, McpAuditOutcome::Approved);
-        assert_eq!(rows[0].tool, "degenview_delete_price_alert");
+        assert_eq!(rows[0].tool, "fakingview_delete_price_alert");
         assert_eq!(rows[0].client_id, "c1");
     }
 

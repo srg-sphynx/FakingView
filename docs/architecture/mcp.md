@@ -5,18 +5,18 @@ current-thread Tokio runtime confined to the `mcp-server` thread.
 
 ```text
 client → 127.0.0.1:<port>/mcp → bearer/Host/Origin/size checks
-       → per-call permission check → Request queue → DegenViewApp::tick_mcp
+       → per-call permission check → Request queue → FakingViewApp::tick_mcp
        → permission/deadline/cancel recheck → existing workspace/host mutation path
 ```
 
 ## Routing
 
 A tool lives in its domain's router (`mcp::chart::tools`, `mcp::alert::tools`, `mcp::pine::tools`,
-`mcp::market::tools` and the others, put together in `DegenViewMcp::new`). It takes its caller
+`mcp::market::tools` and the others, put together in `FakingViewMcp::new`). It takes its caller
 through the `Caller` extractor and queues one `McpCommand`, which is one variant per domain
 (`Chart`, `Alert`, `Pine`, `Paper`, `Portfolio`, `Watchlist`, `Replay`, `Snapshot`) carrying that
 domain's own command enum, defined beside its tools with what it says about confirmation
-(`confirm::Confirm`). On the app thread `DegenViewApp::run_mcp_command` only routes: it hands the
+(`confirm::Confirm`). On the app thread `FakingViewApp::run_mcp_command` only routes: it hands the
 domain's command to `host::mcp::<domain>::run` with the parts of the app it reaches (an `McpTabs`
 view of the open tabs, a store, a host, the alert sheet's Save), and `confirmation_summary` hands it
 to `host::mcp::<domain>::describe`. Replies stay one `McpReply` enum. Result fields with a closed set
@@ -118,7 +118,7 @@ Delete and saved-source writes require their own grants.
 
 ## Tool behavior
 
-| Area | Tools (`degenview_…`) |
+| Area | Tools (`fakingview_…`) |
 | --- | --- |
 | Charts | `list_workspaces`, `list_charts`, `add_chart`, `list_indicators`, `add_indicator`, `remove_indicator`, `set_timeframe`, `set_chart_type`, `remove_chart`, `get_replay`, `control_replay`, `get_chart_snapshot` |
 | Price alerts | `list_price_alerts`, `create_price_alert`, `update_price_alert`, `pause_price_alert`, `resume_price_alert`, `delete_price_alert` |
@@ -249,7 +249,7 @@ Delete and saved-source writes require their own grants.
   constructed type's bars. `remove_indicator` is `ChartWorkspace::remove_indicator`
   (`charts.indicators.write`); removing one that is not there answers `not_applied`.
 - Markets and watchlists live in `mcp::market::tools` (a second `tool_router`, merged in
-  `DegenViewMcp::new`) and `mcp::market` (result types and pure projections). `search_symbols`
+  `FakingViewMcp::new`) and `mcp::market` (result types and pure projections). `search_symbols`
   runs `service::search` for each named provider side by side on a blocking worker (at most four
   searches at once, 20 s ceiling), keeps only hits of the provider asked, and reports a failing
   provider in `source_errors` while the others answer; the search function is

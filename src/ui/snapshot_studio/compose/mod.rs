@@ -3,7 +3,7 @@
 //!
 //! In order: the backdrop (when the image has one), the soft shadow under the chart, the chart (or
 //! each chart of a layout) through the card's own `paint_snapshot`, the rounding of the chart's
-//! corners, and for the Styled look the title block and the DegenView mark. The composer never
+//! corners, and for the Styled look the title block and the FakingView mark. The composer never
 //! draws a chart: what a chart looks like is the card's alone, and the composer says only where
 //! it goes, which bars and prices it shows and how its canvas is restyled.
 //!

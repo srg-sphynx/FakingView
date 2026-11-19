@@ -2,7 +2,7 @@
 
 "How often did this happen on the days this chart covers?", answered with the sample size and a
 95% interval. A docked panel on the right of the chart (right-click → *Session statistics*) and
-the read-only MCP tool `degenview_get_session_stats` ask the same engine.
+the read-only MCP tool `fakingview_get_session_stats` ask the same engine.
 
 The idea, the shape of the answer (`P(outcome | conditions)` with `N` and a confidence interval on
 every number, a stability split, a row per year) and the outcome names come from LuxAlgo's

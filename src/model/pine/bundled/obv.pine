@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // On-Balance Volume: a running total that adds the bar's volume on an up close and subtracts it on
 // a down close. Rising OBV with flat price means buyers are accumulating. A moving average of it
 // is drawn as the signal.

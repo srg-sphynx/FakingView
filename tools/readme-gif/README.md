@@ -1,6 +1,6 @@
 # README hero GIF
 
-Records the animated hero picture from the real app: a script drives a throwaway DegenView through its
+Records the animated hero picture from the real app: a script drives a throwaway FakingView through its
 own MCP server while a second script films the app's window. Retake it when the UI it shows changes.
 macOS only.
 
@@ -31,7 +31,7 @@ Then record:
 tools/readme-gif/record.sh /tmp/hero.gif
 ```
 
-`DEGENVIEW_BIN=<path>` uses another binary and `KEEP=1` keeps the work directory, which holds every
+`FAKINGVIEW_BIN=<path>` uses another binary and `KEEP=1` keeps the work directory, which holds every
 frame and a contact sheet (`take/sheet.png`) for checking each beat.
 
 What you need: Xcode's command line tools (`swiftc`), Python 3 with [Pillow](https://pillow.readthedocs.io),
@@ -42,8 +42,8 @@ While it runs (about a minute) the app window is frontmost, so leave the keyboar
 ## What it does and does not touch
 
 - The app runs with a throwaway `HOME`, no Keychain and no notifications. Your own profile is not read
-  or written, and your own DegenView can stay open (the recorder's MCP port is 8791, change it with
-  `DEGENVIEW_RECORD_PORT`).
+  or written, and your own FakingView can stay open (the recorder's MCP port is 8791, change it with
+  `FAKINGVIEW_RECORD_PORT`).
 - Only the app's own window is captured, by window id, never the screen or a region.
 - The MCP token is generated for the run and exists only in the process environment and the
   throwaway store.

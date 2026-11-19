@@ -2,14 +2,14 @@
 //! `secret_service`): one generic-password item per endpoint. Talks to the Security framework directly (a few C calls), so it adds no
 //! crate to the build.
 //!
-//! Items go in the shared `es.nico.degenview.shared` access group when this process is
+//! Items go in the shared `local.fakingview.desktop.shared` access group when this process is
 //! entitled to it, which both the app and the login-item alert agent are, and are read
 //! from that group only. The agent has no UI to answer a Keychain prompt, so reads fail
 //! instead of asking, and a missing item is simply "unavailable". Without the entitlement
 //! (Debug builds) the app can still store and read its own item, but the agent cannot see
 //! it.
 //!
-//! Under `is_disabled` (tests, `DEGENVIEW_NO_KEYCHAIN=1`) values stay in memory: a
+//! Under `is_disabled` (tests, `FAKINGVIEW_NO_KEYCHAIN=1`) values stay in memory: a
 //! rebuilt, re-signed binary would otherwise block on a Keychain access prompt.
 
 use crate::model::webhook::EndpointId;
@@ -17,7 +17,7 @@ use crate::service::webhook::delivery::{
     InMemoryWebhookSecretStore, SecretStoreError, WebhookSecretStore,
 };
 
-const SERVICE: &str = "es.nico.degenview.webhook";
+const SERVICE: &str = "local.fakingview.desktop.webhook";
 
 /// Which Keychain items a call addresses: a service name, and whether the item lives in the
 /// shared access group (when this process is entitled to it) or in the process's own default.
@@ -32,11 +32,11 @@ const WEBHOOKS: Scope = Scope {
     shared_group: true,
 };
 #[cfg(any(target_os = "macos", test))]
-const ACCESS_GROUP_SUFFIX: &str = "es.nico.degenview.shared";
+const ACCESS_GROUP_SUFFIX: &str = "local.fakingview.desktop.shared";
 
 /// Whether the Keychain is off-limits to this process.
 pub fn is_disabled() -> bool {
-    cfg!(test) || std::env::var_os("DEGENVIEW_NO_KEYCHAIN").is_some()
+    cfg!(test) || std::env::var_os("FAKINGVIEW_NO_KEYCHAIN").is_some()
 }
 
 /// The Keychain account name for an endpoint.
@@ -224,7 +224,7 @@ pub(crate) mod platform {
         // SAFETY: as in `access_group`.
         let missing = unsafe {
             let task = Owned::new(SecTaskCreateFromSelf(std::ptr::null()));
-            let key = string("com.degenview.test.no-such-entitlement");
+            let key = string("com.fakingview.test.no-such-entitlement");
             match (task, key) {
                 (Some(task), Some(key)) => Owned::new(SecTaskCopyValueForEntitlement(
                     task.as_raw(),
@@ -513,11 +513,11 @@ mod tests {
     fn only_the_shared_group_is_used() {
         let groups = vec![
             "TEAMID.com.example.other".to_owned(),
-            "TEAMID.es.nico.degenview.shared".to_owned(),
+            "TEAMID.local.fakingview.desktop.shared".to_owned(),
         ];
         assert_eq!(
             shared_access_group(&groups),
-            Some("TEAMID.es.nico.degenview.shared")
+            Some("TEAMID.local.fakingview.desktop.shared")
         );
         assert_eq!(shared_access_group(&groups[..1]), None);
         assert_eq!(shared_access_group(&[]), None);
@@ -547,7 +547,7 @@ mod tests {
         for scope in [
             WEBHOOKS,
             Scope {
-                service: "es.nico.degenview.test",
+                service: "local.fakingview.desktop.test",
                 shared_group: false,
             },
         ] {

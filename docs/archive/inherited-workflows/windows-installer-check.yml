@@ -17,7 +17,7 @@ permissions:
 env:
   # Keep in step with release.yml.
   INNO_SETUP_VERSION: "6.7.1"
-  APP_ID: "{79717C79-2D1E-4206-B25A-F3E626438640}"
+  APP_ID: "{FA88671D-145C-576B-9B00-22DB6C36120D}"
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -56,11 +56,11 @@ jobs:
         shell: bash
         run: |
           mkdir stub
-          cp /c/Windows/System32/ping.exe stub/degenview.exe
-          ./tools/windows-installer.sh v0.0.0-check stub/degenview.exe "$ARCH"
+          cp /c/Windows/System32/ping.exe stub/fakingview.exe
+          ./tools/windows-installer.sh v0.0.0-check stub/fakingview.exe "$ARCH"
           # The other CPU's installer too, for the refusal check below.
           if [ "$ARCH" = arm64 ]; then
-            ./tools/windows-installer.sh v0.0.0-check stub/degenview.exe x64
+            ./tools/windows-installer.sh v0.0.0-check stub/fakingview.exe x64
           fi
 
       # The x64 installer is `x64os`, so it must not install the emulated build on Windows on ARM.
@@ -70,9 +70,9 @@ jobs:
         timeout-minutes: 5
         run: |
           $ErrorActionPreference = 'Stop'
-          $dir = Join-Path $env:RUNNER_TEMP 'DegenViewRefused'
+          $dir = Join-Path $env:RUNNER_TEMP 'FakingViewRefused'
           $key = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$($env:APP_ID)_is1"
-          $setup = Get-Item dist\DegenView-v0.0.0-check-windows-x64-setup.exe
+          $setup = Get-Item dist\FakingView-v0.0.0-check-windows-x64-setup.exe
           $run = Start-Process -Wait -PassThru -FilePath $setup.FullName `
             -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$dir"
           Write-Host "exit code $($run.ExitCode)"
@@ -84,10 +84,10 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $setup = Get-Item "dist\DegenView-v0.0.0-check-windows-$($env:ARCH)-setup.exe"
-          $dir = Join-Path $env:RUNNER_TEMP 'DegenViewInstall'
+          $setup = Get-Item "dist\FakingView-v0.0.0-check-windows-$($env:ARCH)-setup.exe"
+          $dir = Join-Path $env:RUNNER_TEMP 'FakingViewInstall'
           $key = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$($env:APP_ID)_is1"
-          $data = Join-Path $env:APPDATA 'es.nico.degenview'
+          $data = Join-Path $env:APPDATA 'local.fakingview.desktop'
           New-Item -Force -ItemType Directory $data | Out-Null
           Set-Content (Join-Path $data 'keep.txt') 'user data'
 
@@ -95,10 +95,10 @@ jobs:
             -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$dir"
 
           foreach ($path in @(
-              "$dir\degenview.exe", "$dir\unins000.exe",
+              "$dir\fakingview.exe", "$dir\unins000.exe",
               "$dir\licenses\OFL-JetBrainsMono.txt", "$dir\licenses\OFL-NotoSansSymbols2.txt",
               "$dir\licenses\FONTS.md",
-              "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\DegenView.lnk")) {
+              "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\FakingView.lnk")) {
             if (-not (Test-Path -LiteralPath $path)) { throw "missing after install: $path" }
           }
           $entry = Get-ItemProperty -LiteralPath $key
@@ -107,8 +107,8 @@ jobs:
           Write-Host "Installed to $dir, DisplayVersion $($entry.DisplayVersion)"
 
           # What the self-updater leaves behind must go with the app.
-          New-Item -Force -ItemType Directory "$dir\.DegenView-update\old" | Out-Null
-          Set-Content "$dir\.DegenView-update\old\degenview.exe" 'old'
+          New-Item -Force -ItemType Directory "$dir\.FakingView-update\old" | Out-Null
+          Set-Content "$dir\.FakingView-update\old\fakingview.exe" 'old'
 
           Start-Process -Wait -FilePath "$dir\unins000.exe" `
             -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'

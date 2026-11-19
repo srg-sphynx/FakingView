@@ -6,7 +6,7 @@
 //!
 //! This follows TradingView's chart templates (styling only). Saving the chart type and its
 //! settings, and the choice of applying a template without them ([`ApplyScope::ColorsAndCanvas`]),
-//! are DegenView's own additions.
+//! are FakingView's own additions.
 //!
 //! Pure: no egui types and no storage. [`TemplateBook`] is the one place the rules live
 //! (validation, unique names, rename, duplicate, update, delete); the store reads and writes it

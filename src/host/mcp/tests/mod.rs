@@ -68,7 +68,7 @@ fn audit_row(n: u64) -> McpAuditEntry {
         at_ms: 1_000 + n as i64,
         client_id: "c1".into(),
         client_name: "Claude".into(),
-        tool: "degenview_list_charts".into(),
+        tool: "fakingview_list_charts".into(),
         count: 1,
         ..McpAuditEntry::default()
     }
@@ -291,7 +291,7 @@ fn lan() -> BindMode {
 }
 
 fn scratch_dir(name: &str) -> std::path::PathBuf {
-    std::env::temp_dir().join(format!("degenview-mcp-host-{name}-{}", new_id()))
+    std::env::temp_dir().join(format!("fakingview-mcp-host-{name}-{}", new_id()))
 }
 
 #[test]
@@ -427,7 +427,7 @@ fn a_remote_bind_gets_a_saved_certificate_for_its_address_and_loopback_gets_none
     let mut host = host(&store);
     assert!(host.tls_identity().unwrap().is_none());
 
-    let dir = std::env::temp_dir().join(format!("degenview-mcp-host-tls-{}", new_id()));
+    let dir = std::env::temp_dir().join(format!("fakingview-mcp-host-tls-{}", new_id()));
     host.tls_dir = Some(dir.clone());
     host.settings = remote_settings();
     let first = host.tls_identity().unwrap().expect("a certificate");

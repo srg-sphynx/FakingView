@@ -11,9 +11,9 @@
 # CloudKit Dashboard under Settings, Tokens & Keys). It only reads schemas.
 set -eu
 
-team="${DEGENVIEW_TEAM_ID:-8JR6HMQNDE}"
-container="${DEGENVIEW_CLOUDKIT_CONTAINER:-iCloud.es.nico.degenview}"
-record_type="DegenViewSyncRecord"
+team="${FAKINGVIEW_TEAM_ID:-8JR6HMQNDE}"
+container="${FAKINGVIEW_CLOUDKIT_CONTAINER:-iCloud.local.fakingview.desktop}"
+record_type="FakingViewSyncRecord"
 # The plain (queryable by CloudKit) fields the bridge writes; `payload` and `modifiedAtMs` are
 # encrypted values and have no schema entry.
 fields="schemaVersion entityType revision originDevice payloadSize"

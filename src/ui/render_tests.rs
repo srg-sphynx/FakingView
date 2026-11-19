@@ -1,5 +1,5 @@
 //! Writing frames of egui as PNGs, for the tests that are run by hand to look at a screen the way
-//! a person would. They are `#[ignore]`d and only write when `DEGENVIEW_GALLERY_DIR` names a
+//! a person would. They are `#[ignore]`d and only write when `FAKINGVIEW_GALLERY_DIR` names a
 //! folder, so a normal test run neither needs nor leaves anything.
 
 use crate::service::snapshot::{export, raster};
@@ -8,7 +8,7 @@ use std::path::PathBuf;
 
 /// The folder the gallery tests write to, if one was asked for.
 pub(crate) fn gallery_dir() -> Option<PathBuf> {
-    std::env::var_os("DEGENVIEW_GALLERY_DIR").map(PathBuf::from)
+    std::env::var_os("FAKINGVIEW_GALLERY_DIR").map(PathBuf::from)
 }
 
 /// An egui context that draws like the app at 2x, and remembers every texture it was asked to

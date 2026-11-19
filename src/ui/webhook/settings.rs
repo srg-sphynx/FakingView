@@ -15,7 +15,7 @@ use crate::ui::{kit, theme};
 use eframe::egui::{self, Rect, Sense, Vec2};
 use std::collections::HashMap;
 
-pub const DEFAULT_TEST_PAYLOAD: &str = r#"{"event":"DegenView webhook test"}"#;
+pub const DEFAULT_TEST_PAYLOAD: &str = r#"{"event":"FakingView webhook test"}"#;
 
 /// What the last Test button press found out.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -245,7 +245,7 @@ pub fn body(
             kit::ORANGE,
             "Saved webhooks could not be read",
             Some(
-                "Changes are turned off so nothing is overwritten. Restart DegenView to try again.",
+                "Changes are turned off so nothing is overwritten. Restart FakingView to try again.",
             ),
             None,
         );
@@ -749,7 +749,7 @@ mod tests {
     }
 
     /// The page with endpoints in each state, and the editor sheet, in both themes; with
-    /// `DEGENVIEW_GALLERY_DIR` set they are written out to look at.
+    /// `FAKINGVIEW_GALLERY_DIR` set they are written out to look at.
     #[test]
     fn the_page_and_the_sheet_draw_in_both_themes() {
         use crate::ui::render_tests::{Screen, gallery_dir};
@@ -765,7 +765,7 @@ mod tests {
         first.headers.push(crate::model::webhook::WebhookHeader {
             id: 1,
             name: "X-Source".into(),
-            value: "degenview".into(),
+            value: "fakingview".into(),
         });
         first.headers.push(crate::model::webhook::WebhookHeader {
             id: 2,

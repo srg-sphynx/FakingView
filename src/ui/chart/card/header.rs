@@ -182,10 +182,7 @@ impl ChartCard {
                                                     format::headline(price, true)
                                                 )
                                             } else {
-                                                format::headline(
-                                                    last.close,
-                                                    source.is_prediction_market(),
-                                                )
+                                                headline_text(last.close, source)
                                             },
                                         )
                                         .size(11.0)
@@ -219,8 +216,8 @@ impl ChartCard {
                                         .size()
                                         .x
                                 };
-                                let full = change_text(wide.then_some(amount), percent);
-                                let short = change_text(None, percent);
+                                let full = change_text(wide.then_some(amount), percent, source);
+                                let short = change_text(None, percent, source);
                                 let text = if measure(&full) <= room {
                                     Some(full)
                                 } else if measure(&short) <= room {
@@ -380,14 +377,25 @@ fn pills_beside_star<R>(
     .inner
 }
 
+/// The header's own currency label. Kite prices are already INR, so the shared precision
+/// formatter's unit changes without a price conversion; other providers retain their format.
+pub(super) fn headline_text(value: f64, source: DataSource) -> String {
+    let text = format::headline(value, source.is_prediction_market());
+    if source == DataSource::Kite {
+        text.replacen('$', "₹", 1)
+    } else {
+        text
+    }
+}
+
 /// `+$67.13 (+0.10%)`, or `+0.10%` when the amount is left out (prediction markets quote
 /// probabilities, so a price difference means nothing there).
-pub(super) fn change_text(amount: Option<f64>, percent: f64) -> String {
+pub(super) fn change_text(amount: Option<f64>, percent: f64, source: DataSource) -> String {
     let sign = if percent >= 0.0 { "+" } else { "-" };
     match amount {
         Some(amount) => format!(
             "{sign}{} ({sign}{:.2}%)",
-            format::headline(amount.abs(), false),
+            headline_text(amount.abs(), source),
             percent.abs()
         ),
         None => format!("{sign}{:.2}%", percent.abs()),

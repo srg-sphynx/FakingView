@@ -4,7 +4,7 @@
 //! as deferred viewports with `'static` closures, so this is a cheap-to-clone handle on shared
 //! state. Pure edits (select, reorder, move) apply here at once; anything that needs the app's
 //! tab contents (new tab, close with an unsaved-script prompt) is queued as a [`TabRequest`] for
-//! `DegenViewApp::process_commands`.
+//! `FakingViewApp::process_commands`.
 
 use crate::lock::lock;
 use crate::model::tab::window_frames::{Frame, FrameMemory, Layout, Sample};
@@ -444,7 +444,7 @@ impl TabWindowHost {
     }
 
     pub fn viewport_id(window: WindowId) -> ViewportId {
-        ViewportId::from_hash_of(("degenview-window", window))
+        ViewportId::from_hash_of(("fakingview-window", window))
     }
 
     /// What a window reports every frame: where it is and where its tab strip is.

@@ -83,7 +83,7 @@ impl SnapshotHost {
         };
         let Some(provider) = providers::provider(id) else {
             return Hosting::Unavailable(
-                "This snapshot host is not in this version of DegenView. Choose another in \
+                "This snapshot host is not in this version of FakingView. Choose another in \
                  Settings ▸ Snapshots."
                     .to_owned(),
             );

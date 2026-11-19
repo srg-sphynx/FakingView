@@ -9,7 +9,7 @@
 //! * they never go to SQLite, a file, iCloud Sync or a log, and nothing here prints one;
 //! * a credential is read when a connection needs it, not at startup, so a user who never connects
 //!   a broker is never prompted;
-//! * under `DEGENVIEW_NO_KEYCHAIN` (tests, development) they live in memory for the session.
+//! * under `FAKINGVIEW_NO_KEYCHAIN` (tests, development) they live in memory for the session.
 //!
 //! Implements the broker crate's `SecretStore`, so the crate never decides where a secret lives.
 
@@ -22,7 +22,7 @@ use crate::lock::lock;
 use crate::service::keychain::api_keys::{KeyBackend, default_backend};
 use crate::service::keychain::webhook_secrets::Scope;
 
-const SERVICE: &str = "es.nico.degenview.broker";
+const SERVICE: &str = "local.fakingview.desktop.broker";
 const SCOPE: Scope = Scope {
     service: SERVICE,
     shared_group: false,
@@ -230,7 +230,7 @@ mod tests {
     #[test]
     fn the_scope_is_not_shared_with_the_background_agent() {
         const { assert!(!SCOPE.shared_group) };
-        assert_eq!(SCOPE.service, "es.nico.degenview.broker");
+        assert_eq!(SCOPE.service, "local.fakingview.desktop.broker");
     }
 
     /// A corrupt item reads as absent rather than as credentials.

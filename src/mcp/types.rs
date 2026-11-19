@@ -179,7 +179,7 @@ pub struct IndicatorParameterInfo {
 
 #[derive(Debug, Clone, PartialEq, Serialize, JsonSchema)]
 pub struct IndicatorSpecInfo {
-    /// Stable id to pass to `degenview_add_indicator`.
+    /// Stable id to pass to `fakingview_add_indicator`.
     pub id: String,
     pub title: String,
     pub description: String,
@@ -438,7 +438,7 @@ pub struct AppliedPineDetail {
     pub timeframe: String,
     pub instance: AppliedPineInfo,
     /// The user's input overrides by input id, as `{kind, value}`; an input with no entry runs at
-    /// its default (see `degenview_get_pine_inputs`).
+    /// its default (see `fakingview_get_pine_inputs`).
     pub inputs: std::collections::BTreeMap<String, serde_json::Value>,
     /// Style overrides by `kind.id.attribute`.
     pub style_overrides: std::collections::BTreeMap<String, String>,
@@ -610,7 +610,7 @@ pub struct PineAlertInfo {
 pub struct PineAlertsResult {
     pub subscriptions: Vec<PineAlertInfo>,
     pub total: usize,
-    /// DegenView does not keep a log of fired script alerts, so none can be returned.
+    /// FakingView does not keep a log of fired script alerts, so none can be returned.
     pub event_history_available: bool,
     pub recent_events: Vec<String>,
 }
@@ -637,7 +637,7 @@ pub struct PineEditResult {
     /// The compile result of the text now current. Absent when `compile_warning` says why.
     pub compile: Option<PineCompileResult>,
     /// Why `compile` is absent although the edit itself succeeded (the compile could not run).
-    /// The edit is not undone; call `degenview_compile_pine_script` for the diagnostics.
+    /// The edit is not undone; call `fakingview_compile_pine_script` for the diagnostics.
     pub compile_warning: Option<String>,
 }
 
@@ -783,7 +783,7 @@ pub struct CandlesResult {
     pub summary: Option<CandleSummary>,
     /// Whether the chart holds bars older than the first returned. Page back with `before`.
     pub has_older_loaded: bool,
-    /// Whether the market can serve more history than the chart holds. DegenView loads it only
+    /// Whether the market can serve more history than the chart holds. FakingView loads it only
     /// as someone scrolls the chart back, so asking again will not fetch it.
     pub older_history_available: bool,
     /// Whether the newest returned bar is still forming (its period has not ended).
@@ -824,7 +824,7 @@ pub struct DrawingInfo {
     pub text: Option<String>,
     pub locked: bool,
     pub hidden: bool,
-    /// Whether this server can change it: a tool `degenview_add_drawings` draws, not locked.
+    /// Whether this server can change it: a tool `fakingview_add_drawings` draws, not locked.
     pub editable: bool,
 }
 
@@ -836,7 +836,7 @@ pub struct DrawingsResult {
     pub drawings: Vec<DrawingInfo>,
     pub total: usize,
     pub truncated: bool,
-    /// Rows this version of DegenView cannot read; they are kept, not shown.
+    /// Rows this version of FakingView cannot read; they are kept, not shown.
     pub unreadable: usize,
 }
 

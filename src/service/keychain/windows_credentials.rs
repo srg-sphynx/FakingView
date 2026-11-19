@@ -27,7 +27,7 @@
 //! [`EXISTS_TTL`] (an item removed in the Credential Manager window shows up as gone then).
 //!
 //! Buffers that held a secret are overwritten before they are freed. That is best effort: the
-//! caller's own `String` is not ours to wipe. Under `DEGENVIEW_NO_KEYCHAIN` the callers never reach
+//! caller's own `String` is not ours to wipe. Under `FAKINGVIEW_NO_KEYCHAIN` the callers never reach
 //! this module (`keychain::webhook_secrets::is_disabled`).
 //!
 //! The Keychain's access groups do not exist here, so `Scope::shared_group` is ignored: an item is
@@ -50,7 +50,7 @@ const MAX_BLOB_BYTES: usize = 2560;
 /// in UTF-16 units.
 const MAX_TARGET_UNITS: usize = 32767;
 /// Shown as the credential's user name in the Credential Manager window.
-const USER_NAME: &str = "degenview";
+const USER_NAME: &str = "fakingview";
 /// How long `exists` believes its last answer.
 const EXISTS_TTL: Duration = Duration::from_secs(30);
 
@@ -336,8 +336,8 @@ mod tests {
     #[test]
     fn the_target_name_joins_service_and_account() {
         assert_eq!(
-            target_name("es.nico.degenview.webhook", "endpoint-3").as_deref(),
-            Some("es.nico.degenview.webhook/endpoint-3")
+            target_name("local.fakingview.desktop.webhook", "endpoint-3").as_deref(),
+            Some("local.fakingview.desktop.webhook/endpoint-3")
         );
     }
 
@@ -437,7 +437,7 @@ mod tests {
         }
 
         let scope = Scope {
-            service: "es.nico.degenview.test",
+            service: "local.fakingview.desktop.test",
             shared_group: false,
         };
         let account = format!("test-{}", std::process::id());

@@ -158,7 +158,7 @@ fn the_group_says_what_it_syncs() {
     assert_eq!(describe(LinkToggles::NONE), "nothing synced");
 }
 
-/// The popover as a picture, both themes. Run by hand with `DEGENVIEW_GALLERY_DIR` set.
+/// The popover as a picture, both themes. Run by hand with `FAKINGVIEW_GALLERY_DIR` set.
 #[test]
 #[ignore = "writes images for a person to look at"]
 fn gallery_of_the_tab_linking() {

@@ -1,5 +1,5 @@
 //@version=6
-// Example script bundled with DegenView. Edit it freely.
+// Example script bundled with FakingView. Edit it freely.
 // MACD with a four-colour histogram: strong colours while momentum is growing,
 // faded colours while it fades.
 indicator("MACD Histogram", overlay = false)

@@ -37,7 +37,7 @@ fn market(item: &WatchlistInstrument) -> Option<SearchResult> {
     }
     let id = item.instrument.symbol.as_str();
     Some(match source {
-        DataSource::Alpaca => {
+        DataSource::Alpaca | DataSource::Kite => {
             let ticker = id.to_uppercase();
             let symbol = if item.name.is_empty() || item.name.eq_ignore_ascii_case(&ticker) {
                 ticker.clone()

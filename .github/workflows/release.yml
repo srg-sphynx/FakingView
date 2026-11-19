@@ -1,586 +1,193 @@
-name: Release
+name: Release FakingView
 
-# Push a tag like `v0.1.0` to build every platform and publish a GitHub release.
-# Tags containing a hyphen (v0.2.0-rc.1) are published as pre-releases.
+# Releases are an explicit maintainer action. A tag created by the initial manual
+# publication does not start another competing build or overwrite its assets.
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Existing tag to build and release (e.g. v0.1.0)"
+      version:
+        description: "Prepared Cargo version, for example 0.1.0-beta.1"
         required: true
+        type: string
 
-# Nothing gets more than read access by default. Only the `release` job below is granted write.
 permissions:
   contents: read
 
 env:
+  RUST_TOOLCHAIN: "1.100.0"
   CARGO_TERM_COLOR: always
-  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
-  # The compiler every release is built with. A release is signed and shipped, so the toolchain is
-  # chosen here, in a reviewed change, not by whatever "stable" means on the day of the build. Keep
-  # in step with ci.yml and the other workflows that build; bump it with its own pull request.
-  RUST_TOOLCHAIN: "1.99.0"
-  # The Windows installer compiler; keep in step with windows-installer-check.yml.
-  INNO_SETUP_VERSION: "6.7.1"
+
+concurrency:
+  group: fakingview-release-${{ inputs.version }}
+  cancel-in-progress: false
 
 jobs:
   verify:
-    name: Verify version
-    runs-on: ubuntu-latest
-    # The one commit every later job builds: the commit the verified, signed tag object names.
-    # Later jobs check this out by hash, not by tag name, so a tag that moves between jobs (or
-    # between the check and the build) cannot change what gets signed.
+    name: Verify the prepared main commit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     outputs:
-      sha: ${{ steps.signed.outputs.commit }}
+      sha: ${{ steps.metadata.outputs.sha }}
+      version: ${{ steps.metadata.outputs.version }}
+      tag: ${{ steps.metadata.outputs.tag }}
     steps:
-      # Full history, for the ancestry check below. No credentials are left in .git/config.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
-
-      # The app reports the Cargo.toml version (Settings > About, the update check), so a tag
-      # that disagrees would ship a build that thinks it is out of date. Cut releases with
-      # tools/release.sh, which bumps Cargo.toml before tagging.
-      # In-app updates only install releases whose tag GitHub reports as verified and tagged by the
-      # maintainer (src/service/update/tag_signature.rs), so fail fast on anything else. GitHub verifies
-      # the signature when the tag is pushed and can lag a moment, hence the retries.
-      - name: Tag must be signed by the maintainer
-        id: signed
+      - name: Bind the release to a version and commit
+        id: metadata
         env:
-          GH_TOKEN: ${{ github.token }}
-          MAINTAINER_EMAIL: nicoswd@gmail.com
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REF: ${{ github.ref }}
         run: |
-          for attempt in 1 2 3 4 5; do
-            kind=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --jq .object.type)
-            if [ "$kind" != "tag" ]; then
-              echo "::error::${RELEASE_TAG} is a lightweight tag. Release with tools/release.sh, which signs it."
-              exit 1
-            fi
-            sha=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --jq .object.sha)
-            if gh api "repos/${GITHUB_REPOSITORY}/git/tags/${sha}" | jq -e --arg email "$MAINTAINER_EMAIL" --arg tag "$RELEASE_TAG" '
-                .verification.verified == true and .verification.reason == "valid"
-                and .tag == $tag and .object.type == "commit"
-                and (.tagger.email | ascii_downcase) == $email' >/dev/null; then
-              echo "${RELEASE_TAG} is signed by ${MAINTAINER_EMAIL}"
-              commit=$(gh api "repos/${GITHUB_REPOSITORY}/git/tags/${sha}" --jq .object.sha)
-              case "$commit" in
-                *[!0-9a-f]* | "") echo "::error::unexpected commit id '${commit}' for ${RELEASE_TAG}"; exit 1 ;;
-              esac
-              echo "commit=${commit}" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            sleep $((attempt * 3))
-          done
-          echo "::error::${RELEASE_TAG} is not a verified tag by ${MAINTAINER_EMAIL}. Release with tools/release.sh."
-          exit 1
-
-      # A signed tag proves who tagged, not that the commit was ever reviewed or tested. Every
-      # release is cut from `main` (tools/release.sh), which only takes changes through a pull
-      # request, so a tag on a commit that is not in main's history is not a release.
-      - name: Tag must point into main
-        env:
-          RELEASE_SHA: ${{ steps.signed.outputs.commit }}
-        run: |
-          head=$(git rev-parse HEAD)
-          if [ "$head" != "$RELEASE_SHA" ]; then
-            echo "::error::Checked out ${head} but the signed tag names ${RELEASE_SHA}."
-            exit 1
-          fi
-          git fetch --quiet origin main
-          if ! git merge-base --is-ancestor "$RELEASE_SHA" FETCH_HEAD; then
-            echo "::error::${RELEASE_TAG} (${RELEASE_SHA}) is not on main. Releases are cut from main with tools/release.sh."
-            exit 1
-          fi
-
-      - name: Tag must match Cargo.toml
-        run: |
-          cargo_version=$(awk '/^\[/ { in_package = ($0 == "[package]") } in_package && /^version = "/ { gsub(/^version = "|"$/, ""); print; exit }' Cargo.toml)
-          tag_version="${RELEASE_TAG#v}"
-          if [ "$cargo_version" != "$tag_version" ]; then
-            echo "::error::Tag ${RELEASE_TAG} does not match Cargo.toml version ${cargo_version}. Run tools/release.sh ${tag_version} instead of tagging by hand."
-            exit 1
-          fi
-
-  # The Flatpak bundle is a Linux asset like the tarball: it must exist before the release is
-  # published, because the release is immutable. Built from source inside the Flatpak SDK.
-  flatpak:
-    name: Build Flatpak
-    needs: verify
-    permissions:
-      contents: read
-    uses: ./.github/workflows/flatpak.yml
-    with:
-      ref: ${{ needs.verify.outputs.sha }}
-      bundle-prefix: DegenView-${{ github.event.inputs.tag || github.ref_name }}-linux
-      # The hosted Flatpak repo (docs/flatpak.md) publishes the branches `stable` (a final) and `beta`
-      # (an `-rc.N`), matching the app's update channels: the updater offers an alpha or beta tag to no
-      # channel (`update::check::Version::kind`), so those build on `dev`, which nothing publishes. The tag
-      # is the verified one, and tools/release.sh only writes X.Y.Z or X.Y.Z-(alpha|beta|rc).N.
-      branch: ${{ contains(github.event.inputs.tag || github.ref_name, '-rc.') && 'beta' || (contains(github.event.inputs.tag || github.ref_name, '-') && 'dev' || 'stable') }}
+          python3 - <<'PY'
+          import os, pathlib, re, subprocess, tomllib
+          version = os.environ["RELEASE_VERSION"]
+          if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(alpha|beta|rc)\.[1-9][0-9]*)?", version):
+              raise SystemExit("Use a valid X.Y.Z or X.Y.Z-(alpha|beta|rc).N version")
+          if os.environ["RELEASE_REF"] != "refs/heads/main":
+              raise SystemExit("Dispatch a release from main")
+          manifest = tomllib.loads(pathlib.Path("Cargo.toml").read_text())
+          if manifest["package"]["name"] != "fakingview" or manifest["package"]["version"] != version:
+              raise SystemExit("Run tools/release.sh prepare VERSION and commit the version first")
+          lock = tomllib.loads(pathlib.Path("Cargo.lock").read_text())
+          root = [p for p in lock["package"] if p["name"] == "fakingview" and "source" not in p]
+          if len(root) != 1 or root[0]["version"] != version:
+              raise SystemExit("Cargo.lock root version does not match the prepared release")
+          sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          subprocess.run(["git", "merge-base", "--is-ancestor", sha, "origin/main"], check=True)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"sha={sha}\nversion={version}\ntag=v{version}\n")
+          PY
 
   build:
-    name: Build ${{ matrix.name }}
+    name: Test and build macOS arm64
     needs: verify
-    runs-on: ${{ matrix.os }}
-    # Only the macOS signing steps read secrets. Moving them into this environment (restricted to
-    # `v*` tags) is what keeps a workflow run from any other branch away from them; see
-    # docs/agent-guides/releases-updates.md.
-    environment: release
-    permissions:
-      contents: read
+    # GitHub documents macos-15 as an Apple Silicon runner. Fail if that changes.
+    runs-on: macos-15
+    timeout-minutes: 60
     env:
+      MACOSX_DEPLOYMENT_TARGET: "14.0"
+      CLANG_MODULE_CACHE_PATH: ${{ github.workspace }}/target/swift-module-cache
+      FAKINGVIEW_NO_KEYCHAIN: "1"
       RELEASE_SHA: ${{ needs.verify.outputs.sha }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: macos-arm64
-            os: macos-latest
-            target: aarch64-apple-darwin
-          - name: macos-x64
-            os: macos-15-intel
-            target: x86_64-apple-darwin
-          - name: windows-x64
-            os: windows-latest
-            target: x86_64-pc-windows-msvc
-          # Native ARM64 Windows (free for public repositories). The zip and installer names carry
-          # the matrix name, which is what the updater's `-windows-arm64.zip` suffix matches.
-          - name: windows-arm64
-            os: windows-11-arm
-            target: aarch64-pc-windows-msvc
-          # Linux is built on the OLDEST distro we support (Ubuntu 22.04, glibc 2.35): a binary needs
-          # the glibc it was linked against, so building on `ubuntu-latest` (24.04) raised the floor to
-          # 2.39. See tools/check-glibc.py, which release.yml runs on the result.
-          - name: linux-x64
-            os: ubuntu-22.04
-            target: x86_64-unknown-linux-gnu
-          - name: linux-arm64
-            os: ubuntu-22.04-arm
-            target: aarch64-unknown-linux-gnu
+      RELEASE_TAG: ${{ needs.verify.outputs.tag }}
+      RELEASE_VERSION: ${{ needs.verify.outputs.version }}
     steps:
-      # The commit the signed tag names (see `verify`), not the tag's name. No credentials are left
-      # in .git/config for the build scripts of 580-odd crates to find.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ env.RELEASE_SHA }}
+          ref: ${{ needs.verify.outputs.sha }}
           persist-credentials: false
-
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
         with:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
-          targets: ${{ matrix.target }}
-
-      # No build cache here. A release is signed (and notarized) from what this job compiles, so it
-      # must not start from compiled output restored from somewhere else: whatever could write that
-      # cache (a merged change, a compromised action) would be in the next release. A clean build is
-      # slower; that is the price of knowing what went into it.
-
-      - name: Install Linux dependencies
-        if: runner.os == 'Linux'
+          components: rustfmt, clippy
+      # Release artifacts never restore a compiler/build cache and need no Apple secrets.
+      - name: Validate the checkout
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev \
-            libx11-dev libxcursor-dev libxrandr-dev libxi-dev \
-            libgl1-mesa-dev libegl1-mesa-dev libssl-dev pkg-config
-
-      # Everything that runs third-party code happens BEFORE the signing material exists on the
-      # runner: the disk image tool and its dependencies are installed, and the whole crate graph
-      # (every build script and proc-macro) is compiled, with no certificate, no notarization key
-      # and no provisioning profile on disk. After the import below, only Apple's tools and our own
-      # scripts run.
-      #
-      # Homebrew's Python refuses a global pip install, so dmgbuild gets a venv. Every package is
-      # pinned with its hash (tools/requirements/dmgbuild.txt), so a new upload to PyPI changes nothing.
-      - name: Install dmgbuild
-        if: runner.os == 'macOS'
-        run: |
-          python3 -m venv "$RUNNER_TEMP/dmgvenv"
-          "$RUNNER_TEMP/dmgvenv/bin/pip" install --quiet --require-hashes -r tools/requirements/dmgbuild.txt
-
-      # The same cargo command tools/bundle.sh would run (it is told to skip it below), so the
-      # signing steps find the binaries already built.
-      - name: Build macOS release binaries
-        if: runner.os == 'macOS'
+          test "$(uname -m)" = arm64
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          cargo fmt --all -- --check
+          cargo test --locked
+          cargo clippy --locked --all-targets --all-features -- -D warnings
+      - name: Build the Finder application
         env:
-          DEGENVIEW_ICLOUD: ${{ vars.DEGENVIEW_ICLOUD }}
-          DEGENVIEW_ICLOUD_ENVIRONMENT: Production
+          FAKINGVIEW_BUILD_ID: ${{ needs.verify.outputs.sha }}
+        run: ./tools/bundle.sh
+      - name: Package app, license notices and corresponding source
         run: |
-          features=""
-          [ -n "$DEGENVIEW_ICLOUD" ] && features="--features icloud"
-          cargo build --release --locked $features --bin degenview --bin degenview-alert-agent
-
-      # Developer ID signing needs the certificate in a keychain codesign can read unattended, so
-      # import it into a throwaway one (deleted at the end of the job).
-      - name: Import the Developer ID certificate
-        if: runner.os == 'macOS'
-        env:
-          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
-          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
-        run: |
-          keychain="$RUNNER_TEMP/build.keychain-db"
-          keychain_password=$(uuidgen)
-          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
-          security create-keychain -p "$keychain_password" "$keychain"
-          security set-keychain-settings -lut 21600 "$keychain"
-          security unlock-keychain -p "$keychain_password" "$keychain"
-          security import "$RUNNER_TEMP/cert.p12" -k "$keychain" -P "$MACOS_CERT_PASSWORD" \
-            -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" >/dev/null
-          security list-keychains -d user -s "$keychain" login.keychain-db
-          rm "$RUNNER_TEMP/cert.p12"
-
-      - name: Build and sign macOS app bundle
-        if: runner.os == 'macOS'
-        env:
-          DEGENVIEW_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
-          DEGENVIEW_KEYCHAIN_ACCESS_GROUP: ${{ secrets.MACOS_KEYCHAIN_ACCESS_GROUP }}
-          MACOS_PROFILE_APP: ${{ secrets.MACOS_PROFILE_APP }}
-          MACOS_PROFILE_HELPER: ${{ secrets.MACOS_PROFILE_HELPER }}
-          # Set the repository variable DEGENVIEW_ICLOUD to 1 once the app profile grants iCloud
-          # (docs/icloud-sync.md). A release always uses the Production environment.
-          DEGENVIEW_ICLOUD: ${{ vars.DEGENVIEW_ICLOUD }}
-          DEGENVIEW_ICLOUD_ENVIRONMENT: Production
-          # Compiled above, before the certificate was imported.
-          DEGENVIEW_SKIP_BUILD: "1"
-        run: |
-          echo "$MACOS_PROFILE_APP" | base64 --decode > "$RUNNER_TEMP/app.provisionprofile"
-          echo "$MACOS_PROFILE_HELPER" | base64 --decode > "$RUNNER_TEMP/helper.provisionprofile"
-          export DEGENVIEW_APP_PROFILE="$RUNNER_TEMP/app.provisionprofile"
-          export DEGENVIEW_HELPER_PROFILE="$RUNNER_TEMP/helper.provisionprofile"
-          ./tools/bundle.sh
-
-      # Notarize the signed app, then staple the ticket to it so Gatekeeper accepts it offline.
-      # The zip is only the upload; the shipped zip is made after stapling.
-      - name: Notarize and staple macOS app
-        if: runner.os == 'macOS'
-        env:
-          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          DEGENVIEW_ICLOUD: ${{ vars.DEGENVIEW_ICLOUD }}
-        run: |
-          echo "$ASC_KEY_P8" | base64 --decode > "$RUNNER_TEMP/AuthKey.p8"
-          ditto -c -k --keepParent target/DegenView.app "$RUNNER_TEMP/notarize.zip"
-          if ! xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
-              --key "$RUNNER_TEMP/AuthKey.p8" --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" \
-              --wait --output-format json > "$RUNNER_TEMP/notarize.json"; then
-            cat "$RUNNER_TEMP/notarize.json"
-            echo "::error::notarytool submit failed"
-            exit 1
-          fi
-          cat "$RUNNER_TEMP/notarize.json"
-          status=$(jq -r .status "$RUNNER_TEMP/notarize.json")
-          if [ "$status" != "Accepted" ]; then
-            id=$(jq -r .id "$RUNNER_TEMP/notarize.json")
-            xcrun notarytool log "$id" \
-              --key "$RUNNER_TEMP/AuthKey.p8" --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" || true
-            echo "::error::Notarization finished with status ${status}"
-            exit 1
-          fi
-          # Stapling and validating fetch the ticket from Apple's CloudKit, which now and then drops
-          # the connection ("network connection was lost", exit 68) even though the build was
-          # Accepted; the Intel runner hits it most. Retry each step on its own, so a validate that
-          # cannot connect never makes a staple that already worked run again, and back off for
-          # minutes rather than seconds.
-          . ./tools/retry.sh
-          retry "stapler staple" xcrun stapler staple target/DegenView.app || exit 1
-          # The ticket is stapled; this only asks Apple to confirm it. If Apple stays unreachable
-          # the offline checks below (signature, then Gatekeeper using the stapled ticket) decide.
-          if ! retry "stapler validate" xcrun stapler validate target/DegenView.app; then
-            echo "::warning::stapler validate could not reach Apple; relying on the offline checks"
-          fi
-          codesign --verify --deep --strict --verbose=2 target/DegenView.app
-          spctl --assess --type execute --verbose=2 target/DegenView.app
-          if [ -n "$DEGENVIEW_ICLOUD" ]; then
-            ./tools/verify-icloud.sh target/DegenView.app Production
-          fi
-
-      - name: Package macOS app
-        if: runner.os == 'macOS'
-        run: |
+          licenses=target/FakingView.app/Contents/Resources/Licenses
+          test -f "$licenses/OFL-JetBrainsMono.txt"
+          test -f "$licenses/OFL-NotoSansSymbols2.txt"
+          cp LICENSE.md "$licenses/GPL-3.0.txt"
+          cp THIRD_PARTY_NOTICES.md "$licenses/THIRD_PARTY_NOTICES.md"
+          cp docs/getting-started.md target/FakingView.app/Contents/Resources/Getting-Started.md
+          cp docs/app-specs.md target/FakingView.app/Contents/Resources/App-Specs.md
+          /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' target/FakingView.app/Contents/Info.plist | grep -Fx local.fakingview.desktop
+          file target/FakingView.app/Contents/MacOS/FakingView | grep -F arm64
           mkdir -p dist
-          ditto -c -k --sequesterRsrc --keepParent target/DegenView.app \
-            "dist/DegenView-${RELEASE_TAG}-${{ matrix.name }}.zip"
-
-      # The disk image people open to install: the app above (already signed, notarized and stapled)
-      # next to an Applications shortcut, made by tools/make-dmg.sh. The image is signed, notarized
-      # and stapled too, so Gatekeeper accepts it as downloaded. The updater never reads it: it
-      # downloads the zip above, whose name the image's `.dmg` can never match. The App Store Connect
-      # key the notarize step wrote is still in RUNNER_TEMP and is removed below.
-      - name: Build, sign and notarize the macOS disk image
-        if: runner.os == 'macOS'
-        env:
-          DEGENVIEW_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-        run: |
-          # Installed with its hashes before the certificate was imported (see above).
-          export PATH="$RUNNER_TEMP/dmgvenv/bin:$PATH"
-          dmg="dist/DegenView-${RELEASE_TAG}-${{ matrix.name }}.dmg"
-          ./tools/make-dmg.sh target/DegenView.app "$dmg"
-
-          codesign --force --timestamp --sign "$DEGENVIEW_CODESIGN_IDENTITY" "$dmg"
-          codesign --verify --verbose=2 "$dmg"
-          if ! xcrun notarytool submit "$dmg" \
-              --key "$RUNNER_TEMP/AuthKey.p8" --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" \
-              --wait --output-format json > "$RUNNER_TEMP/notarize-dmg.json"; then
-            cat "$RUNNER_TEMP/notarize-dmg.json"
-            echo "::error::notarytool submit failed for the disk image"
-            exit 1
-          fi
-          cat "$RUNNER_TEMP/notarize-dmg.json"
-          status=$(jq -r .status "$RUNNER_TEMP/notarize-dmg.json")
-          if [ "$status" != "Accepted" ]; then
-            id=$(jq -r .id "$RUNNER_TEMP/notarize-dmg.json")
-            xcrun notarytool log "$id" \
-              --key "$RUNNER_TEMP/AuthKey.p8" --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" || true
-            echo "::error::Notarizing the disk image finished with status ${status}"
-            exit 1
-          fi
-          # The same retry as the app (tools/retry.sh): each step on its own, so a validate that cannot
-          # reach Apple never makes a staple that already worked run again.
-          . ./tools/retry.sh
-          retry "stapler staple (disk image)" xcrun stapler staple "$dmg" || exit 1
-          # The ticket is stapled; this only asks Apple to confirm it. If Apple stays unreachable the
-          # offline checks below (the image's signature assessment, then the app inside) decide.
-          if ! retry "stapler validate (disk image)" xcrun stapler validate "$dmg"; then
-            echo "::warning::stapler validate could not reach Apple for the disk image; relying on the offline checks"
-          fi
-
-          # What a user sees: the image is accepted, and the app inside it passes Gatekeeper and
-          # still has its signature after the trip through the image.
-          spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg"
-          mount="$RUNNER_TEMP/dmg-verify"
-          mkdir -p "$mount"
-          hdiutil attach "$dmg" -readonly -nobrowse -mountpoint "$mount" -quiet
-          verified=0
-          spctl --assess --type execute --verbose=2 "$mount/DegenView.app" \
-            && codesign --verify --deep --strict "$mount/DegenView.app" \
-            && verified=1
-          hdiutil detach "$mount" -quiet
-          [ "$verified" = 1 ] || { echo "::error::the app inside the disk image failed verification"; exit 1; }
-
-      - name: Remove signing material
-        if: always() && runner.os == 'macOS'
-        run: |
-          security delete-keychain "$RUNNER_TEMP/build.keychain-db" || true
-          rm -f "$RUNNER_TEMP/AuthKey.p8" "$RUNNER_TEMP/cert.p12" "$RUNNER_TEMP/notarize.zip" \
-            "$RUNNER_TEMP/app.provisionprofile" "$RUNNER_TEMP/helper.provisionprofile"
-
-      # The in-app updater picks this zip by its `-windows-x64.zip` suffix and unpacks
-      # `degenview.exe` from its root (`update::archive::extract_exe`); keep both.
-      - name: Build Windows executable
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          cargo build --release --locked
-          mkdir -p dist
-          # The built-in fonts are under the SIL OFL, which wants its text to come with them.
-          7z a "dist/DegenView-${RELEASE_TAG}-${{ matrix.name }}.zip" ./target/release/degenview.exe \
-            ./assets/fonts/OFL-JetBrainsMono.txt ./assets/fonts/OFL-NotoSansSymbols2.txt ./assets/fonts/README.md
-
-      # A per-user installer around the same exe (packaging/windows/degenview.iss). Its name ends
-      # `-windows-x64-setup.exe`, so the updater, which picks `-windows-x64.zip`, never sees it.
-      - name: Build Windows installer
-        if: runner.os == 'Windows'
-        shell: bash
-        env:
-          MATRIX_NAME: ${{ matrix.name }}
-        run: |
-          choco install innosetup --version "$INNO_SETUP_VERSION" -y --no-progress
-          # `windows-x64` / `windows-arm64`: the part after the dash is the installer's architecture.
-          ./tools/windows-installer.sh "$RELEASE_TAG" target/release/degenview.exe "${MATRIX_NAME#windows-}"
-
-      # The in-app updater picks this tarball by its `-linux-<arch>.tar.gz` suffix and unpacks only
-      # `./degenview` from its root (`update::archive::extract_tar_gz_binary`); keep both.
-      - name: Build Linux binary
-        if: runner.os == 'Linux'
-        run: |
-          cargo build --release --locked
-          # Fail the release rather than ship a binary that will not start on the oldest distro we
-          # support, which is what moving this job off the 22.04 runner would do.
-          python3 tools/check-glibc.py target/release/degenview
-          mkdir -p dist pkg
-          cp target/release/degenview pkg/
-          cp assets/brand/DegenView-512-rounded.png pkg/degenview.png
-          cp packaging/degenview.desktop pkg/
-          # The built-in fonts are under the SIL OFL, which wants its text to come with them.
-          mkdir -p pkg/licenses
-          cp assets/fonts/OFL-JetBrainsMono.txt assets/fonts/OFL-NotoSansSymbols2.txt pkg/licenses/
-          cp assets/fonts/README.md pkg/licenses/FONTS.md
-          tar -czf "dist/DegenView-${RELEASE_TAG}-${{ matrix.name }}.tar.gz" -C pkg .
-
+          ditto -c -k --sequesterRsrc --keepParent target/FakingView.app "dist/FakingView-${RELEASE_TAG}-macos-arm64.zip"
+          git archive --format=tar --prefix="FakingView-${RELEASE_VERSION}/" "$RELEASE_SHA" | gzip -n > "dist/FakingView-${RELEASE_TAG}-source.tar.gz"
+          (
+            cd dist
+            shasum -a 256 "FakingView-${RELEASE_TAG}-macos-arm64.zip" "FakingView-${RELEASE_TAG}-source.tar.gz" > SHA256SUMS.txt
+            shasum -a 256 -c SHA256SUMS.txt
+          )
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: DegenView-${{ matrix.name }}
+          name: fakingview-release
           path: dist/*
           if-no-files-found: error
+          retention-days: 14
 
-  release:
-    name: Publish release
-    needs: [verify, build, flatpak]
-    runs-on: ubuntu-latest
-    environment: release
-    # The only job that can write to the repository. `id-token` and `attestations` are for the
-    # build provenance below.
+  publish:
+    name: Publish the reviewed artifacts
+    needs: [verify, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
       contents: write
-      id-token: write
-      attestations: write
     env:
       RELEASE_SHA: ${{ needs.verify.outputs.sha }}
+      RELEASE_TAG: ${{ needs.verify.outputs.tag }}
+      RELEASE_VERSION: ${{ needs.verify.outputs.version }}
     steps:
-      # Full history and tags, for the release notes. Checked out by commit; the tag must still
-      # name that commit (a tag cannot move once it has an immutable release, but a run can).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ env.RELEASE_SHA }}
-          fetch-depth: 0
+          ref: ${{ needs.verify.outputs.sha }}
           persist-credentials: false
-
-      - name: The tag still names the verified commit
-        run: |
-          tagged=$(git rev-parse -q --verify "refs/tags/${RELEASE_TAG}^{commit}" || true)
-          if [ "$tagged" != "$RELEASE_SHA" ]; then
-            echo "::error::${RELEASE_TAG} names '${tagged}', not the verified commit ${RELEASE_SHA}."
-            exit 1
-          fi
-
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
+          name: fakingview-release
           path: dist
-          pattern: DegenView-*
-          merge-multiple: true
-
-      - name: Generate release notes
+      - name: Verify and publish once
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          # A stable release lists everything since the previous stable one, so the changes a
-          # release candidate already carried are not lost from its notes. A prerelease lists
-          # only what is new since the previous tag of any kind.
-          case "$RELEASE_TAG" in
-            *-*) prev=$(git describe --tags --abbrev=0 --match 'v*' "${RELEASE_TAG}^" 2>/dev/null || true) ;;
-            *) prev=$(git tag --merged "${RELEASE_TAG}^" --list 'v*' --sort=-v:refname | grep -v -e '-' | head -1 || true) ;;
-          esac
-          if [ -n "$prev" ]; then
-            range="${prev}..${RELEASE_TAG}"
-            heading="Changes since ${prev}"
-          else
-            range="${RELEASE_TAG}"
-            heading="Changes"
-          fi
-          base="https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}"
-          {
-            echo "## ${heading}"
-            echo
-            git log --no-merges --pretty='format:- %s (%h)' "$range"
-            echo
-            if [ -n "$prev" ]; then
-              echo
-              echo "**Full diff:** https://github.com/${{ github.repository }}/compare/${prev}...${RELEASE_TAG}"
-            fi
-            echo
-            echo "## Downloads"
-            echo
-            echo "| Platform | Arch | Link |"
-            echo "| --- | --- | --- |"
-            echo "| macOS (dmg) | arm64 | [DegenView-${RELEASE_TAG}-macos-arm64.dmg](${base}/DegenView-${RELEASE_TAG}-macos-arm64.dmg) |"
-            echo "| macOS (dmg) | x64 | [DegenView-${RELEASE_TAG}-macos-x64.dmg](${base}/DegenView-${RELEASE_TAG}-macos-x64.dmg) |"
-            echo "| macOS (zip) | arm64 | [DegenView-${RELEASE_TAG}-macos-arm64.zip](${base}/DegenView-${RELEASE_TAG}-macos-arm64.zip) |"
-            echo "| macOS (zip) | x64 | [DegenView-${RELEASE_TAG}-macos-x64.zip](${base}/DegenView-${RELEASE_TAG}-macos-x64.zip) |"
-            echo "| Windows (installer) | x64 | [DegenView-${RELEASE_TAG}-windows-x64-setup.exe](${base}/DegenView-${RELEASE_TAG}-windows-x64-setup.exe) |"
-            echo "| Windows (installer) | arm64 | [DegenView-${RELEASE_TAG}-windows-arm64-setup.exe](${base}/DegenView-${RELEASE_TAG}-windows-arm64-setup.exe) |"
-            echo "| Windows (portable) | x64 | [DegenView-${RELEASE_TAG}-windows-x64.zip](${base}/DegenView-${RELEASE_TAG}-windows-x64.zip) |"
-            echo "| Windows (portable) | arm64 | [DegenView-${RELEASE_TAG}-windows-arm64.zip](${base}/DegenView-${RELEASE_TAG}-windows-arm64.zip) |"
-            echo "| Linux (tar.gz) | x64 | [DegenView-${RELEASE_TAG}-linux-x64.tar.gz](${base}/DegenView-${RELEASE_TAG}-linux-x64.tar.gz) |"
-            echo "| Linux (tar.gz) | arm64 | [DegenView-${RELEASE_TAG}-linux-arm64.tar.gz](${base}/DegenView-${RELEASE_TAG}-linux-arm64.tar.gz) |"
-            echo "| Linux (Flatpak) | x64 | [DegenView-${RELEASE_TAG}-linux-x64.flatpak](${base}/DegenView-${RELEASE_TAG}-linux-x64.flatpak) |"
-            echo "| Linux (Flatpak) | arm64 | [DegenView-${RELEASE_TAG}-linux-arm64.flatpak](${base}/DegenView-${RELEASE_TAG}-linux-arm64.flatpak) |"
-            echo
-            echo "The macOS builds are signed with a Developer ID and notarized by Apple. The Windows installer and executable are unsigned; Windows SmartScreen may ask you to approve them on first launch."
-          } > notes.md
-          cat notes.md
-
-      # An immutable release cannot be amended, so check the whole set while it is still only files:
-      # exactly these twelve names (the updater picks its zip by exact name, see
-      # `update::check::select_asset`), nothing missing, nothing stray, nothing empty.
-      - name: Check the asset set
-        run: |
-          expected=$(for suffix in \
-            macos-arm64.zip macos-x64.zip macos-arm64.dmg macos-x64.dmg \
-            windows-x64.zip windows-arm64.zip windows-x64-setup.exe windows-arm64-setup.exe \
-            linux-x64.tar.gz linux-arm64.tar.gz linux-x64.flatpak linux-arm64.flatpak; do
-            echo "DegenView-${RELEASE_TAG}-${suffix}"
-          done | sort)
-          actual=$(ls dist | sort)
-          if [ "$expected" != "$actual" ]; then
-            echo "::error::dist/ does not hold exactly the expected assets."
-            diff <(echo "$expected") <(echo "$actual") || true
+          (
+            cd dist
+            shasum -a 256 -c SHA256SUMS.txt
+          )
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::This release already exists. Published releases are never overwritten."
             exit 1
           fi
-          for asset in dist/*; do
-            [ -s "$asset" ] || { echo "::error::$asset is empty."; exit 1; }
-          done
-
-      # Provenance for every asset: a signed statement from GitHub that this workflow, at this
-      # commit, produced these exact bytes. Anyone can check a download with
-      # `gh attestation verify <file> --repo degenview/degenview`. Recorded before the release is
-      # published, so the release never exists without it.
-      - name: Attest build provenance
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-path: dist/*
-
-      # The app only installs a release that GitHub published as immutable, so every asset must be
-      # attached before it is published: `gh release create` makes a draft, uploads, then
-      # publishes. Never `gh release upload` to a published release, it is locked.
-      - name: Create GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          # A failed earlier run can leave an unpublished draft behind; a published release is
-          # never touched (it is immutable).
-          # (`gh release view` cannot see drafts by tag, `release list` can.)
-          draft=$(gh release list --limit 100 --json tagName,isDraft \
-            --jq ".[] | select(.isDraft and .tagName == \"${RELEASE_TAG}\") | .tagName")
-          if [ -n "$draft" ]; then
-            gh release delete "$RELEASE_TAG" --yes
+          if existing=$(gh api "repos/$GITHUB_REPOSITORY/commits/$RELEASE_TAG" --jq .sha 2>/dev/null); then
+            test "$existing" = "$RELEASE_SHA"
           fi
-          flags=""
-          case "$RELEASE_TAG" in *-*) flags="--prerelease" ;; esac
-          gh release create "$RELEASE_TAG" dist/* \
-            --title "DegenView ${RELEASE_TAG}" \
-            --notes-file notes.md \
-            --verify-tag \
-            $flags
+          python3 - <<'PY'
+          import os, pathlib
+          tag = os.environ["RELEASE_TAG"]
+          version = os.environ["RELEASE_VERSION"]
+          sha = os.environ["RELEASE_SHA"]
+          repo = os.environ["GITHUB_REPOSITORY"]
+          tracked = pathlib.Path("docs/releases") / f"{tag}.md"
+          if tracked.is_file():
+              text = tracked.read_text()
+          else:
+              text = f"""FakingView {version} for Apple Silicon Macs running macOS 14 or newer.
 
-      # Fail loudly if the release is not immutable or an asset does not match the release
-      # attestation. This can only run after publishing (a draft has no attestation), so it is an
-      # alarm, not a gate: a client can see the release while this runs. GitHub creates the
-      # attestation asynchronously, so right after publishing it can be missing ("no attestations
-      # for tag"); retry before failing.
-      - name: Verify the published release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          verify_release() {
-            gh release verify "$RELEASE_TAG"
-            for asset in dist/*; do
-              gh release verify-asset "$RELEASE_TAG" "$asset"
-            done
-          }
-          for attempt in 1 2 3 4 5 6; do
-            if verify_release; then
-              exit 0
-            fi
-            [ "$attempt" -lt 6 ] || break
-            echo "Attempt ${attempt} failed; retrying in $((attempt * 10))s"
-            sleep $((attempt * 10))
-          done
-          echo "::error::${RELEASE_TAG} did not verify as an immutable, attested release."
-          exit 1
+          This is an unsigned, non-notarized build for manual installation. Background alerts use the foreground fallback. The package contains the app and alert helper; the matching source archive is attached under GPL-3.0-only.
+
+          Kite Connect requires your own eligible daily session. Authentication and live-data entitlements must be verified with your account. Watchlist quotes stream over WebSocket; chart candles refresh from the historical API. Kite order entry and INR paper/portfolio accounting are not included.
+
+          Installation and setup: https://github.com/{repo}/blob/{sha}/docs/getting-started.md
+
+          App specifications: https://github.com/{repo}/blob/{sha}/docs/app-specs.md
+
+          Source commit: {sha}
+
+          Verify downloaded assets against SHA256SUMS.txt.
+          """
+          pathlib.Path("release-notes.md").write_text(text)
+          PY
+          if [ "$RELEASE_VERSION" != "${RELEASE_VERSION%%-*}" ]; then
+            flags=(--prerelease)
+          else
+            flags=()
+          fi
+          gh release create "$RELEASE_TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" --target "$RELEASE_SHA" \
+            --title "FakingView ${RELEASE_VERSION}" --notes-file release-notes.md "${flags[@]}"

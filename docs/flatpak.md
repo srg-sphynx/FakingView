@@ -1,16 +1,16 @@
 # Flatpak
 
-Every release carries `DegenView-<tag>-linux-x64.flatpak` and `DegenView-<tag>-linux-arm64.flatpak` next to the Linux tarballs. The app id is
-`es.nico.degenview`, the same as the window's `app_id` in `src/lib.rs`; it is permanent once
+Every release carries `FakingView-<tag>-linux-x64.flatpak` and `FakingView-<tag>-linux-arm64.flatpak` next to the Linux tarballs. The app id is
+`local.fakingview.desktop`, the same as the window's `app_id` in `src/lib.rs`; it is permanent once
 published, so do not rename it.
 
 ## What is built
 
 | File | Role |
 | --- | --- |
-| `packaging/flatpak/es.nico.degenview.yml` | The manifest: Freedesktop runtime and SDK `26.08`, the `rust-stable` SDK extension, an offline `cargo build --release --locked --bin degenview` |
-| `packaging/flatpak/es.nico.degenview.desktop` | Launcher (the tarball keeps `packaging/degenview.desktop`) |
-| `packaging/flatpak/es.nico.degenview.metainfo.xml` | AppStream metadata; the `0.0.0` release is a placeholder |
+| `packaging/flatpak/local.fakingview.desktop.yml` | The manifest: Freedesktop runtime and SDK `26.08`, the `rust-stable` SDK extension, an offline `cargo build --release --locked --bin fakingview` |
+| `packaging/flatpak/local.fakingview.desktop.desktop` | Launcher (the tarball keeps `packaging/fakingview.desktop`) |
+| `packaging/flatpak/local.fakingview.desktop.metainfo.xml` | AppStream metadata; the `0.0.0` release is a placeholder |
 | `.github/workflows/flatpak.yml` | Reusable workflow that produces the bundle |
 | `.github/workflows/release.yml` | Calls it for a tag; the `release` job waits for it, so the bundle is attached before the release is published (releases are immutable) |
 | `.github/workflows/flatpak-check.yml` | Calls it on pull requests that touch the packaging, weekly on `main`, and on demand; not on `Cargo.toml`/`Cargo.lock` changes (see below) |
@@ -40,7 +40,7 @@ container tag in `flatpak.yml`. The `rust-stable` extension must ship rustc at l
 No filesystem access. The data and cache directories follow `XDG_DATA_HOME` and `XDG_CACHE_HOME`
 (`store::data_dir`, `cache_dir`), which Flatpak points at the app's own folders. The MCP server
 listens on `127.0.0.1`; `--share=network` uses the host network, so clients on the host reach it.
-`degenview-alert-agent` is the macOS login item and is not installed.
+`fakingview-alert-agent` is the macOS login item and is not installed.
 
 ## Updates
 
@@ -67,7 +67,7 @@ for a release candidate, a tag with `-rc.` (the form the Release Candidate chann
 `tools/release.sh` says the same), so its bundle is built on `dev`, which the repo never publishes.
 Note this is narrower than `--prerelease`, which is any hyphen. `release.yml` passes the branch to
 `flatpak.yml`'s `branch` input, which the pinned `flatpak-builder` action uses for both
-`--default-branch` and the bundle's ref, so a bundle is `app/es.nico.degenview/<arch>/<stable|beta|dev>`.
+`--default-branch` and the bundle's ref, so a bundle is `app/local.fakingview.desktop/<arch>/<stable|beta|dev>`.
 The pull request check keeps `master`. Bundles from before this change are on `master` and are
 not published.
 
@@ -78,7 +78,9 @@ on `dev` and not published). A final release is copied onto `beta` as well as `s
 installed `//beta` follows it from release candidates to finals and on to the next candidate. `stable`
 is the newest final.
 
-The repo itself lives in `degenview/flatpak` and is served at `https://flatpak.degenview.app`.
+The following hosted repository belongs to upstream DegenView, not this local FakingView fork. It does not distribute the `local.fakingview.desktop` application.
+
+The upstream repo lives in `degenview/flatpak` and is served at `https://flatpak.degenview.app`.
 It pulls: a scheduled and manual workflow lists this repo's releases, picks the newest final (for
 `stable`) and the newest final or `-rc.N` (for `beta`), verifies every bundle (`gh release verify-asset`, `gh attestation verify --repo
 degenview/degenview`), imports them into an OSTree repo, signs it with a GPG key that only that
@@ -111,7 +113,7 @@ one worker thread with a private current-thread runtime.
   keyring prompts the user to unlock it.
 - `Scope::shared_group` is a Keychain access group and means nothing here: an item is its service
   plus its account.
-- `DEGENVIEW_NO_KEYCHAIN` keeps secrets in memory, as on macOS.
+- `FAKINGVIEW_NO_KEYCHAIN` keeps secrets in memory, as on macOS.
 
 ## Windows secret storage
 
@@ -132,7 +134,7 @@ Credential Manager > Windows Credentials, where the user can remove them.
   the SQLite file, its backups and iCloud Sync.
 - Credential Manager never prompts, so there is no worker thread. `exists` is cached for 30 seconds
   (the webhook list asks once per row per frame) and kept current by the app's own writes.
-- `Scope::shared_group` means nothing here, `DEGENVIEW_NO_KEYCHAIN` keeps secrets in memory, and
+- `Scope::shared_group` means nothing here, `FAKINGVIEW_NO_KEYCHAIN` keeps secrets in memory, and
   temporary buffers that held a secret are overwritten before they are freed (best effort).
 - The MCP remote-access TLS key (`mcp-tls.pem`) is not an item here: it is a certificate and key in
   one file, so on Windows the whole file is encrypted with DPAPI for the signed-in user
@@ -183,5 +185,5 @@ Written without a Linux machine; CI builds the bundle but nothing has run it.
 
 - The clipboard picture (`native_bridge::clipboard_picture`) is macOS-only, so "paste an image" has
   no Linux path yet.
-- Flathub: a separate `flathub/es.nico.degenview` repository whose manifest builds a signed tag.
+- Flathub: a separate `flathub/local.fakingview.desktop` repository whose manifest builds a signed tag.
   Needs the id's domain verified and metainfo that lists each release.

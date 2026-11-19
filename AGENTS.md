@@ -1,4 +1,4 @@
-# AGENTS.md — DegenView Rust
+# AGENTS.md — FakingView Rust
 
 Guidance for AI coding agents working in this repository.
 
@@ -21,7 +21,7 @@ Always read [Core guidance](docs/agent-guides/core.md), then every guide whose s
 | Chart patterns, Elliott waves or cycle drawings | [Chart patterns, Elliott waves and cycles](docs/pattern-tools.md) |
 | Position, forecast, volume profile, VWAP or measurement drawings | [Forecasting, volume and measurement tools](docs/forecast-tools.md) |
 | Fibonacci or Gann drawings, level lists, fans, circles, arcs, spirals or Gann angles | [Fibonacci and Gann tools](docs/fibonacci-gann-tools.md) |
-| Session statistics: gap fills, prior-day breaks, weekday effects, `degenview_get_session_stats` | [Session statistics](docs/session-stats.md) |
+| Session statistics: gap fills, prior-day breaks, weekday effects, `fakingview_get_session_stats` | [Session statistics](docs/session-stats.md) |
 | Pine language/runtime, Pine Studio, editor behavior, or example scripts | [Pine and scripts](docs/agent-guides/pine.md) |
 | Adding an indicator to a chart: the toolbar's Indicators button, the indicator catalog, or the Pine indicators bundled with the app | [Indicator catalog](docs/indicator-picker.md) |
 | User-defined functions or methods, overloads, call resolution, or the Pine type checker | [User-defined methods](docs/pine-user-methods.md) |
@@ -65,38 +65,48 @@ A pull-down is exactly as wide as its longest row. Never guess a width (`set_min
 `kit::fitted_menu` (or `kit::menu_fit`), and look at the opened menu in a picture before shipping.
 Details: [UI style](docs/agent-guides/ui-style.md).
 
-## Supply chain
+## Supply chain and FakingView releases
 
-Nothing reaches a release that was not reviewed, pinned and built from a signed tag on `main`.
-When touching `.github/`, `tools/`, `packaging/`, `build.rs`, `Cargo.toml`/`Cargo.lock` or the
-updater (`src/service/update/`): pin every `uses:` to a commit,
-keep job permissions minimal, never run third-party code on a macOS release job after the signing
-certificate is imported, use `--locked`, add no git or non-crates.io dependency, keep
-`cargo deny check` clean. Never ask for, store or use a GitHub token with `admin:ssh_signing_key`,
-`admin:*` or `delete_repo` scope; never push a tag. Details:
-[Releases and updates](docs/agent-guides/releases-updates.md#build-hardening).
+The active publication target is `srg-sphynx/FakingView`. FakingView uses an independent
+version line starting with `0.1.0-beta.1`; retained historical tags are not FakingView releases.
+The current package is a manual-download macOS arm64 build without Developer ID notarization.
+Do not claim that it is signed by an inherited maintainer or enable automatic installation on
+that assumption. Mandatory GPL, copyright and third-party notices stay intact.
 
-## Choosing the release type
+When touching `.github/`, `tools/`, `packaging/`, `build.rs`, Cargo files or the updater:
 
-When a task ends with "should we release this?", or the user asks what to release, check changes
-since the last tag (`git tag --sort=-v:refname | head -3`, then `git log v<last>..HEAD`) and suggest
-one row below with the resulting version. Never run `tools/release.sh` unless the user picked the
-version. Procedure, channels and scheme:
-[Releases and updates](docs/agent-guides/releases-updates.md).
+- Pin every external `uses:` to a full commit, keep permissions minimal and use `--locked`.
+- Add no git or non-crates.io dependency, and keep `cargo deny check` clean.
+- Do not ask for or use a GitHub token with `admin:*`, `admin:ssh_signing_key` or `delete_repo`.
+- Keep build/signing credentials out of third-party build scripts. Releases currently need no
+  Apple credentials; an unsigned build must never be described as notarized.
+- Release only reviewed, validated source from `main`, with the app's matching source archive,
+  checksums, license and notices. Published releases and their tags are never moved or replaced.
 
-| Changes since the last release | Suggest |
-| --- | --- |
-| Only bug fixes, copy or UI polish, docs, or performance with no behaviour change | PATCH, stable: `0.5.1` → `0.5.2` |
-| A new feature or visible behaviour change, low risk | MINOR, stable: `0.6.0` |
-| A new feature that touches the updater, signing or entitlements, iCloud/CloudKit records, the store schema, Pine runtime semantics, or anything that can lose user data | MINOR as a release candidate first: `0.6.0-rc.1`, then `0.6.0` after a clean RC |
-| A breaking change to saved data or to the MCP or Pine public surface | MINOR (MAJOR from 1.0), release candidate first |
-| A fix to a release candidate | The next candidate: `0.6.0-rc.2` |
-| A fix needed on stable while a candidate is open | PATCH off stable (`0.5.2`), but `tools/release.sh` only cuts from `main`, which already holds the candidate's changes: tell the user, who needs a hotfix branch |
-| Only docs, tests or tooling that no user build contains | No release |
+## Choosing and preparing a release
 
-Say which rows matched and why; when two match, prefer the safer. Tags are `v` plus the version;
-prereleases are `-rc.N` (dotted, numbered from 1). A release candidate is never promoted: the final
-version is a fresh tag.
+An explicit publication request authorizes the ordinary preparation needed for that release.
+Use the requested version, or choose a prerelease appropriate to the verified state when the
+request leaves version selection open. The initial beta records that live Kite account and
+market-data entitlements have not been exercised with user credentials.
+
+`Cargo.toml` remains the version source. Prepare it programmatically with
+`tools/release.sh prepare VERSION`, previewing with `--dry-run` when useful. That command changes
+only the root manifest/lock versions; review and commit those changes before building the
+release. Do not bump dependency versions as part of a release or edit/create a release tag by
+hand. The publication command or explicit Release FakingView workflow creates GitHub's tag at
+its exact validated commit, without a local tag push.
+
+- Fixing an open beta: advance its number, for example `0.1.0-beta.1` to `0.1.0-beta.2`.
+- Completing a beta's verified scope: prepare its stable version as a fresh release.
+- New features after a stable release: use a new minor version while below 1.0.
+- Corrections to a stable release: use a patch version.
+- Changes to saved data, account handling or public MCP/Pine interfaces: use a prerelease first.
+
+The definitive procedure is [GitHub publishing](docs/github-publishing.md). The old platform
+workflows in `docs/archive/inherited-workflows/` are inactive references, not release steps.
+Never invoke a release, upload assets, or change repository settings unless publication is in
+the user's authorized task scope. Preparation and local verification are reversible.
 
 ## Running tests
 
@@ -113,7 +123,7 @@ old output). Finished worktrees are where the disk goes.
 
 - One worktree per branch, beside the main checkout, building into `target/` or a `target-*`
   directory (both ignored). Never share one `CARGO_TARGET_DIR` between worktrees: concurrent builds
-  block on its lock and overwrite each other's `target/debug/degenview`.
+  block on its lock and overwrite each other's `target/debug/fakingview`.
 - Remove a worktree when its pull request merges. `tools/clean-worktrees.sh` lists every worktree and
   whether it can go; `--remove-merged` removes finished ones, never one with uncommitted changes,
   newer commits, no pull request, or a process running from it. `--clean-idle DAYS` deletes only the

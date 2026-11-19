@@ -1,4 +1,4 @@
-//! A host of the user's own, speaking DegenView's protocol: one `POST` of the PNG as `image/png`,
+//! A host of the user's own, speaking FakingView's protocol: one `POST` of the PNG as `image/png`,
 //! an optional bearer token, and `{"url": "https://…"}` back. `docs/snapshots.md` writes the
 //! protocol down, and <https://github.com/degenview/snapshots> is a server that speaks it.
 
@@ -19,7 +19,7 @@ const TOKEN: &str = "token";
 const TOKEN_ACCOUNT: &str = "host-token-v1";
 
 /// Where a developer or a machine with no secure storage gives the token.
-pub const TOKEN_ENV: &str = "DEGENVIEW_SNAPSHOT_TOKEN";
+pub const TOKEN_ENV: &str = "FAKINGVIEW_SNAPSHOT_TOKEN";
 
 fn host_problem(text: &str) -> Option<&'static str> {
     SnapshotHost::parse(text).err().map(|error| error.message())
@@ -36,12 +36,12 @@ static DESCRIPTOR: ProviderDescriptor = ProviderDescriptor {
     summary: "Upload to a server you run",
     logo: Logo::Glyph(Glyph::Server),
     setup_steps: &[
-        "Run DegenView Snapshots on a server you control, or any host that implements the same protocol.",
+        "Run a snapshot server you control that implements the FakingView upload protocol.",
         "Enter its upload address below. Add the access token if the host asks for one.",
     ],
     links: &[Link {
-        label: "DegenView Snapshots on GitHub",
-        url: "https://github.com/degenview/snapshots",
+        label: "Self-hosted snapshot guide",
+        url: "https://github.com/srg-sphynx/FakingView/blob/main/docs/snapshots.md#self-hosted",
     }],
     notice: "Images go to the host you enter, which you run or trust. Whoever has a link can open the image, and the host decides how long it keeps it.",
     fields: &[
@@ -287,7 +287,7 @@ mod tests {
         );
         assert_eq!(
             DESCRIPTOR.field(TOKEN).unwrap().env,
-            Some("DEGENVIEW_SNAPSHOT_TOKEN")
+            Some("FAKINGVIEW_SNAPSHOT_TOKEN")
         );
     }
 }

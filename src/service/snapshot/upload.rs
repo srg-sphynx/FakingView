@@ -71,7 +71,7 @@ impl SnapshotTransport for UreqTransport {
             .header("Content-Type", &request.content_type)
             .header(
                 "User-Agent",
-                concat!("DegenView/", env!("CARGO_PKG_VERSION")),
+                concat!("FakingView/", env!("CARGO_PKG_VERSION")),
             );
         for (name, value) in &request.headers {
             call = call.header(*name, value);
@@ -311,7 +311,7 @@ mod tests {
             seen[0]
                 .header("user-agent")
                 .unwrap()
-                .starts_with("DegenView/")
+                .starts_with("FakingView/")
         );
         assert_eq!(seen[0].body, png());
     }
@@ -521,7 +521,7 @@ mod tests {
             seen[0]
                 .header("user-agent")
                 .unwrap()
-                .starts_with("DegenView/")
+                .starts_with("FakingView/")
         );
         let body = &seen[0].body;
         let text = String::from_utf8_lossy(body);

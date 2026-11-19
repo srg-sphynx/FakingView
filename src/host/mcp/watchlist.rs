@@ -89,7 +89,7 @@ pub(super) fn watchlist_by_id(store: &WatchlistStore, id: u64) -> Result<&Watchl
         .find(|list| list.id == id)
         .ok_or_else(|| {
             McpError::NotFound(
-                "No such watchlist: use a watchlist_id from degenview_list_watchlists".into(),
+                "No such watchlist: use a watchlist_id from fakingview_list_watchlists".into(),
             )
         })
 }

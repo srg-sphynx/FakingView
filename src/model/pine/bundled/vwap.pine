@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Volume Weighted Average Price, restarted at the start of each day, with bands a multiple of
 // the volume-weighted standard deviation away. It needs volume, so it is flat on a market
 // that reports none.

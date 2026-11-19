@@ -1,5 +1,5 @@
 //! Pictures of the assistant's panel in the whole window, in both themes, for a person to look at.
-//! Run by hand: `DEGENVIEW_GALLERY_DIR=… cargo test --lib pine_studio::ai_gallery -- --ignored`.
+//! Run by hand: `FAKINGVIEW_GALLERY_DIR=… cargo test --lib pine_studio::ai_gallery -- --ignored`.
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};

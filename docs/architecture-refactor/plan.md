@@ -18,7 +18,7 @@ What holds up:
 What does not:
 
 1. **Two god structs.** `ChartWorkspace` has 87 fields, its `impl` spread over 28 files that each
-   see every field; `DegenViewApp` has 55, 19 of them `Arc<Mutex<_>>`. Splitting an `impl` over
+   see every field; `FakingViewApp` has 55, 19 of them `Arc<Mutex<_>>`. Splitting an `impl` over
    files is not decoupling: nothing has an interface and nothing can be tested alone.
 2. **Views in hosts, an engine in a view.** About 1,700 lines of egui live in `host/portfolio`
    (`PortfolioTab`) and `host/paper` (`PaperPanel`). In the other direction a whole Pine execution
@@ -105,7 +105,7 @@ Stacked pull requests, logic changes first and pure moves last.
 - [x] **PR 9: `ChartWorkspace` in owned parts.** [#520](https://github.com/degenview/degenview/pull/520)
       Drawing tools, layout session, watchlist pane, trade side, replay, undo history and alert UI
       become sub-structs with their own methods.
-- [x] **PR 10: `DegenViewApp` in owned parts.** [#521](https://github.com/degenview/degenview/pull/521)
+- [x] **PR 10: `FakingViewApp` in owned parts.** [#521](https://github.com/degenview/degenview/pull/521)
       An alert coordinator, the tab state, the MCP state and the saved session; windows share each
       part's one handle instead of its fields.
 - [x] **PR 11: MCP routing.** [#522](https://github.com/degenview/degenview/pull/522)
@@ -141,7 +141,7 @@ Measured on 14 November 2026, on the tree before PR 1 (`fef5a750`) and after PR 
 - `#![allow(dead_code)]`: 61 before, 0 after.
 - `Result<_, String>` in non-test code (regex `Result<[^;{]*, String>`, inline test modules left
   out): 346 before, 253 after. Finding 4's "about 290" was counted another way.
-- `ChartWorkspace` fields: 87 before, 39 after. `DegenViewApp` fields: 55 before, 24 after.
+- `ChartWorkspace` fields: 87 before, 39 after. `FakingViewApp` fields: 55 before, 24 after.
 - `KNOWN_LAYERING_DEBT`: 7 entries when PR 2 added it, 0 after. `KNOWN_DRAWING_DEBT`: 4, then 0.
 - `thread::spawn` in `src/ui`: 12 before, 0 after.
 - Inline `mod tests`: 496 files before, 476 after; 95 over 300 lines before, 75 after.

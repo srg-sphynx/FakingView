@@ -2,7 +2,7 @@
 //! the SQLite file is not enough to add a credential. It is created on first use from the OS
 //! random source and never leaves this process.
 //!
-//! Under `DEGENVIEW_NO_KEYCHAIN` (and in tests) the host does not seal at all, because a key that
+//! Under `FAKINGVIEW_NO_KEYCHAIN` (and in tests) the host does not seal at all, because a key that
 //! lived in memory would be new on every launch and lock the user out of their own credentials.
 //! On Linux without a Secret Service the key cannot be created, and the host runs unsealed.
 
@@ -12,7 +12,7 @@ use crate::service::keychain::webhook_secrets::Scope;
 use crate::service::webhook::delivery::SecretStoreError;
 
 const SCOPE: Scope = Scope {
-    service: "es.nico.degenview.mcp",
+    service: "local.fakingview.desktop.mcp",
     shared_group: false,
 };
 const ACCOUNT: &str = "seal-key-v1";
@@ -50,7 +50,7 @@ impl SealKeyStore {
     pub const SERVICE: &'static str = SCOPE.service;
 
     /// The store on the platform's real secret storage. Never `default_backend()`: that returns
-    /// an in-memory store when `DEGENVIEW_NO_KEYCHAIN` is set, which would hand a distributed
+    /// an in-memory store when `FAKINGVIEW_NO_KEYCHAIN` is set, which would hand a distributed
     /// build a new key on every launch and a way around the seal.
     pub fn system() -> Self {
         Self::with_backend(Box::new(KeychainBackend))

@@ -2,10 +2,10 @@
 
 ## Startup and windows
 
-`main` opens `Store`, builds `eframe::NativeOptions`, and starts `DegenViewApp` in a hidden root
+`main` opens `Store`, builds `eframe::NativeOptions`, and starts `FakingViewApp` in a hidden root
 viewport. Each visible deferred viewport renders one `TabWindows` entry: the app-owned tab strip and
 its active `ChartWorkspace`, `PortfolioTab`, or `PineStudio`. `TabWindowHost` owns grouping and
-dragging; the app's `TabState` owns the `TabSlot`s, and `DegenViewApp` routes Settings/Alerts window
+dragging; the app's `TabState` owns the `TabSlot`s, and `FakingViewApp` routes Settings/Alerts window
 actions to shared hosts.
 
 `UpdateHost` is app-owned and projected into each window and Settings. It checks after launch and
@@ -41,7 +41,7 @@ cards are non-market charts and must be skipped by market-data paths.
 
 ## Persistence and domain ownership
 
-- `Store` opens bundled-rusqlite `degenview.sqlite` in Application Support. Document tables are
+- `Store` opens bundled-rusqlite `fakingview.sqlite` in Application Support. Document tables are
   ordered `id/position/payload` JSON; `setting` and `window_group` are keyed tables. The schema is
   idempotent with no migrations. Serde defaults evolve nested models.
 - `replace_documents` refuses to replace a collection containing undecodable rows. Swift data

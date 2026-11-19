@@ -9,7 +9,7 @@ use crate::model::mcp::{McpAuditKind, McpAuditOutcome};
 use serde_json::{Value, json};
 use std::time::{Duration, Instant};
 
-const REMOVE: &str = "degenview_remove_chart";
+const REMOVE: &str = "fakingview_remove_chart";
 
 fn remove(url: &str, token: &str) -> Value {
     call(
@@ -162,10 +162,10 @@ fn only_high_impact_calls_are_asked_about() {
     let harness = harness_asking();
     let url = harness.url();
     for (tool, arguments) in [
-        ("degenview_list_workspaces", json!({})),
-        ("degenview_list_charts", json!({"workspace_id": "1"})),
+        ("fakingview_list_workspaces", json!({})),
+        ("fakingview_list_charts", json!({"workspace_id": "1"})),
         (
-            "degenview_add_chart",
+            "fakingview_add_chart",
             json!({"workspace_id": "1", "source": "binance", "symbol": "ETHUSDT"}),
         ),
     ] {
@@ -325,7 +325,7 @@ fn a_dry_run_is_never_asked_about() {
     assert_eq!(gate(&order(true)), Gate::Free);
     assert_eq!(
         gate(&order(false)),
-        Gate::Ask("degenview_place_paper_order")
+        Gate::Ask("fakingview_place_paper_order")
     );
 }
 
@@ -506,14 +506,14 @@ fn a_credential_is_told_the_action_it_asked_for_never_what_the_app_found_out() {
     let result = call(
         &harness.url(),
         "tok",
-        "degenview_delete_price_alert",
+        "fakingview_delete_price_alert",
         json!({"alert_id": "1"}),
     );
     assert_eq!(error_code(&result), "CONFIRMATION_REQUIRED");
     let text = result.to_string();
     assert_eq!(
         result["structuredContent"]["operation"],
-        json!("Run degenview_delete_price_alert")
+        json!("Run fakingview_delete_price_alert")
     );
     // The stand-in app describes the target as "the stub's target"; that is the user's to read.
     assert!(!text.contains("stub's target"), "{text}");
@@ -524,7 +524,7 @@ fn a_credential_is_told_the_action_it_asked_for_never_what_the_app_found_out() {
     let refused = call(
         &harness.url(),
         "tok",
-        "degenview_delete_price_alert",
+        "fakingview_delete_price_alert",
         json!({"alert_id": "1"}),
     );
     assert_eq!(error_code(&refused), "CONFIRMATION_DENIED");

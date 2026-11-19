@@ -1,5 +1,5 @@
 //! The Pine Studio window: file-backed Pine script library, editor, preview chart and drawer.
-//! A port of DegenView's `PineStudioView` and its view models.
+//! A port of FakingView's `PineStudioView` and its view models.
 //!
 //! Layout (see `workspace.rs`): the bar's script button opens the script picker, and for the
 //! open script the window is a split between the code editor and the preview chart, with the
@@ -71,6 +71,7 @@ pub enum PineStudioAction {
     },
     /// Open Settings on the Alpaca tab.
     OpenAlpacaSettings,
+    OpenKiteSettings,
     /// Open the webhooks list in Settings.
     OpenWebhookSettings,
     /// Open Settings on the AI Assistant page.
@@ -644,3 +645,6 @@ fn compile_into(editor: &mut EditorState) {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod publication_gallery;

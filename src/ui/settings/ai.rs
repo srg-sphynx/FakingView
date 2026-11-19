@@ -163,7 +163,7 @@ impl AiSettingsState {
             self.status = Some(match store.save(kind, &self.key_input) {
                 Ok(()) => StatusMessage::ok(crate::platform::saved_securely()),
                 Err(error) => StatusMessage::error(format!(
-                    "The key could not be saved for later ({}). It works until you quit DegenView.",
+                    "The key could not be saved for later ({}). It works until you quit FakingView.",
                     error.0
                 )),
             });
@@ -361,7 +361,7 @@ pub fn body(
         theme::text_secondary(),
         "Your script is sent to the provider",
         Some(&format!(
-            "When you ask the assistant for a change, the open script and your message are sent to {provider} with your key. DegenView has no server in between, and you pay {provider} for the usage."
+            "When you ask the assistant for a change, the open script and your message are sent to {provider} with your key. FakingView has no server in between, and you pay {provider} for the usage."
         )),
         None,
     );

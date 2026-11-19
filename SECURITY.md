@@ -1,31 +1,24 @@
 # Security policy
 
-## Reporting a vulnerability
+Report a vulnerability through [GitHub private vulnerability reporting](https://github.com/srg-sphynx/FakingView/security/advisories/new)
+when that option is available. Do not put API keys, access tokens, portfolio records or exploit
+credentials in public issues. Include the affected version, reproducible steps and the relevant
+component; remove personal data from logs and screenshots.
 
-Please report it privately through
-[GitHub's private vulnerability reporting](https://github.com/degenview/degenview/security/advisories/new)
-(Security tab, "Report a vulnerability"). Do not open a public issue or discussion for it.
+## Release and credential boundaries
 
-Include what you found, how to reproduce it, and the version (Settings > About). You will get a
-reply as soon as the maintainer can; this is a one-person project, so please allow some days.
+- The initial macOS preview is **not Developer ID signed or notarized**. Download from this
+  repository's release page and compare the archive against `SHA256SUMS.txt`.
+- Each release includes corresponding source under GPL-3.0-only. The release workflow and
+  manual publisher bind artifacts to a committed version and do not overwrite existing releases.
+- Automatic update installation is disabled. No inherited maintainer signing identity is trusted.
+- Kite credentials use macOS Keychain; API secrets and request tokens are transient. Never
+  commit a real credential or include one in an issue, script, screenshot or social card.
+- Kite integration is read-only market data. It does not submit Zerodha orders, and INR quotes
+  cannot enter the USD paper-trading or portfolio asset paths.
+- The optional MCP server is off by default, with explicit permissions for its operations.
 
-## What counts
-
-- Anything that lets someone run code on a user's machine or read their keys, portfolio or API
-  tokens: the app, its MCP server, Pine scripts, imported files, the auto-updater.
-- Anything that lets someone put a file in front of the updater, or into a release.
-- Weaknesses in how releases are built and published (the workflows in `.github/`, `tools/`).
-
-## How releases are protected
-
-Every release is built by a GitHub Actions workflow from a signed tag on `main`, published as an
-immutable GitHub release with a build provenance attestation. Check a download with:
-
-    gh attestation verify <file> --repo degenview/degenview
-
-macOS builds are also signed with a Developer ID and notarized by Apple. The Windows and Linux
-builds are not code-signed; the attestation and the release's SHA-256 digest are what bind them
-to the workflow run. Details: [docs/agent-guides/releases-updates.md](docs/agent-guides/releases-updates.md).
-
-Dependencies are checked for known vulnerabilities, yanked versions and unexpected sources on every
-pull request (`deny.toml`).
+CI tests use mock servers. Passing them does not establish live account authentication or data
+entitlement. The dependency/workflow audit runs on repository changes and on its scheduled check.
+See [the release guide](docs/releasing.md), [app specs](docs/app-specs.md) and
+[third-party notices](THIRD_PARTY_NOTICES.md) for scope and provenance.

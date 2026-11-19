@@ -132,7 +132,7 @@ mod tests {
     use std::sync::atomic::Ordering;
 
     const SCOPE: Scope = Scope {
-        service: "es.nico.degenview.test",
+        service: "local.fakingview.desktop.test",
         shared_group: false,
     };
 

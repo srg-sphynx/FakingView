@@ -16,7 +16,7 @@ use crate::mcp::paper::{
     PaperTradesResult,
 };
 use crate::mcp::state::ClientIdentity;
-use crate::mcp::tools::{Caller, DegenViewMcp, McpSource, failure, invalid, parse_id, unexpected};
+use crate::mcp::tools::{Caller, FakingViewMcp, McpSource, failure, invalid, parse_id, unexpected};
 use crate::model::mcp::Permission;
 use crate::model::paper::{
     PaperInstrument, PaperOrderChanges, PaperOrderRequest, PaperOrderSide, PaperOrderType,
@@ -29,14 +29,14 @@ use rmcp::{tool, tool_router};
 use schemars::JsonSchema;
 use serde::Deserialize;
 
-pub const LIST_PAPER_ACCOUNTS: &str = "degenview_list_paper_accounts";
-pub const GET_PAPER_ACCOUNT: &str = "degenview_get_paper_account";
-pub const LIST_PAPER_FILLS: &str = "degenview_list_paper_fills";
-pub const LIST_PAPER_TRADES: &str = "degenview_list_paper_trades";
-pub const PLACE_PAPER_ORDER: &str = "degenview_place_paper_order";
-pub const MODIFY_PAPER_ORDER: &str = "degenview_modify_paper_order";
-pub const CANCEL_PAPER_ORDERS: &str = "degenview_cancel_paper_orders";
-pub const CLOSE_PAPER_POSITIONS: &str = "degenview_close_paper_positions";
+pub const LIST_PAPER_ACCOUNTS: &str = "fakingview_list_paper_accounts";
+pub const GET_PAPER_ACCOUNT: &str = "fakingview_get_paper_account";
+pub const LIST_PAPER_FILLS: &str = "fakingview_list_paper_fills";
+pub const LIST_PAPER_TRADES: &str = "fakingview_list_paper_trades";
+pub const PLACE_PAPER_ORDER: &str = "fakingview_place_paper_order";
+pub const MODIFY_PAPER_ORDER: &str = "fakingview_modify_paper_order";
+pub const CANCEL_PAPER_ORDERS: &str = "fakingview_cancel_paper_orders";
+pub const CLOSE_PAPER_POSITIONS: &str = "fakingview_close_paper_positions";
 
 /// The largest quantity or price a call may carry: far past anything real, short of overflow.
 const MAX_NUMBER: f64 = 1e15;
@@ -45,7 +45,7 @@ const MAX_ORDER_IDS: usize = 50;
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct PaperAccountParams {
-    /// An `account_id` from `degenview_list_paper_accounts`.
+    /// An `account_id` from `fakingview_list_paper_accounts`.
     #[schemars(length(min = 1, max = 20))]
     pub account_id: String,
 }
@@ -53,7 +53,7 @@ pub struct PaperAccountParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct PaperHistoryParams {
-    /// An `account_id` from `degenview_list_paper_accounts`.
+    /// An `account_id` from `fakingview_list_paper_accounts`.
     #[schemars(length(min = 1, max = 20))]
     pub account_id: String,
     /// Rows to skip, newest first. Default 0.
@@ -89,13 +89,13 @@ pub enum TimeInForceArg {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct PlaceOrderParams {
-    /// An `account_id` from `degenview_list_paper_accounts`.
+    /// An `account_id` from `fakingview_list_paper_accounts`.
     #[schemars(length(min = 1, max = 20))]
     pub account_id: String,
     /// The market data provider of the market to trade.
     pub source: McpSource,
-    /// The provider's own symbol, as `degenview_search_symbols` returns it. A chart of this
-    /// market must be open in DegenView (`degenview_add_chart`): paper orders fill from chart
+    /// The provider's own symbol, as `fakingview_search_symbols` returns it. A chart of this
+    /// market must be open in FakingView (`fakingview_add_chart`): paper orders fill from chart
     /// prices, so without one there is no price and the order is refused.
     #[schemars(length(min = 1, max = 128))]
     pub symbol: String,
@@ -119,7 +119,7 @@ pub struct PlaceOrderParams {
     /// Your own id for this order, 1 to 64 letters, digits, `-`, `_` or `.`. Calling again with
     /// the same id for the same account returns the order already placed (`already_placed`)
     /// instead of placing another, so a call that timed out can be retried safely. The same id
-    /// with a different order is refused (`CONFLICT`). Remembered until DegenView quits, and
+    /// with a different order is refused (`CONFLICT`). Remembered until FakingView quits, and
     /// forgotten if the order no longer exists (the account was reset).
     #[schemars(length(min = 1, max = 64))]
     pub request_id: Option<String>,
@@ -128,7 +128,7 @@ pub struct PlaceOrderParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ModifyOrderParams {
-    /// An `order_id` of a working order, from `degenview_get_paper_account`.
+    /// An `order_id` of a working order, from `fakingview_get_paper_account`.
     #[schemars(length(min = 1, max = 20))]
     pub order_id: String,
     pub quantity: Option<f64>,
@@ -139,7 +139,7 @@ pub struct ModifyOrderParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CancelOrdersParams {
-    /// An `account_id` from `degenview_list_paper_accounts`.
+    /// An `account_id` from `fakingview_list_paper_accounts`.
     #[schemars(length(min = 1, max = 20))]
     pub account_id: String,
     /// The working orders to cancel, up to 50.
@@ -152,7 +152,7 @@ pub struct CancelOrdersParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ClosePositionsParams {
-    /// An `account_id` from `degenview_list_paper_accounts`.
+    /// An `account_id` from `fakingview_list_paper_accounts`.
     #[schemars(length(min = 1, max = 20))]
     pub account_id: String,
     /// The market of the position to close; give with `symbol`.
@@ -258,11 +258,11 @@ fn order_request(
 fn order_id(raw: &str) -> Result<u64, CallToolResult> {
     raw.trim()
         .parse::<u64>()
-        .map_err(|_| invalid("an order id is an order_id returned by degenview_get_paper_account"))
+        .map_err(|_| invalid("an order id is an order_id returned by fakingview_get_paper_account"))
 }
 
 fn account_id(raw: &str) -> Result<u64, CallToolResult> {
-    parse_id(raw, "account_id", "degenview_list_paper_accounts")
+    parse_id(raw, "account_id", "fakingview_list_paper_accounts")
 }
 
 fn page(params: &PaperHistoryParams) -> Result<(usize, usize), CallToolResult> {
@@ -277,7 +277,7 @@ fn page(params: &PaperHistoryParams) -> Result<(usize, usize), CallToolResult> {
     Ok((params.offset.unwrap_or(0) as usize, limit))
 }
 
-impl DegenViewMcp {
+impl FakingViewMcp {
     /// A write grant is not a read grant: the account (cash, equity, margin) goes back only to a
     /// credential that holds `paper.read` now, checked after the write ran.
     fn hide_unread_account(&self, client: &ClientIdentity, account: &mut Option<PaperAccountInfo>) {
@@ -288,9 +288,9 @@ impl DegenViewMcp {
 }
 
 #[tool_router(router = paper_router, vis = "pub(in crate::mcp)")]
-impl DegenViewMcp {
+impl FakingViewMcp {
     #[tool(
-        name = "degenview_list_paper_accounts",
+        name = "fakingview_list_paper_accounts",
         description = "List the paper-trading accounts (simulated money): name, currency, cash, equity, realized and unrealized profit and loss, margin and available funds, and which one is selected. An account another Mac runs says so in `run_by_another_mac`. Read-only: orders cannot be placed or changed over MCP.",
         annotations(
             read_only_hint = true,
@@ -320,8 +320,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_get_paper_account",
-        description = "One paper account with its open positions (side, quantity, entry, mark price, unrealized profit and loss, return) and the orders that can still fill (pending, working, partly filled, with bracket roles). A position without a quote has a null mark and no profit figure. Fills and closed trades are separate: degenview_list_paper_fills, degenview_list_paper_trades.",
+        name = "fakingview_get_paper_account",
+        description = "One paper account with its open positions (side, quantity, entry, mark price, unrealized profit and loss, return) and the orders that can still fill (pending, working, partly filled, with bracket roles). A position without a quote has a null mark and no profit figure. Fills and closed trades are separate: fakingview_list_paper_fills, fakingview_list_paper_trades.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -352,7 +352,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_list_paper_fills",
+        name = "fakingview_list_paper_fills",
         description = "The fills of a paper account, newest first: market, side, quantity, price, commission, what the price was taken from (bid/ask or a fallback), and time. Pages of up to 200 (`offset`, `limit`).",
         annotations(
             read_only_hint = true,
@@ -390,7 +390,7 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_list_paper_trades",
+        name = "fakingview_list_paper_trades",
         description = "The closed trades of a paper account, newest exit first: side, quantity, entry and exit price and time, gross and net profit and loss. The reply also totals winners, losers and net profit and loss over all of the account's trades, not only the page. Pages of up to 200 (`offset`, `limit`).",
         annotations(
             read_only_hint = true,
@@ -428,8 +428,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_place_paper_order",
-        description = "Place a simulated order in a paper-trading account: market, limit, stop or stop-limit, buy or sell, optionally with take-profit and stop-loss exits. Simulated money only: nothing reaches a broker. The order fills from the prices of an open DegenView chart of that market (degenview_add_chart first; with none the order is refused for lack of a price) and, while it works, fills only while DegenView runs. The reply is the order as it stands (`filled`, `working`, or the refusal), the fills it produced and, if the credential also holds paper.read, the account after. Use `dry_run` to check an order without placing it, and `request_id` so a retry after a timeout cannot place it twice. An account another Mac runs is refused. Check degenview_get_paper_account for what is open afterwards. Replay does not hold paper orders back: they fill at live prices. A dry run (dry_run: true) is never asked about. Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_place_paper_order",
+        description = "Place a simulated order in a paper-trading account: market, limit, stop or stop-limit, buy or sell, optionally with take-profit and stop-loss exits. Simulated money only: nothing reaches a broker. The order fills from the prices of an open FakingView chart of that market (fakingview_add_chart first; with none the order is refused for lack of a price) and, while it works, fills only while FakingView runs. The reply is the order as it stands (`filled`, `working`, or the refusal), the fills it produced and, if the credential also holds paper.read, the account after. Use `dry_run` to check an order without placing it, and `request_id` so a retry after a timeout cannot place it twice. An account another Mac runs is refused. Check fakingview_get_paper_account for what is open afterwards. Replay does not hold paper orders back: they fill at live prices. A dry run (dry_run: true) is never asked about. Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -470,8 +470,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_modify_paper_order",
-        description = "Change a working paper order's quantity, limit price or stop price (only the ones that apply to its type). Returns the order afterwards and, if the credential also holds paper.read, the account. An order that has filled, been canceled or been rejected cannot be changed. An account another Mac runs is refused. Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_modify_paper_order",
+        description = "Change a working paper order's quantity, limit price or stop price (only the ones that apply to its type). Returns the order afterwards and, if the credential also holds paper.read, the account. An order that has filled, been canceled or been rejected cannot be changed. An account another Mac runs is refused. Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -514,8 +514,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_cancel_paper_orders",
-        description = "Cancel working paper orders: the ones named in `order_ids` (up to 50), or with `all` every working order of the account. An order that is not the account's, or can no longer be canceled, is reported in `failures`; the rest are canceled. `nothing_to_do` when no order was working. An account another Mac runs is refused. Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_cancel_paper_orders",
+        description = "Cancel working paper orders: the ones named in `order_ids` (up to 50), or with `all` every working order of the account. An order that is not the account's, or can no longer be canceled, is reported in `failures`; the rest are canceled. `nothing_to_do` when no order was working. An account another Mac runs is refused. Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -566,8 +566,8 @@ impl DegenViewMcp {
     }
 
     #[tool(
-        name = "degenview_close_paper_positions",
-        description = "Close paper positions at the market: the one in a given market (`source` + `symbol`), or with `all` every open position of the account. Each close is a market order against the position, so it needs a current price from an open chart of that market. A position that cannot be closed is reported in `failures`; the others still close. `nothing_to_do` when `all` and nothing is open. An account another Mac runs is refused. Asks the user to approve it in DegenView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
+        name = "fakingview_close_paper_positions",
+        description = "Close paper positions at the market: the one in a given market (`source` + `symbol`), or with `all` every open position of the account. Each close is a market order against the position, so it needs a current price from an open chart of that market. A position that cannot be closed is reported in `failures`; the others still close. `nothing_to_do` when `all` and nothing is open. An account another Mac runs is refused. Asks the user to approve it in FakingView first: the first call answers CONFIRMATION_REQUIRED with a confirmation_id and changes nothing; once the user has approved, repeat the exact same call (any change to the arguments is a new question). If the user declines you get CONFIRMATION_DENIED: do not retry it.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,

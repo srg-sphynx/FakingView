@@ -40,6 +40,7 @@ pub fn policy(source: DataSource, timeframe: Timeframe) -> Option<Policy> {
     let fresh = match source {
         DataSource::CoinGecko => 120,
         DataSource::DexScreener => 30,
+        DataSource::Kite => 1,
         DataSource::Coinbase | DataSource::Okx | DataSource::Alpaca => 0,
         DataSource::Binance | DataSource::Bybit | DataSource::Gate | DataSource::Mexc
             if source.plan(timeframe).is_some_and(|plan| !plan.is_native()) =>

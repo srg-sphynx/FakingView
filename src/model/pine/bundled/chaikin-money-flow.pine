@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Chaikin Money Flow: volume weighted by where each bar closed inside its range, summed over N
 // bars, from -1 to +1. Above zero means closes lean toward the highs (buying pressure).
 indicator("Chaikin Money Flow", overlay = false)

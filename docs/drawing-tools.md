@@ -36,7 +36,7 @@ a focused text field alone.
 
 | Tool | Anchors / placement | What is drawn | Default (lib unless noted) |
 |---|---|---|---|
-| Trend line | 2 | segment, extend left/right (past the first / second anchor) | DegenView's own `#0A84FF` 1.5 px |
+| Trend line | 2 | segment, extend left/right (past the first / second anchor) | FakingView's own `#0A84FF` 1.5 px |
 | Ray | 2 | from the first anchor through the second, on to the plot's edge | `#2962FF` 2 px, extend right on |
 | Info line | 2 | trend line and a statistics box (price range, %, bars, time, distance, angle) | stats on and always shown |
 | Extended line | 2 | through both anchors, no end | extend both on |
@@ -133,7 +133,7 @@ same text.
 ## Trend line style
 
 The trend line carries a `DrawingStyle` like the other lines: colour, width, pattern, extend left
-and right, arrow ends, price labels, statistics and text. Its default is DegenView's own blue
+and right, arrow ends, price labels, statistics and text. Its default is FakingView's own blue
 1.5 px (`DrawingStyle::trend_line()`). It is projected by the same code as the other lines
 (`ui/drawing/layer/line_shapes.rs`); the painter prolongs it to the plot edge and the hit test
 follows the prolongation, and its ends can be grabbed without selecting it first. The properties
@@ -418,6 +418,6 @@ placement, selected (handles, halo, toolbar), hovered, locked, with text, and un
 | Regression over a live bar, in replay, on a log scale and on a Renko chart | regression trend |
 | Pitchfork levels, fills and the four variants on the same three pivots | all four forks |
 
-The hand-run galleries (`DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery -- --ignored`) write
+The hand-run galleries (`FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery -- --ignored`) write
 the new tools, the menus, the dialog pages and the editor as PNGs from the app's own renderer, which
 is a way to look at them without a window; they are not a comparison with TradingView.

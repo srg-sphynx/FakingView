@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Money Flow Index: an RSI that also weighs volume, from 0 to 100. Above 80 is overbought and
 // below 20 is oversold; price making a new extreme that MFI does not confirm is a divergence.
 indicator("Money Flow Index", overlay = false)

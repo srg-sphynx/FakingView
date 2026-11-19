@@ -900,7 +900,7 @@ mod tests {
     }
 
     /// Hand-run: the bar in both themes, with one, two and many tools and the second armed.
-    /// `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_favorites_bar -- --ignored`
+    /// `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_favorites_bar -- --ignored`
     #[test]
     #[ignore]
     fn gallery_of_the_favorites_bar() {

@@ -387,7 +387,7 @@ pub(super) fn guard_armed_alerts(
         return Ok(());
     }
     Err(McpError::Conflict(format!(
-        "Script alert {} is armed on this instance, and {what} would change or silence it. Change it in DegenView, or pause the alert there first",
+        "Script alert {} is armed on this instance, and {what} would change or silence it. Change it in FakingView, or pause the alert there first",
         armed.join(", ")
     )))
 }
@@ -716,7 +716,7 @@ pub(super) fn report_of(
     }
 }
 
-/// The scripts' alert subscriptions as stored. DegenView keeps no log of what they fired, so no
+/// The scripts' alert subscriptions as stored. FakingView keeps no log of what they fired, so no
 /// history is invented: reading never runs a script or sends anything.
 pub fn pine_alerts(
     subscriptions: &[crate::model::alert::pine::PineAlertSubscription],

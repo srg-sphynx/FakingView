@@ -1,4 +1,4 @@
-//! Settings ▸ Brokers: connect a broker to trade for real from DegenView.
+//! Settings ▸ Brokers: connect a broker to trade for real from FakingView.
 //!
 //! One card per broker the build knows, drawn from the broker's own descriptor (its fields, its
 //! setup steps, its permission wording), so a new broker needs no change here. A card shows:
@@ -83,7 +83,7 @@ pub fn can_connect(descriptor: &Descriptor, values: &BTreeMap<String, String>) -
 pub struct PermissionRow {
     pub label: &'static str,
     pub granted: bool,
-    /// Granted, and DegenView would rather it were not.
+    /// Granted, and FakingView would rather it were not.
     pub warn: bool,
 }
 
@@ -111,7 +111,7 @@ pub fn permission_rows(permissions: &Permissions) -> Vec<PermissionRow> {
 pub fn permission_advice(permissions: &Permissions) -> Option<&'static str> {
     if permissions.can_transfer {
         Some(
-            "This key can move funds. DegenView never moves funds and does not need that: create a key without the Transfer permission and use that instead.",
+            "This key can move funds. FakingView never moves funds and does not need that: create a key without the Transfer permission and use that instead.",
         )
     } else if !permissions.can_trade {
         Some(
@@ -823,7 +823,7 @@ fn poll_operation(descriptor: &'static Descriptor, form: &mut BrokerForm) {
         // A broker that takes no key has nothing to keep: say so instead of "saved".
         (KeyOperation::Saving, Ok(())) if descriptor.credential_fields.is_empty() => {
             StatusMessage::ok(
-                "Connected. Nothing is saved: connect again after restarting DegenView.",
+                "Connected. Nothing is saved: connect again after restarting FakingView.",
             )
         }
         (KeyOperation::Saving, Ok(())) => StatusMessage::ok(crate::platform::saved_securely()),
@@ -839,7 +839,7 @@ fn poll_operation(descriptor: &'static Descriptor, form: &mut BrokerForm) {
         // The connection is stopped, but the key is still in the keychain: it connects again at
         // the next start unless it is removed there.
         (KeyOperation::Removing, Err(error)) => StatusMessage::error(format!(
-            "Disconnected, but the key could NOT be removed from this Mac and will connect again when DegenView starts. Remove it in your keychain, or try again: {error}"
+            "Disconnected, but the key could NOT be removed from this Mac and will connect again when FakingView starts. Remove it in your keychain, or try again: {error}"
         )),
     });
 }

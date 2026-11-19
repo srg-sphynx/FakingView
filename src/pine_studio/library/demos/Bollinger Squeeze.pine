@@ -1,5 +1,5 @@
 //@version=6
-// Example script bundled with DegenView. Edit it freely.
+// Example script bundled with FakingView. Edit it freely.
 // Bollinger Bands, with the background tinted when the bands are the narrowest
 // they have been for a while: a "squeeze", which often comes before a big move.
 indicator("Bollinger Squeeze", overlay = true)

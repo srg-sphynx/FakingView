@@ -2,7 +2,7 @@
 //! sharp they are. A pure view over the saved choices: it returns [`SnapshotsAction`]s and the
 //! settings host applies them.
 //!
-//! DegenView hosts nothing itself. Copy link, Open in new tab and Tweet image upload the image to
+//! FakingView hosts nothing itself. Copy link, Open in new tab and Tweet image upload the image to
 //! the provider turned on here (one at a time, none until the user turns one on), and the app asks
 //! once per destination before the first upload. The providers are rows drawn from their
 //! descriptors (`service::snapshot::providers`), so this page does not change for a new one.
@@ -120,7 +120,7 @@ pub fn body(
         "Nothing is uploaded until you turn a host on",
         Some(
             "Saving or copying an image never uploads anything. Sharing uploads the image to the \
-             host that is on, and DegenView asks once before the first upload to each. A host's \
+             host that is on, and FakingView asks once before the first upload to each. A host's \
              Test button sends a one-pixel image to check the settings.",
         ),
         None,
@@ -187,7 +187,7 @@ fn sharing_badge(ui: &mut egui::Ui, input: &SnapshotsInput) {
         .and_then(providers::provider);
     let Some(provider) = provider else {
         if input.prefs.provider.is_some() {
-            // Chosen with a newer version of DegenView: there is no row for it here to act on.
+            // Chosen with a newer version of FakingView: there is no row for it here to act on.
             kit::status_badge(
                 ui,
                 "This version does not know the selected host",
@@ -221,10 +221,11 @@ fn sharing_badge(ui: &mut egui::Ui, input: &SnapshotsInput) {
 /// The privacy card's words: which destinations the user has agreed to upload to.
 fn approved_hint(consented: &[String]) -> String {
     if consented.is_empty() {
-        "DegenView asks before the first upload to a host, and never uploads on its own.".to_owned()
+        "FakingView asks before the first upload to a host, and never uploads on its own."
+            .to_owned()
     } else {
         format!(
-            "You agreed to upload to {}. DegenView asks again for any other host.",
+            "You agreed to upload to {}. FakingView asks again for any other host.",
             consented.join(", ")
         )
     }
@@ -461,7 +462,7 @@ mod tests {
 
     /// The page in each state, in both themes, at the Settings window's width and at its
     /// narrowest. Run by hand to look at it:
-    /// `DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_snapshots_page -- --ignored`.
+    /// `FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_the_snapshots_page -- --ignored`.
     #[test]
     #[ignore = "writes pictures"]
     fn gallery_of_the_snapshots_page() {

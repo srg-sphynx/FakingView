@@ -61,7 +61,7 @@ const MAGIC: &[u8] = b"DVTLS-DPAPI1\n";
 
 /// Ties the blob to this use. Not a secret.
 #[cfg_attr(not(windows), allow(dead_code))]
-const ENTROPY: &[u8] = b"degenview.mcp.tls.v1";
+const ENTROPY: &[u8] = b"fakingview.mcp.tls.v1";
 
 /// The blob after the magic, or `None` when the bytes do not start with it.
 #[cfg_attr(not(windows), allow(dead_code))]
@@ -88,7 +88,7 @@ impl AtRest for Dpapi {
             pbData: input.0.as_mut_ptr(),
         };
         let entropy = entropy_blob();
-        let description = wide("DegenView MCP TLS identity");
+        let description = wide("FakingView MCP TLS identity");
         let mut out = CRYPT_INTEGER_BLOB {
             cbData: 0,
             pbData: null_mut(),
@@ -232,7 +232,7 @@ mod tests {
     #[test]
     fn the_magic_is_told_apart_from_pem_text() {
         assert!(strip_magic(b"-----BEGIN CERTIFICATE-----").is_none());
-        assert!(strip_magic(b"# degenview-mcp-tls address=10.0.0.7").is_none());
+        assert!(strip_magic(b"# fakingview-mcp-tls address=10.0.0.7").is_none());
         assert_eq!(strip_magic(b"DVTLS-DPAPI1\nabc"), Some(&b"abc"[..]));
     }
 
@@ -254,7 +254,7 @@ mod tests {
     #[cfg(windows)]
     #[test]
     fn dpapi_round_trips_and_leaves_no_pem_text_on_disk() {
-        let text = "# degenview-mcp-tls address=10.0.0.7\n-----BEGIN PRIVATE KEY-----\nabc\n";
+        let text = "# fakingview-mcp-tls address=10.0.0.7\n-----BEGIN PRIVATE KEY-----\nabc\n";
         let bytes = Dpapi.wrap(text).unwrap();
         assert!(bytes.starts_with(MAGIC));
         assert!(!String::from_utf8_lossy(&bytes).contains("PRIVATE KEY"));

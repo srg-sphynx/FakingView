@@ -9,7 +9,7 @@ fn source_hash_is_sha256() {
 }
 
 fn temp_store(tag: &str) -> (ScriptStore, PathBuf) {
-    let root = std::env::temp_dir().join(format!("degenview-store-{tag}-{}", new_id()));
+    let root = std::env::temp_dir().join(format!("fakingview-store-{tag}-{}", new_id()));
     let store = ScriptStore::new(root.join("Scripts"), root.join("ScriptMetadata"));
     (store, root)
 }

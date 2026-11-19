@@ -1,4 +1,4 @@
-use super::DegenViewApp;
+use super::FakingViewApp;
 use super::tabs::{TabContent, TabState};
 use crate::store::SharedStore;
 use crate::workspace::PersistedWorkspace;
@@ -30,7 +30,7 @@ pub(super) enum PersistedTab {
     Unknown(UnknownTab),
 }
 
-/// A row another (newer) DegenView version wrote that this one cannot read. Kept verbatim, so
+/// A row another (newer) FakingView version wrote that this one cannot read. Kept verbatim, so
 /// that version still finds it, instead of failing every save.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub(super) struct UnknownTab {
@@ -193,7 +193,7 @@ fn persisted_session(tabs: &TabState) -> Result<PersistedSession, String> {
     })
 }
 
-impl DegenViewApp {
+impl FakingViewApp {
     pub(super) fn save_session(&mut self) {
         self.session
             .save(&self.store, persisted_session(&self.tabs));

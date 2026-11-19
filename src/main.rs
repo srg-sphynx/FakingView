@@ -3,10 +3,12 @@
 
 fn main() {
     // Before anything else: a panic in a build with no console is otherwise invisible.
-    degenview::install_panic_hook(|message| show_error("DegenView stopped unexpectedly", message));
-    if let Err(error) = degenview::run_gui_with(icloud()) {
-        degenview::note_startup(&format!("failed: {error}"));
-        show_error("DegenView failed to start", &error.to_string());
+    fakingview::install_panic_hook(|message| {
+        show_error("FakingView stopped unexpectedly", message)
+    });
+    if let Err(error) = fakingview::run_gui_with(icloud()) {
+        fakingview::note_startup(&format!("failed: {error}"));
+        show_error("FakingView failed to start", &error.to_string());
         std::process::exit(1);
     }
 }
@@ -15,7 +17,7 @@ fn main() {
 /// binary, rather than in the library: the background alert agent shares the library and must
 /// not link CloudKit.
 #[cfg(all(target_os = "macos", feature = "icloud"))]
-fn icloud() -> Option<std::sync::Arc<dyn degenview::TransportFactory>> {
+fn icloud() -> Option<std::sync::Arc<dyn fakingview::TransportFactory>> {
     use std::ffi::c_void;
 
     unsafe extern "C" {
@@ -30,17 +32,17 @@ fn icloud() -> Option<std::sync::Arc<dyn degenview::TransportFactory>> {
         fn dv_sync_destroy(handle: *mut c_void);
     }
 
-    let api = degenview::NativeApi {
+    let api = fakingview::NativeApi {
         abi_version: dv_sync_abi_version,
         create: dv_sync_create,
         command: dv_sync_command,
         destroy: dv_sync_destroy,
     };
-    Some(std::sync::Arc::new(degenview::CloudKitFactory::new(api)))
+    Some(std::sync::Arc::new(fakingview::CloudKitFactory::new(api)))
 }
 
 #[cfg(not(all(target_os = "macos", feature = "icloud")))]
-fn icloud() -> Option<std::sync::Arc<dyn degenview::TransportFactory>> {
+fn icloud() -> Option<std::sync::Arc<dyn fakingview::TransportFactory>> {
     None
 }
 

@@ -1,5 +1,5 @@
 //@version=6
-// Built-in indicator bundled with DegenView. Original work, GPL-3.0-only.
+// Built-in indicator bundled with FakingView. Original work, GPL-3.0-only.
 // Keltner Channels: an EMA with bands a multiple of the Average True Range away. The bands
 // follow volatility, so they widen in fast markets and narrow in quiet ones.
 indicator("Keltner Channels", overlay = true)

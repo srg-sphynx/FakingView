@@ -495,7 +495,7 @@ mod tests {
 
     #[test]
     fn a_failed_snapshot_save_retries_without_losing_the_command() {
-        let path = std::env::temp_dir().join(format!("degenview-alert-save-{}.sqlite", new_id()));
+        let path = std::env::temp_dir().join(format!("fakingview-alert-save-{}.sqlite", new_id()));
         let store = Store::open(&path).expect("open");
         let command = AlertRuntimeCommand::new(AlertRuntimeCommandPayload::ClearHistory, 1_000);
         store.enqueue_alert_command(&command).expect("enqueue");
@@ -525,7 +525,7 @@ mod tests {
 
     #[test]
     fn unreadable_history_blocks_commands_and_saves() {
-        let path = std::env::temp_dir().join(format!("degenview-alert-load-{}.sqlite", new_id()));
+        let path = std::env::temp_dir().join(format!("fakingview-alert-load-{}.sqlite", new_id()));
         let store = Store::open(&path).expect("open");
         store
             .save_alert_snapshot_and_acknowledge(&AlertPersistenceSnapshot::default(), &[])

@@ -1,6 +1,6 @@
 # Live trading (brokers)
 
-DegenView can trade for real through a broker, next to paper trading. All of the exchange-facing
+FakingView can trade for real through a broker, next to paper trading. All of the exchange-facing
 work lives in a separate crate, [`degenview-brokers`](https://github.com/degenview/brokers),
 pinned in `Cargo.toml` to one exact crates.io version. This page is about how the application uses
 it. What was verified against each exchange, and what was not, is in the crate's own `docs/` (for
@@ -31,7 +31,7 @@ price an order trades at) and [iCloud Sync](icloud-sync.md) (nothing here syncs)
 
 | Piece | Where |
 | --- | --- |
-| Credentials | Operating system secret store, app-only group `es.nico.degenview.broker`: `service/keychain/broker_secrets.rs` (the crate's `SecretStore`). Read when connecting, never at startup for a user who has none. **Every read, write and removal runs on one secrets thread owned by `BrokerHost`** (a queue, so a save followed by a removal cannot swap), never on the interface thread: the OS store may prompt or hang. `connection()` reads only what that thread last learned (a key shows as saved once the store has answered). A removal waits behind an unanswered Keychain prompt on the same queue; the connection itself stops at once. Never SQLite, never iCloud, never a log. |
+| Credentials | Operating system secret store, app-only group `local.fakingview.desktop.broker`: `service/keychain/broker_secrets.rs` (the crate's `SecretStore`). Read when connecting, never at startup for a user who has none. **Every read, write and removal runs on one secrets thread owned by `BrokerHost`** (a queue, so a save followed by a removal cannot swap), never on the interface thread: the OS store may prompt or hang. `connection()` reads only what that thread last learned (a key shows as saved once the store has answered). A removal waits behind an unanswered Keychain prompt on the same queue; the connection itself stops at once. Never SQLite, never iCloud, never a log. |
 | Unconfirmed orders | Local-only setting `broker.pending` (`host/broker/mod.rs::store_journal`: the crate's `BlobJournal` over that one setting): written **before** an order is sent, so a restart cannot lose an order that may be live. An unreadable record is an error, never "nothing pending". Every record carries the **account** (the portfolio) that sent it and is keyed by `(broker, account, client order id)`; only a session on that account shows, looks up, settles, retries or deletes it. Records of another account, and records from before they carried one, are left untouched and counted ("1 unconfirmed order belongs to a different account"); they are checked when that account connects again. |
 | Choices about trading | Local-only setting `broker.prefs`. |
 | Connections | `host/broker/mod.rs::BrokerHost`: one per process, shared by every window, **outside the paper-trading lock**. Each connection's runtime runs on its own thread and publishes `Arc` snapshots; the UI never calls the network. Every request for a connection (a new key, the saved key at startup, Disconnect) takes a number, and a start may publish its runtime only if its number is still the broker's current one, so a Disconnect, or a newer key, always has the last word over a start that was still waiting on the Keychain prompt or the store. |
@@ -192,8 +192,8 @@ the variables; the crate honours loopback addresses only, so a stray variable ca
 request):
 
 ```bash
-DEGENVIEW_MOCK_BROKER_URL=http://127.0.0.1:<port> DEGENVIEW_MOCK_BROKER_WS_URL=ws://127.0.0.1:<port> \
-  DEGENVIEW_NO_KEYCHAIN=1 cargo run --release --features dev-mock-broker
+FAKINGVIEW_MOCK_BROKER_URL=http://127.0.0.1:<port> FAKINGVIEW_MOCK_BROKER_WS_URL=ws://127.0.0.1:<port> \
+  FAKINGVIEW_NO_KEYCHAIN=1 cargo run --release --features dev-mock-broker
 ```
 
 and paste the printed key in Settings ▸ Brokers. Place, edit and cancel orders from the panel and the
@@ -204,7 +204,7 @@ chart; the mock keeps its own state, so nothing leaves the machine.
 Automated (all against the mock; none can place a real order): the crate's tests (including its
 conformance suite and the two-account tests), and the app's tests of the host, the screens (confirm-then-send, edit, cancel,
 drag, Escape, the ✕), the workspace and the menu. Pictures for review are written by
-`DEGENVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_live_trading -- --ignored` (and
+`FAKINGVIEW_GALLERY_DIR=<dir> cargo test --lib gallery_of_live_trading -- --ignored` (and
 `gallery_of_chart_trading`). Not done: the screens have not been driven in a real macOS window, and
 nothing has run against a real Coinbase account. Both are needed before this ships; see the pull
 request descriptions for the checklist.

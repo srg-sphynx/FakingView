@@ -1,5 +1,5 @@
 //@version=6
-// Example script bundled with DegenView. Edit it freely.
+// Example script bundled with FakingView. Edit it freely.
 // Reads an EMA from a longer timeframe with request.security and colours the chart
 // by whether price is above or below it. A timeframe shorter than the chart's falls
 // back to the chart's own.

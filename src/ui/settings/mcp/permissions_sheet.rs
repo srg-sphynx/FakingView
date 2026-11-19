@@ -421,13 +421,13 @@ fn permission_row(
             ui.add_space(6.0);
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = 7.0;
-                // Only a permission that can change DegenView is marked, with a small amber dot:
+                // Only a permission that can change FakingView is marked, with a small amber dot:
                 // the many that only look carry nothing, so the marked ones stand out.
                 if permission.is_mutating() {
                     let (dot, response) = ui.allocate_exact_size(Vec2::splat(7.0), Sense::hover());
                     ui.painter()
                         .circle_filled(dot.center(), 3.0, Tone::Warning.dot());
-                    response.on_hover_text("Can change DegenView");
+                    response.on_hover_text("Can change FakingView");
                 }
                 ui.label(kit::text(
                     permission.title(),
