@@ -58,6 +58,7 @@ fn clear_memory() {
     mexc::clear_catalog();
     alpaca::clear_catalog();
     crate::service::market::kite::clear_catalog();
+    crate::service::market::india::clear_catalogs();
     loader::clear_memory();
 }
 

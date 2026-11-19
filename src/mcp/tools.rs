@@ -140,6 +140,8 @@ pub enum McpSource {
     Dexscreener,
     Alpaca,
     Kite,
+    IndMoney,
+    Groww,
 }
 
 impl McpSource {
@@ -156,6 +158,8 @@ impl McpSource {
             Self::Dexscreener => DataSource::DexScreener,
             Self::Alpaca => DataSource::Alpaca,
             Self::Kite => DataSource::Kite,
+            Self::IndMoney => DataSource::IndMoney,
+            Self::Groww => DataSource::Groww,
         }
     }
 }

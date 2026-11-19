@@ -19,6 +19,15 @@ pub enum ProviderError {
     KiteMissingKey,
     #[error("Your Kite Connect session expired. Sign in again in Settings")]
     KiteSessionExpired,
+    #[error("Add your {} access token in Settings", .0.display_name())]
+    MarketTokenMissing(DataSource),
+    #[error("{} denied market-data access. Renew the token in Settings and check your API plan", .0.display_name())]
+    MarketTokenRefused(DataSource),
+    #[error("{} error: {error}", .source_name.display_name())]
+    MarketRequest {
+        source_name: DataSource,
+        error: http::Error,
+    },
     /// The same for CoinMarketCap, whose failures name it: they are usually its key or plan.
     #[error("CoinMarketCap error: {0}")]
     CoinMarketCap(http::Error),
@@ -70,6 +79,10 @@ impl ProviderError {
                 | Self::Alpaca(http::Error::Status(429))
                 | Self::Kite(http::Error::Status(429))
                 | Self::CoinMarketCap(http::Error::Status(429))
+                | Self::MarketRequest {
+                    error: http::Error::Status(429),
+                    ..
+                }
         )
     }
 }

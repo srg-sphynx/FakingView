@@ -3,7 +3,8 @@
 
 use crate::model::watchlist::quote::{SourceQuote, VolumeKind};
 use crate::service::keychain::api_keys::kite_credentials;
-use crate::service::market::kite::{encode, instrument_tokens};
+use crate::service::market::kite::instrument_tokens;
+use crate::service::market::request::encode;
 use crate::service::net::ws::{Backoff, Frame, Keepalive, Session};
 use serde_json::json;
 use std::collections::HashMap;

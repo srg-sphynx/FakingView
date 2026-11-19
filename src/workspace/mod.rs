@@ -88,6 +88,7 @@ pub enum WorkspaceAction {
     OpenAlpacaSettings,
     /// Open Settings on Kite Connect to create or renew the market-data session.
     OpenKiteSettings,
+    OpenMarketTokenSettings(DataSource),
     /// Open Settings on the Brokers page (the live trading panel).
     OpenBrokerSettings,
     /// Open Settings on the Snapshots page (the camera menu's "Configure Snapshots…").

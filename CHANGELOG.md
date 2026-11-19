@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-beta.2 — 2026-11-19
+
+- Added read-only INDmoney (INDstocks) and Groww market data with secure token setup and a live quote test.
+- Added provider-specific instrument search, INR charts, historical candle paging and live REST watchlist quotes.
+- Added both sources to Pine Studio, Pine symbol requests, watchlist import and MCP market tools.
+
 ## 0.1.0-beta.1 — 2026-11-19
 
 First FakingView public preview, with an independent application identity and personal Kite Connect

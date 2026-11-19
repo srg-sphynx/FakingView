@@ -25,8 +25,10 @@ const RELATED_LIMIT: usize = 6;
 
 /// The markets the picker lists, in the order the providers are asked (and so the order exchanges
 /// that list the same market appear in).
-pub const PROVIDERS: [DataSource; 11] = [
+pub const PROVIDERS: [DataSource; 13] = [
     DataSource::Kite,
+    DataSource::IndMoney,
+    DataSource::Groww,
     DataSource::Binance,
     DataSource::Coinbase,
     DataSource::Okx,
@@ -81,10 +83,10 @@ impl Scope {
     pub fn includes(self, source: DataSource) -> bool {
         match self {
             Self::All | Self::Watchlists => PROVIDERS.contains(&source),
-            Self::Stocks => matches!(source, DataSource::Alpaca | DataSource::Kite),
+            Self::Stocks => source == DataSource::Alpaca || source.is_indian_market(),
             Self::Crypto => {
                 PROVIDERS.contains(&source)
-                    && !matches!(source, DataSource::Alpaca | DataSource::Kite)
+                    && !(source == DataSource::Alpaca || source.is_indian_market())
             }
             Self::Predictions => PREDICTION_PROVIDERS.contains(&source),
             Self::Dashboards => source == DataSource::CoinMarketCap,
@@ -154,7 +156,7 @@ pub fn popular() -> Vec<SearchResult> {
 pub fn market_kind(source: DataSource) -> &'static str {
     match source {
         DataSource::Alpaca => "Stock",
-        DataSource::Kite => "India",
+        DataSource::Kite | DataSource::IndMoney | DataSource::Groww => "India",
         DataSource::Polymarket | DataSource::Kalshi => "Prediction",
         DataSource::CoinMarketCap => "Index",
         _ => "Crypto",
@@ -174,7 +176,7 @@ pub fn trading_kind(source: DataSource) -> &'static str {
         DataSource::DexScreener => "DEX",
         DataSource::CoinGecko => "Aggregate",
         DataSource::Alpaca => "Stock",
-        DataSource::Kite => "India",
+        DataSource::Kite | DataSource::IndMoney | DataSource::Groww => "India",
         _ => "",
     }
 }
@@ -364,7 +366,7 @@ impl Related {
             false
         });
         if !PROVIDERS.contains(&of.source)
-            || matches!(of.source, DataSource::Alpaca | DataSource::Kite)
+            || (of.source == DataSource::Alpaca || of.source.is_indian_market())
         {
             return Some(Vec::new());
         }
@@ -474,7 +476,12 @@ mod tests {
     fn a_scope_offers_only_its_own_venues() {
         assert_eq!(
             Scope::Stocks.venues(),
-            [DataSource::Kite, DataSource::Alpaca]
+            [
+                DataSource::Kite,
+                DataSource::IndMoney,
+                DataSource::Groww,
+                DataSource::Alpaca
+            ]
         );
         assert!(!Scope::Crypto.venues().contains(&DataSource::Alpaca));
         assert_eq!(Scope::All.venues().len(), PROVIDERS.len());
@@ -500,6 +507,8 @@ mod tests {
         }
         for source in [
             DataSource::Kite,
+            DataSource::IndMoney,
+            DataSource::Groww,
             DataSource::Coinbase,
             DataSource::Okx,
             DataSource::Kraken,

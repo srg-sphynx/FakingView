@@ -120,6 +120,9 @@ pub(super) fn show_tab(
                     }
                     WorkspaceAction::OpenAlpacaSettings => AppAction::OpenAlpacaSettings,
                     WorkspaceAction::OpenKiteSettings => AppAction::OpenKiteSettings,
+                    WorkspaceAction::OpenMarketTokenSettings(source) => {
+                        AppAction::OpenMarketTokenSettings(source)
+                    }
                     WorkspaceAction::OpenBrokerSettings => AppAction::OpenBrokerSettings,
                     WorkspaceAction::OpenSnapshotSettings => AppAction::OpenSnapshotSettings,
                     WorkspaceAction::SetAlertState { id, state } => {

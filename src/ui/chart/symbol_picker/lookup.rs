@@ -46,7 +46,15 @@ impl Lookup {
         match source {
             Some(source) if is_listed(source) => Self {
                 query: symbol,
-                venue: Some(source),
+                venue: Some(
+                    chosen
+                        .filter(|provider| {
+                            source == DataSource::Kite
+                                && provider.is_indian_market()
+                                && matches!(prefix.as_str(), "NSE" | "BSE")
+                        })
+                        .unwrap_or(source),
+                ),
                 unsupported: None,
             },
             // Prediction titles have colons ("Fed: cut"), and a watchlist is filtered, not searched.
@@ -218,6 +226,25 @@ mod tests {
     }
 
     #[test]
+    fn indian_exchange_queries_keep_the_selected_market_data_provider() {
+        for (provider, prefix) in [
+            (DataSource::IndMoney, "INDMONEY"),
+            (DataSource::Groww, "GROWW"),
+        ] {
+            let lookup = Lookup::of("nse:infy", Scope::Stocks, Some(provider));
+            assert_eq!(lookup.venue, Some(provider));
+            assert_eq!(lookup.query, "NSE:INFY");
+            let explicit = Lookup::of(
+                &format!("{prefix}:BSE:INFY"),
+                Scope::Stocks,
+                Some(DataSource::Kite),
+            );
+            assert_eq!(explicit.venue, Some(provider));
+            assert_eq!(explicit.query, "BSE:INFY");
+        }
+    }
+
+    #[test]
     fn the_searched_venues_are_the_tabs_or_the_one_chosen() {
         let names = |lookup: &Lookup, scope| -> Vec<&'static str> {
             lookup.searched(scope).into_iter().map(short_name).collect()
@@ -226,6 +253,8 @@ mod tests {
             names(&of("btc", Scope::All), Scope::All),
             [
                 "Kite Connect",
+                "INDmoney",
+                "Groww",
                 "Binance",
                 "Coinbase",
                 "OKX",
@@ -244,7 +273,7 @@ mod tests {
         );
         assert_eq!(
             names(&of("btc", Scope::Stocks), Scope::Stocks),
-            ["Kite Connect", "Alpaca"]
+            ["Kite Connect", "INDmoney", "Groww", "Alpaca"]
         );
     }
 }

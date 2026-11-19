@@ -1363,7 +1363,7 @@ fn a_venue_nothing_serves_is_named_and_the_symbol_searched_everywhere() {
     let shown = texts(&mut rig);
     assert!(
         shown.iter().any(|text| text
-            == "KUCOIN isn't supported. Searched: Kite Connect, Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, DEXScreener, CoinGecko, Alpaca."),
+            == "KUCOIN isn't supported. Searched: Kite Connect, INDmoney, Groww, Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, DEXScreener, CoinGecko, Alpaca."),
         "{shown:?}"
     );
     assert!(
@@ -1380,7 +1380,7 @@ fn a_plain_miss_lists_the_venues_that_were_searched() {
     let shown = texts(&mut rig);
     assert!(
         shown.iter().any(|text| text
-            == "Nothing matches “zzz”. Searched: Kite Connect, Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, DEXScreener, CoinGecko, Alpaca."),
+            == "Nothing matches “zzz”. Searched: Kite Connect, INDmoney, Groww, Binance, Coinbase, OKX, Kraken, Bybit, Gate.io, MEXC, DEXScreener, CoinGecko, Alpaca."),
         "{shown:?}"
     );
     rig.picker.set_venue(Some(DataSource::Coinbase));

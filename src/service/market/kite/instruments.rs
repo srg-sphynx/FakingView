@@ -2,11 +2,9 @@
 
 use super::{BASE_URL, DAY_MS, IST_MS, credentials, request};
 use crate::service::ProviderError;
+use crate::service::market::instrument_csv::Records;
 use std::sync::{Arc, Mutex};
 
-const MAX_COLUMNS: usize = 64;
-const MAX_FIELD_BYTES: usize = 16 * 1024;
-const MAX_RECORD_BYTES: usize = 128 * 1024;
 const MAX_INSTRUMENTS: usize = 1_000_000;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -71,93 +69,16 @@ pub(super) fn token(symbol: &str) -> Result<u32, ProviderError> {
         .ok_or_else(|| ProviderError::other("This instrument is not in Kite Connect's current directory. Use exchange:symbol, for example NSE:INFY."))
 }
 
-/// RFC 4180 records, including escaped quotes, CRLF and embedded newlines. Parsing records as
-/// they arrive avoids a second copy of the entire (large) instrument directory.
-struct Records<'a> {
-    bytes: &'a [u8],
-    offset: usize,
-}
-
-impl<'a> Records<'a> {
-    fn new(body: &'a str) -> Self {
-        Self {
-            bytes: body.trim_start_matches('\u{feff}').as_bytes(),
-            offset: 0,
-        }
-    }
-
-    fn next(&mut self) -> Result<Option<Vec<String>>, ProviderError> {
-        if self.offset >= self.bytes.len() {
-            return Ok(None);
-        }
-        let mut fields = Vec::new();
-        let mut field = Vec::new();
-        let start = self.offset;
-        let mut quoted = false;
-        let mut closed = false;
-        while let Some(&byte) = self.bytes.get(self.offset) {
-            self.offset += 1;
-            if self.offset - start > MAX_RECORD_BYTES || field.len() > MAX_FIELD_BYTES {
-                return Err(invalid_csv());
-            }
-            if quoted {
-                if byte == b'"' {
-                    if self.bytes.get(self.offset) == Some(&b'"') {
-                        self.offset += 1;
-                        field.push(b'"');
-                    } else {
-                        quoted = false;
-                        closed = true;
-                    }
-                } else {
-                    field.push(byte);
-                }
-                continue;
-            }
-            match byte {
-                b'"' if field.is_empty() && !closed => quoted = true,
-                b',' => {
-                    push_field(&mut fields, std::mem::take(&mut field))?;
-                    closed = false;
-                }
-                b'\n' | b'\r' => {
-                    if byte == b'\r' && self.bytes.get(self.offset) == Some(&b'\n') {
-                        self.offset += 1;
-                    }
-                    push_field(&mut fields, field)?;
-                    return Ok(Some(fields));
-                }
-                b'"' => return Err(invalid_csv()),
-                _ if closed => return Err(invalid_csv()),
-                _ => field.push(byte),
-            }
-        }
-        if quoted {
-            return Err(invalid_csv());
-        }
-        push_field(&mut fields, field)?;
-        Ok(Some(fields))
-    }
-}
-
 fn invalid_csv() -> ProviderError {
     ProviderError::data("Kite Connect returned malformed instrument CSV")
-}
-fn text(bytes: Vec<u8>) -> Result<String, ProviderError> {
-    String::from_utf8(bytes).map_err(|_| invalid_csv())
-}
-
-fn push_field(fields: &mut Vec<String>, field: Vec<u8>) -> Result<(), ProviderError> {
-    if fields.len() >= MAX_COLUMNS || field.len() > MAX_FIELD_BYTES {
-        return Err(invalid_csv());
-    }
-    fields.push(text(field)?);
-    Ok(())
 }
 
 fn parse(body: &str) -> Result<Vec<Instrument>, ProviderError> {
     let mut records = Records::new(body);
-    let header = records.next()?.ok_or_else(invalid_csv)?;
+    let header = records
+        .next()
+        .map_err(|_| invalid_csv())?
+        .ok_or_else(invalid_csv)?;
     if header
         .iter()
         .collect::<std::collections::HashSet<_>>()
@@ -178,7 +99,7 @@ fn parse(body: &str) -> Result<Vec<Instrument>, ProviderError> {
     let exchange = column("exchange")?;
     let mut out = Vec::new();
     let mut seen = std::collections::HashSet::new();
-    while let Some(row) = records.next()? {
+    while let Some(row) = records.next().map_err(|_| invalid_csv())? {
         if row.len() == 1 && row[0].is_empty() {
             continue;
         }
@@ -226,6 +147,7 @@ fn parse(body: &str) -> Result<Vec<Instrument>, ProviderError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::service::market::instrument_csv::{MAX_COLUMNS, MAX_FIELD_BYTES};
 
     #[test]
     fn instrument_ids_include_the_exchange_and_csv_quotes_are_respected() {

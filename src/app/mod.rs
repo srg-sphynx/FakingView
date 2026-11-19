@@ -31,9 +31,9 @@ use crate::host::tab::title::TabTitleHost;
 use crate::host::tab::window::Placement;
 use crate::host::update::UpdateHost;
 use crate::lock::lock;
-use crate::model::Timeframe;
 use crate::model::alert::AlertState;
 use crate::model::watchlist::WatchlistInstrument;
+use crate::model::{DataSource, Timeframe};
 use crate::native_bridge;
 use crate::pine_studio::PineStudio;
 use crate::service::alert::macos_notifications::{self, Notifier};
@@ -76,6 +76,7 @@ enum AppAction {
     /// Open Settings on the Alpaca page.
     OpenAlpacaSettings,
     OpenKiteSettings,
+    OpenMarketTokenSettings(DataSource),
     OpenBrokerSettings,
     /// Open Settings on the AI Assistant page.
     OpenAiSettings,

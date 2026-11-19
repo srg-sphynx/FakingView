@@ -4,6 +4,7 @@ pub mod broker_secrets;
 pub(crate) mod cached_secret;
 #[cfg(test)]
 pub(crate) mod gated_backend;
+pub mod market_tokens;
 pub mod mcp_seal;
 pub mod proxy_password;
 pub mod secret_service;

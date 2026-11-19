@@ -61,6 +61,8 @@ pub fn chunk_size(source: DataSource) -> usize {
         DataSource::Binance => 100,
         DataSource::Alpaca => 200,
         DataSource::Kite => 500,
+        DataSource::IndMoney => 100,
+        DataSource::Groww => 50,
         DataSource::CoinGecko => 250,
         DataSource::Coinbase => 20,
         // One call answers every spot market, so a round is one request however many rows.
@@ -117,6 +119,38 @@ impl QuoteProvider for LiveProvider {
                     .map_err(|error| {
                         if error.is_rate_limited() {
                             QuoteFailure::RateLimited
+                        } else {
+                            QuoteFailure::Failed(error.to_string())
+                        }
+                    })
+            }
+            DataSource::IndMoney | DataSource::Groww => {
+                use crate::service::ProviderError;
+                use crate::service::market::india::{GROWW, IND_MONEY, quotes};
+                use crate::service::net::http;
+
+                let provider = if source == DataSource::Groww {
+                    GROWW
+                } else {
+                    IND_MONEY
+                };
+                let symbols = requests
+                    .iter()
+                    .map(|request| request.symbol.clone())
+                    .collect::<Vec<_>>();
+                quotes(provider, &symbols)
+                    .map(Outcome::from_quotes)
+                    .map_err(|error| {
+                        if error.is_rate_limited() {
+                            QuoteFailure::RateLimited
+                        } else if matches!(
+                            error,
+                            ProviderError::MarketRequest {
+                                error: http::Error::Status(400 | 404),
+                                ..
+                            }
+                        ) {
+                            QuoteFailure::Rejected(error.to_string())
                         } else {
                             QuoteFailure::Failed(error.to_string())
                         }

@@ -37,13 +37,13 @@ pub(super) fn symbol_info(symbol: &str, source: DataSource, chart_type: ChartTyp
     SymbolInfo {
         ticker: symbol.to_owned(),
         ticker_id: format!("{}:{}", source.watchlist_slug(), symbol),
-        currency: if source == DataSource::Kite {
+        currency: if source.is_indian_market() {
             "INR"
         } else {
             "USD"
         }
         .to_owned(),
-        kind: if source == DataSource::Kite {
+        kind: if source.is_indian_market() {
             // The source includes equities, indices and derivatives; the exchange id alone
             // cannot establish a contract's instrument type.
             "unknown"

@@ -114,6 +114,18 @@ impl SettingsHost {
         self.open = true;
     }
 
+    /// Opens the selected provider's access-token page.
+    pub fn open_market_token(&mut self, provider: crate::model::DataSource) {
+        use crate::model::DataSource;
+        use crate::ui::settings::window::SettingsSection;
+        self.state.section = match provider {
+            DataSource::IndMoney => SettingsSection::IndMoney,
+            DataSource::Groww => SettingsSection::Groww,
+            _ => return,
+        };
+        self.open = true;
+    }
+
     /// Opens Settings on the Brokers page (the live trading panel's "Open Settings").
     pub fn open_brokers(&mut self) {
         self.state.section = crate::ui::settings::window::SettingsSection::Brokers;

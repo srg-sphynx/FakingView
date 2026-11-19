@@ -17,6 +17,8 @@ pub enum DataSource {
     DexScreener,
     Alpaca,
     Kite,
+    IndMoney,
+    Groww,
     Polymarket,
     Kalshi,
     CoinMarketCap,
@@ -36,6 +38,8 @@ impl DataSource {
             Self::DexScreener => "DEXScreener",
             Self::Alpaca => "Alpaca (IEX)",
             Self::Kite => "Kite Connect (India)",
+            Self::IndMoney => "INDmoney",
+            Self::Groww => "Groww",
             Self::Polymarket => "Polymarket",
             Self::Kalshi => "Kalshi",
             Self::CoinMarketCap => "CoinMarketCap",
@@ -56,6 +60,8 @@ impl DataSource {
             Self::DexScreener => "DEXSCREENER",
             Self::Alpaca => "ALPACA",
             Self::Kite => "KITE",
+            Self::IndMoney => "INDMONEY",
+            Self::Groww => "GROWW",
             Self::Polymarket => "POLYMARKET",
             Self::Kalshi => "KALSHI",
             Self::CoinMarketCap => "CMC",
@@ -64,7 +70,7 @@ impl DataSource {
 
     /// The source a `watchlist_slug` names, in any case.
     pub fn from_watchlist_slug(slug: &str) -> Option<Self> {
-        const ALL: [DataSource; 14] = [
+        const ALL: [DataSource; 16] = [
             DataSource::Binance,
             DataSource::Coinbase,
             DataSource::Okx,
@@ -76,6 +82,8 @@ impl DataSource {
             DataSource::DexScreener,
             DataSource::Alpaca,
             DataSource::Kite,
+            DataSource::IndMoney,
+            DataSource::Groww,
             DataSource::Polymarket,
             DataSource::Kalshi,
             DataSource::CoinMarketCap,
@@ -110,6 +118,11 @@ impl DataSource {
         Self::QUOTE_STREAMS.contains(&self)
     }
 
+    /// Whether this source quotes Indian markets in rupees.
+    pub fn is_indian_market(self) -> bool {
+        matches!(self, Self::Kite | Self::IndMoney | Self::Groww)
+    }
+
     /// Whether this source quotes probabilities in 0…1, charted as lines.
     pub fn is_prediction_market(self) -> bool {
         matches!(self, Self::Polymarket | Self::Kalshi)
@@ -130,6 +143,8 @@ impl DataSource {
                 | Self::DexScreener
                 | Self::Alpaca
                 | Self::Kite
+                | Self::IndMoney
+                | Self::Groww
         )
     }
 
@@ -159,7 +174,9 @@ impl DataSource {
             | Self::Mexc
             | Self::CoinGecko
             | Self::Alpaca
-            | Self::Kite => raw.to_uppercase(),
+            | Self::Kite
+            | Self::IndMoney
+            | Self::Groww => raw.to_uppercase(),
             Self::CoinMarketCap => super::cmc::title(raw).to_owned(),
             _ => raw.to_owned(),
         }
@@ -172,7 +189,7 @@ impl DataSource {
         let upper = symbol.trim().to_uppercase();
         let head = upper.split(['/', '-', ' ', '_']).next().unwrap_or(&upper);
         match self {
-            Self::Kite => upper
+            Self::Kite | Self::IndMoney | Self::Groww => upper
                 .split_once(':')
                 .map_or(upper.as_str(), |(_, symbol)| symbol)
                 .split(" — ")

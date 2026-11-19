@@ -170,6 +170,8 @@ fn source_for_slug(slug: &str) -> Option<DataSource> {
         "DEXSCREENER" => Some(DataSource::DexScreener),
         "ALPACA" => Some(DataSource::Alpaca),
         "KITE" => Some(DataSource::Kite),
+        "INDMONEY" => Some(DataSource::IndMoney),
+        "GROWW" => Some(DataSource::Groww),
         "POLYMARKET" => Some(DataSource::Polymarket),
         "KALSHI" => Some(DataSource::Kalshi),
         "CMC" => Some(DataSource::CoinMarketCap),
