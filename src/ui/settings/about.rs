@@ -119,10 +119,33 @@ pub fn show(ui: &mut Ui, updates: &UpdateHost) -> Outcome {
                         ui.spacing_mut().item_spacing = Vec2::ZERO;
                         header(ui, build);
                         ui.add_space(20.0);
-                        outcome.quit = update_status_card(ui, updates, &mut outcome.channel);
-                        if updates.channel() == Channel::ReleaseCandidate {
-                            ui.add_space(10.0);
-                            channel_warning(ui);
+                        if crate::service::update::check::AUTOMATIC_UPDATES_ENABLED {
+                            outcome.quit = update_status_card(ui, updates, &mut outcome.channel);
+                            if updates.channel() == Channel::ReleaseCandidate {
+                                ui.add_space(10.0);
+                                channel_warning(ui);
+                            }
+                        } else {
+                            group(ui, |ui| {
+                                ui.label(kit::text(
+                                    "Manual updates",
+                                    kit::size::SUBHEADLINE + 1.0,
+                                    kit::MEDIUM,
+                                    theme::text_primary(),
+                                ));
+                                ui.add_space(6.0);
+                                ui.label(kit::text(
+                                    "Download new versions from FakingView releases. Automatic installation is disabled for this beta.",
+                                    kit::size::SUBHEADLINE,
+                                    kit::REGULAR,
+                                    theme::text_secondary(),
+                                ));
+                                ui.add_space(10.0);
+                                ui.hyperlink_to(
+                                    "View releases",
+                                    crate::service::update::check::RELEASES_URL,
+                                );
+                            });
                         }
                         ui.add_space(24.0);
                         group(ui, |ui| {

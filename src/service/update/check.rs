@@ -14,6 +14,8 @@ const PAGE_SIZE: usize = 30;
 const MAX_PAGES: usize = 3;
 /// Where "view release" falls back to when the API reply carries no page URL.
 pub const RELEASES_URL: &str = "https://github.com/srg-sphynx/FakingView/releases";
+/// This distribution uses manual downloads until it has its own reviewed update trust policy.
+pub const AUTOMATIC_UPDATES_ENABLED: bool = false;
 
 /// Which releases the updater offers. A channel also takes everything more stable than itself, so
 /// a Release Candidate user moves on to `0.6.0` rather than staying on `0.6.0-rc.2`.
@@ -191,7 +193,7 @@ pub fn github_headers() -> [(&'static str, &'static str); 3] {
 /// Blocking: up to `MAX_PAGES` GETs. Call it from a worker thread.
 pub fn check(current: &str, channel: Channel) -> UpdateOutcome {
     // Local builds have no configured signing policy for automatic installation.
-    if env!("CARGO_PKG_NAME") == "fakingview" {
+    if !AUTOMATIC_UPDATES_ENABLED {
         return UpdateOutcome::Failed(
             "Automatic installation is disabled for this FakingView build. Download a release from github.com/srg-sphynx/FakingView/releases.".into(),
         );
