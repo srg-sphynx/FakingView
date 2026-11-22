@@ -1068,55 +1068,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be1e0bca6c3637f992fc1cc7cbc52a78c1ef6db076dbf1059c4323d6a2048376"
 
 [[package]]
-name = "fakingview"
-version = "0.1.0"
-dependencies = [
- "axum",
- "block2 0.6.2",
- "degenview-brokers",
- "eframe",
- "egui_extras",
- "flate2",
- "getrandom 0.4.3",
- "hmac",
- "http",
- "hyper",
- "hyper-util",
- "image",
- "libc",
- "objc2 0.6.5",
- "objc2-app-kit 0.3.2",
- "objc2-foundation 0.3.2",
- "objc2-service-management",
- "objc2-user-notifications 0.3.2",
- "oo7",
- "rcgen",
- "rfd",
- "rmcp",
- "rusqlite",
- "rustls-webpki",
- "schemars",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "similar",
- "subtle",
- "tar",
- "thiserror 2.0.21",
- "tokio",
- "tokio-rustls",
- "tokio-util",
- "tower",
- "ttf-parser",
- "tungstenite",
- "ureq",
- "windows-sys 0.61.2",
- "winresource",
- "x11rb 0.14.0",
- "zip",
-]
-
-[[package]]
 name = "degenview-brokers"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1553,6 +1504,55 @@ checksum = "8be9f3dfaaffdae2972880079a491a1a8bb7cbed0b8dd7a347f668b4150a3b93"
 dependencies = [
  "event-listener",
  "pin-project-lite",
+]
+
+[[package]]
+name = "fakingview"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "block2 0.6.2",
+ "degenview-brokers",
+ "eframe",
+ "egui_extras",
+ "flate2",
+ "getrandom 0.4.3",
+ "hmac",
+ "http",
+ "hyper",
+ "hyper-util",
+ "image",
+ "libc",
+ "objc2 0.6.5",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
+ "objc2-service-management",
+ "objc2-user-notifications 0.3.2",
+ "oo7",
+ "rcgen",
+ "rfd",
+ "rmcp",
+ "rusqlite",
+ "rustls-webpki",
+ "schemars",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "similar",
+ "subtle",
+ "tar",
+ "thiserror 2.0.21",
+ "tokio",
+ "tokio-rustls",
+ "tokio-util",
+ "tower",
+ "ttf-parser",
+ "tungstenite",
+ "ureq",
+ "windows-sys 0.61.2",
+ "winresource",
+ "x11rb 0.14.0",
+ "zip",
 ]
 
 [[package]]
@@ -2513,9 +2513,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.39.1"
+version = "0.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14a5f01b87b92705d07b433c06f96cbc764637d81a0bffb5734ce17cf0f9a2b3"
+checksum = "b06e69070b7e12262b0cd90832f0a7396f142a2b330181255562decf9f0c6215"
 dependencies = [
  "cc",
  "pkg-config",
@@ -4110,9 +4110,9 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.41.1"
+version = "0.42.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da9bba6f3506135e120a6586df05be18b48d18896600646a4bec8f993d91a594"
+checksum = "a4edff0039f148731aee2fd80f76dbfeb12d204ab3d1c544838d34e02151049b"
 dependencies = [
  "bitflags 2.13.2",
  "fallible-iterator",
@@ -4688,9 +4688,9 @@ dependencies = [
 
 [[package]]
 name = "sqlite-wasm-rs"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36bd8e29bf08189a005b2df1df99823aa0861cabe9044e5f31ed54ca292ee618"
+checksum = "a6cd504cecbfe7eef649988840f9a6cb768d11085efec138f8e99f160632d867"
 dependencies = [
  "cc",
  "rsqlite-vfs",
