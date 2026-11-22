@@ -98,8 +98,9 @@ fi
 [ -z "$(git status --porcelain)" ] || { echo "error: publish requires a clean working tree, including untracked files" >&2; exit 1; }
 commit=$(git rev-parse HEAD)
 app_asset="FakingView-$tag-macos-arm64.zip"
+dmg_asset="FakingView-$tag-macos-arm64.dmg"
 source_asset="FakingView-$tag-source.tar.gz"
-for asset in "$app_asset" "$source_asset" SHA256SUMS.txt; do
+for asset in "$dmg_asset" "$app_asset" "$source_asset" SHA256SUMS.txt; do
     [ -f "$assets_dir/$asset" ] || { echo "error: missing $assets_dir/$asset" >&2; exit 1; }
 done
 [ -f "$notes_file" ] || { echo "error: missing release notes $notes_file" >&2; exit 1; }
@@ -108,7 +109,7 @@ done
     shasum -a 256 -c SHA256SUMS.txt
 )
 echo "Publish FakingView $tag at $commit to $(git remote get-url origin)"
-echo "Assets: $app_asset, $source_asset, SHA256SUMS.txt"
+echo "Assets: $dmg_asset, $app_asset, $source_asset, SHA256SUMS.txt"
 if [ "$dry_run" = 1 ]; then
     echo "Dry run: no files, commits, tags or remotes changed."
     exit 0
@@ -133,9 +134,9 @@ fi
 if [ "$version" != "${version%%-*}" ]; then
     set -- --prerelease
 else
-    set --
+    set -- --latest
 fi
 gh release create "$tag" \
-    "$assets_dir/$app_asset" "$assets_dir/$source_asset" "$assets_dir/SHA256SUMS.txt" \
+    "$assets_dir/$dmg_asset" "$assets_dir/$app_asset" "$assets_dir/$source_asset" "$assets_dir/SHA256SUMS.txt" \
     --repo "$repository" --target "$commit" --title "FakingView $version" \
     --notes-file "$notes_file" "$@"

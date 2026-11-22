@@ -15,7 +15,7 @@ their actual assets, signing status and verification results in their release no
 | Bundle | `FakingView.app`, ID `local.fakingview.desktop` |
 | Alert helper | `FakingViewAlertAgent.app`, ID `local.fakingview.desktop.alert-agent` |
 | Storage | Bundled SQLite plus local script and workspace files; secure credentials through the OS secret store |
-| Release signing | Current local preview has no Developer ID or notarization; its Mach-O carries a linker-generated ad-hoc signature |
+| Release signing | The macOS arm64 distribution has no Developer ID or notarization. Its Mach-O executables carry linker-generated ad-hoc signatures |
 | Other source targets | Intel macOS, Windows and Linux code/packaging exist; the local verification does not certify those platforms |
 | License | GPL-3.0-only application; third-party fonts and components retain their licenses |
 
@@ -87,7 +87,7 @@ installing the app. See [MCP documentation](mcp-implementation.md).
 
 ## Verification boundaries
 
-The release verification has 7,841 passing tests, 131 ignored optional tests, clean
+The initial beta verification had 7,841 passing tests, 131 ignored optional tests, clean
 Clippy/format checks and reviewed application galleries. The earlier development bundle was
 also launched natively and inspected with REA.
 

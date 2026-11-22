@@ -1,8 +1,7 @@
 # Building FakingView
 
-The published preview targets Apple Silicon Macs running macOS 14 or newer. The source retains
-cross-platform code, but a macOS arm64 archive is the supported release artifact for
-`0.1.0-beta.1`.
+The macOS arm64 DMG targets Apple Silicon Macs running macOS 14 or newer. The source also
+retains cross-platform code.
 
 ## Requirements
 

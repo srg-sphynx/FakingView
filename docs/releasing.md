@@ -1,16 +1,16 @@
 # Publishing a FakingView release
 
-The release home is <https://github.com/srg-sphynx/FakingView/releases>. The first product release
-is `0.1.0-beta.1`, a prerelease. This guide describes the release contract for this project. The
-repository also contains historical release guides; do not assume their signing accounts, hosting
-services or upstream publishing permissions exist for FakingView.
+The release home is <https://github.com/srg-sphynx/FakingView/releases>. This guide describes the
+release contract for FakingView. Follow the [GitHub publishing procedure](github-publishing.md)
+for commands and asset names.
 
 ## What a release must identify
 
 Every release states its version, source commit, supported operating systems/architectures,
 signing/notarization status, installation instructions, checksums, verification performed and
-known limitations. Use a prerelease designation while live Kite acceptance and distribution trust
-remain incomplete. The application version comes from `Cargo.toml`; a bundle's numeric version
+known limitations. Stable releases cover the verified application and installation scope.
+Authenticated market data depends on each provider account's entitlements. The application
+version comes from `Cargo.toml`; a bundle's numeric version
 follows the packaging script's representation of that version.
 
 Do not publish API keys, tokens, account details, signing material, personal workspace databases,
@@ -55,12 +55,9 @@ Settings and the token-entry flow. Include the application license, third-party 
 licenses with the bundle. Corresponding source must be available under GPL-3.0-only at the exact
 release commit.
 
-Archive the `.app` with a method that preserves the macOS bundle. Publish a SHA-256 manifest for
-the downloadable files. A checksum identifies the uploaded bytes; it does not substitute for
-Developer ID signing or notarization. The initial release carries the locally verified arm64 app,
-a corresponding-source archive and checksums. Future release automation can build artifacts from
-an explicitly selected source ref through manual workflow dispatch; each run must retain this
-same verification and provenance contract.
+Package the arm64 app as a DMG and ZIP. Publish a corresponding-source archive and SHA-256
+manifest alongside them. The release workflow builds from the version prepared on `main`
+through manual workflow dispatch.
 
 ## Publish and verify
 

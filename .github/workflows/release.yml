@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Prepared Cargo version, for example 0.1.0-beta.1"
+        description: "Prepared Cargo version, for example 0.1.0"
         required: true
         type: string
 
@@ -109,10 +109,11 @@ jobs:
           file target/FakingView.app/Contents/MacOS/FakingView | grep -F arm64
           mkdir -p dist
           ditto -c -k --sequesterRsrc --keepParent target/FakingView.app "dist/FakingView-${RELEASE_TAG}-macos-arm64.zip"
+          ./tools/make-dmg.sh target/FakingView.app "dist/FakingView-${RELEASE_TAG}-macos-arm64.dmg"
           git archive --format=tar --prefix="FakingView-${RELEASE_VERSION}/" "$RELEASE_SHA" | gzip -n > "dist/FakingView-${RELEASE_TAG}-source.tar.gz"
           (
             cd dist
-            shasum -a 256 "FakingView-${RELEASE_TAG}-macos-arm64.zip" "FakingView-${RELEASE_TAG}-source.tar.gz" > SHA256SUMS.txt
+            shasum -a 256 "FakingView-${RELEASE_TAG}-macos-arm64.dmg" "FakingView-${RELEASE_TAG}-macos-arm64.zip" "FakingView-${RELEASE_TAG}-source.tar.gz" > SHA256SUMS.txt
             shasum -a 256 -c SHA256SUMS.txt
           )
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -169,6 +170,8 @@ jobs:
           else:
               text = f"""FakingView {version} for Apple Silicon Macs running macOS 14 or newer.
 
+          Download the macOS arm64 DMG, open it and drag FakingView into Applications.
+
           This is an unsigned, non-notarized build for manual installation. Background alerts use the foreground fallback. The package contains the app and alert helper; the matching source archive is attached under GPL-3.0-only.
 
           Kite Connect requires your own eligible daily session. Authentication and live-data entitlements must be verified with your account. Watchlist quotes stream over WebSocket; chart candles refresh from the historical API. Kite order entry and INR paper/portfolio accounting are not included.
@@ -186,8 +189,11 @@ jobs:
           if [ "$RELEASE_VERSION" != "${RELEASE_VERSION%%-*}" ]; then
             flags=(--prerelease)
           else
-            flags=()
+            flags=(--latest)
           fi
-          gh release create "$RELEASE_TAG" dist/* \
+          gh release create "$RELEASE_TAG" \
+            "dist/FakingView-${RELEASE_TAG}-macos-arm64.dmg" \
+            "dist/FakingView-${RELEASE_TAG}-macos-arm64.zip" \
+            "dist/FakingView-${RELEASE_TAG}-source.tar.gz" dist/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$RELEASE_SHA" \
             --title "FakingView ${RELEASE_VERSION}" --notes-file release-notes.md "${flags[@]}"

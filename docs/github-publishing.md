@@ -27,8 +27,8 @@ foreground fallback. The release adds no live Kite orders or INR portfolio/paper
 Run this from a checkout with Rust available:
 
 ```sh
-./tools/release.sh prepare 0.1.0-beta.1 --dry-run
-./tools/release.sh prepare 0.1.0-beta.1
+./tools/release.sh prepare 0.1.0 --dry-run
+./tools/release.sh prepare 0.1.0
 ```
 
 Preparation changes only the root package versions in `Cargo.toml` and `Cargo.lock`. It keeps
@@ -52,7 +52,7 @@ The commands below require macOS on Apple Silicon. Set `version` to the already 
 committed package version. `dist/` is a release staging directory; do not commit binaries.
 
 ```sh
-version=0.1.0-beta.1
+version=0.1.0
 tag="v$version"
 release_commit=$(git rev-parse HEAD)
 FAKINGVIEW_BUILD_ID="$release_commit" ./tools/bundle.sh
@@ -61,9 +61,10 @@ cp LICENSE.md "$licenses/GPL-3.0.txt"
 cp THIRD_PARTY_NOTICES.md "$licenses/THIRD_PARTY_NOTICES.md"
 cp docs/getting-started.md target/FakingView.app/Contents/Resources/Getting-Started.md
 mkdir -p dist
+./tools/make-dmg.sh target/FakingView.app "dist/FakingView-$tag-macos-arm64.dmg"
 ditto -c -k --sequesterRsrc --keepParent target/FakingView.app "dist/FakingView-$tag-macos-arm64.zip"
 git archive --format=tar --prefix="FakingView-$version/" "$release_commit" | gzip -n > "dist/FakingView-$tag-source.tar.gz"
-(cd dist && shasum -a 256 "FakingView-$tag-macos-arm64.zip" "FakingView-$tag-source.tar.gz" > SHA256SUMS.txt)
+(cd dist && shasum -a 256 "FakingView-$tag-macos-arm64.dmg" "FakingView-$tag-macos-arm64.zip" "FakingView-$tag-source.tar.gz" > SHA256SUMS.txt)
 ```
 
 Keep release notes in `docs/releases/vVERSION.md`, committed before building. Include the
@@ -78,14 +79,14 @@ application release needs no `admin:*`, `admin:ssh_signing_key` or `delete_repo`
 Never paste a token into a chat, repository file, shell script or release note.
 
 ```sh
-./tools/release.sh publish 0.1.0-beta.1 \
-  --assets-dir dist --notes-file docs/releases/v0.1.0-beta.1.md --dry-run
-./tools/release.sh publish 0.1.0-beta.1 \
-  --assets-dir dist --notes-file docs/releases/v0.1.0-beta.1.md
+./tools/release.sh publish 0.1.0 \
+  --assets-dir dist --notes-file docs/releases/v0.1.0.md --dry-run
+./tools/release.sh publish 0.1.0 \
+  --assets-dir dist --notes-file docs/releases/v0.1.0.md
 ```
 
 Publication requires clean `main`, matching Cargo version, the exact commit already at the
-remote's `main`, all three expected assets and valid checksums. It refuses an existing release
+remote's `main`, the DMG, ZIP, source archive and valid checksums. It refuses an existing release
 or a tag naming a different commit. GitHub creates the release tag at that exact commit; the
 script does not create or push local tags. A hyphenated version is published as a prerelease.
 The interactive prompt may be suppressed with `--yes` when publication is already authorized.
@@ -101,11 +102,11 @@ After preparing, validating and pushing a new version, open
 **Run workflow**, choose `main`, and enter the exact prepared Cargo version. The equivalent CLI:
 
 ```sh
-gh workflow run release.yml --repo srg-sphynx/FakingView --ref main -f version=0.1.0-beta.2
+gh workflow run release.yml --repo srg-sphynx/FakingView --ref main -f version=0.1.0
 ```
 
 The workflow validates one source SHA and its manifest/lock versions, runs formatting, tests
-and all-feature Clippy, builds the app with Rust 1.100.0, and attaches the app, matching source
+and all-feature Clippy, builds the app with Rust 1.100.0, and attaches the DMG, ZIP, matching source
 and checksums. It restores no build cache and requires no Apple signing secrets. Its final
 job alone has `contents: write`. It refuses to overwrite an existing release. There is no tag
 push trigger, so manually publishing the first release does not start a competing release job.

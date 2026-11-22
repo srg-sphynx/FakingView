@@ -9,12 +9,12 @@
 Connect your own Zerodha Kite Connect, INDmoney, or Groww account. Explore price history, follow live quotes,
 write indicators and keep your workspace on your Mac.
 
-[![Release](https://img.shields.io/github/v/release/srg-sphynx/FakingView?include_prereleases&label=preview)](https://github.com/srg-sphynx/FakingView/releases)
+[![Release](https://img.shields.io/github/v/release/srg-sphynx/FakingView)](https://github.com/srg-sphynx/FakingView/releases/latest)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0--only-737b87)](LICENSE.md)
 ![Rust](https://img.shields.io/badge/built_with-Rust-737b87)
 ![macOS](https://img.shields.io/badge/macOS-14%2B_%C2%B7_Apple_Silicon-737b87)
 
-[Download](https://github.com/srg-sphynx/FakingView/releases) ·
+[Download](https://github.com/srg-sphynx/FakingView/releases/latest) ·
 [Getting started](docs/getting-started.md) ·
 [App specs](docs/app-specs.md) ·
 [Report an issue](https://github.com/srg-sphynx/FakingView/issues)
@@ -98,12 +98,12 @@ runtime is an independent implementation with documented compatibility boundarie
 promise of identical behavior for every script. Optional AI assistance sends the requested context
 to the provider you configure with your own key.
 
-## Preview-release boundaries
+## macOS releases
 
-The first FakingView release is **0.1.0-beta.1**, targeting **macOS 14 or newer on Apple Silicon**.
-It is a preview release without an Apple Developer ID signature or notarization. The project
-includes Windows, Linux and Intel macOS code and packaging, but those platforms are not claimed
-as verified by this local build.
+Download the macOS arm64 DMG from [GitHub Releases](https://github.com/srg-sphynx/FakingView/releases)
+for **macOS 14 or newer on Apple Silicon**. Open the image and drag FakingView into Applications.
+The package has no Apple Developer ID signature or notarization. See the [installation guide](docs/getting-started.md)
+for checksum verification and first launch.
 
 For Kite specifically:
 

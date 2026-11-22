@@ -11,8 +11,9 @@ The actionable procedure is [GitHub publishing](../github-publishing.md).
 - Release only a clean, reviewed, validated commit that has reached `main`.
 - Initial independent version: `0.1.0-beta.1`. A beta is a GitHub prerelease. Never reuse or move a
   published version/tag; publish a new version for corrections.
-- Current artifact: `FakingView-vVERSION-macos-arm64.zip`, containing `FakingView.app` and its
-  alert helper. The app targets macOS 14 or newer on Apple Silicon.
+- Current installer: `FakingView-vVERSION-macos-arm64.dmg`, containing `FakingView.app` and an
+  Applications shortcut. Also attach the compatible `FakingView-vVERSION-macos-arm64.zip`.
+  Both packages contain the app and its alert helper for macOS 14 or newer on Apple Silicon.
 - Also attach `FakingView-vVERSION-source.tar.gz` and `SHA256SUMS.txt`. Corresponding source,
   GPL text, original copyright notices, bundled-font licenses and third-party notices accompany
   distribution.

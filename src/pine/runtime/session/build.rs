@@ -14,6 +14,7 @@ use crate::pine::runtime::support::{LibraryLinkage, SecurityDataProvider};
 use crate::pine::runtime::types::RuntimeFunction;
 use crate::pine::strategy::broker::Broker;
 use crate::pine::syntax::ast::{Expression, Statement};
+use crate::pine::syntax::scopes::ShadowNames;
 
 impl Session {
     #[allow(clippy::too_many_arguments)]
@@ -28,6 +29,8 @@ impl Session {
     ) -> Self {
         let mut program = program;
         crate::pine::runtime::call_binding::bind(&mut program);
+        let mut shadow_names = ShadowNames::default();
+        mark_shadowing(&mut program, &mut shadow_names);
         let supplied_mintick = mintick.filter(|m| *m > 0.0 && m.is_finite());
         let drawing_limits = drawings::DrawingLimits {
             max_lines: program.declaration.max_lines_count,
@@ -43,6 +46,8 @@ impl Session {
         let mut types = FastMap::default();
         let mut enums = FastMap::default();
         let linkage = LibraryLinkage::new(&program);
+        // A block's names are its own, and no function sees them.
+        let globals = crate::pine::syntax::scopes::top_level_declarations(&program.statements);
         for statement in &program.statements {
             match statement {
                 Statement::TypeDeclaration { name, fields, .. } => {
@@ -57,13 +62,14 @@ impl Session {
                     body,
                     ..
                 } => {
-                    let function = RuntimeFunction::new(
+                    let mut function = RuntimeFunction::new(
                         parameters
                             .iter()
                             .map(|p| linkage.canonical(p, "", &HashSet::new()))
                             .collect(),
                         body.clone(),
                     );
+                    function.mark_globals(&globals);
                     callables.push(function.clone());
                     if let Some(previous) = functions.insert(name.clone(), function.clone()) {
                         let known: &mut Vec<RuntimeFunction> =
@@ -105,7 +111,7 @@ impl Session {
         let history_builtins =
             history_builtin_names(&program.statements, &linkage, &shadowing_builtins);
         let security_slices = security_slice::build(&program.statements);
-        let tracks_chart_bars = requests_security(&program);
+        let keeps_series_bars = replays_chart_bars(&program);
         let mut inputs = inputs;
         for input in &program.input_schema.inputs {
             inputs
@@ -169,10 +175,13 @@ impl Session {
             varip_fields,
             last_open_time: None,
             security_globals: None,
+            call_frames: Vec::new(),
             security_slices,
             theme: crate::pine::compiler::program::ChartTheme::DARK,
             security_depth: 0,
             shadowing_builtins,
+            shadow_names: shadow_names.into_names(),
+            shadow_stack: Vec::new(),
             history_builtins,
             #[cfg(any(test, feature = "corpus"))]
             ignore_routes: false,
@@ -188,7 +197,7 @@ impl Session {
             footprints: Default::default(),
             series_bars: Vec::new(),
             replay_globals: None,
-            tracks_chart_bars,
+            keeps_series_bars,
             bar_seconds: 0.0,
             chart_bar_seconds: None,
             alert_mode: false,
@@ -221,6 +230,21 @@ impl Session {
             // The first bar executes as bar 0.
             bar_index: -1,
             ..RuntimeState::default()
+        }
+    }
+}
+
+/// Flags the declarations of the program and of the libraries it imports that hide an outer name
+/// (`Declaration::shadows`), so that running a block saves only those.
+fn mark_shadowing(program: &mut CompiledProgram, names: &mut ShadowNames) {
+    crate::pine::syntax::scopes::mark_shadowing(
+        &mut program.statements,
+        &crate::pine::compiler::symbol_catalog::is_variable,
+        names,
+    );
+    for import in &mut program.imports {
+        if let Some(library) = &mut import.library {
+            mark_shadowing(library, names);
         }
     }
 }
@@ -314,8 +338,10 @@ fn history_builtin_names(
 }
 
 /// Whether the script, or a library it imports, calls `request.security` anywhere (in a function
-/// body or a block too). Read off the parsed calls, so the way the call is spelled cannot hide it.
-fn requests_security(program: &CompiledProgram) -> bool {
+/// body or a block too), so that a call site which skipped a chart bar has to replay it
+/// (`replay_skipped_bars`). Read off the parsed calls, so the way the call is spelled cannot hide
+/// it. `request.security_lower_tf` is not counted: it does not replay skipped chart bars.
+fn replays_chart_bars(program: &CompiledProgram) -> bool {
     let mut found = false;
     crate::pine::syntax::traversal::for_each_call(&program.statements, &mut |name, _| {
         found |= name == "request.security";
@@ -324,7 +350,7 @@ fn requests_security(program: &CompiledProgram) -> bool {
         || program
             .imports
             .iter()
-            .any(|import| import.library.as_deref().is_some_and(requests_security))
+            .any(|import| import.library.as_deref().is_some_and(replays_chart_bars))
 }
 
 #[cfg(test)]
@@ -337,7 +363,7 @@ mod request_detection_tests {
         let source = format!("//@version=6\nindicator(\"T\")\n{body}\n");
         let program = compiler::compile(&source, Limits::default(), &NoLibraries);
         assert!(program.is_valid(), "{:?}", program.diagnostics);
-        requests_security(&program)
+        replays_chart_bars(&program)
     }
 
     #[test]

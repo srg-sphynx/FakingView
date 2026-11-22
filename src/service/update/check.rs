@@ -646,6 +646,15 @@ mod tests {
     }
 
     #[test]
+    fn stable_release_is_newer_than_the_fakingview_betas() {
+        let releases = [reply("v0.1.0"), reply("v0.1.0-beta.2")];
+        for beta in ["0.1.0-beta.1", "0.1.0-beta.2"] {
+            let release = available(eval(&releases, beta, Channel::of_version(beta)));
+            assert_eq!(release.version, "0.1.0");
+        }
+    }
+
+    #[test]
     fn drafts_are_ignored_and_stable_never_sees_a_prerelease() {
         let draft = r#"{"tag_name":"v9.0.0","draft":true}"#;
         assert_eq!(one(draft, "0.1.0"), UpdateOutcome::UpToDate);
@@ -781,6 +790,7 @@ mod tests {
         for required in [
             "runs-on: macos-15",
             r#"test "$(uname -m)" = arm64"#,
+            "FakingView-${RELEASE_TAG}-macos-arm64.dmg",
             "FakingView-${RELEASE_TAG}-macos-arm64.zip",
             "FakingView-${RELEASE_TAG}-source.tar.gz",
             "SHA256SUMS.txt",
@@ -791,6 +801,7 @@ mod tests {
         }
         let publisher = include_str!("../../../tools/release.sh");
         for required in [
+            "FakingView-$tag-macos-arm64.dmg",
             "FakingView-$tag-macos-arm64.zip",
             "FakingView-$tag-source.tar.gz",
             "SHA256SUMS.txt",
