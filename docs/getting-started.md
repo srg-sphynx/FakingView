@@ -11,15 +11,16 @@ No Rust toolchain is needed to use a downloaded `.app`.
 
 1. Visit the [FakingView releases page](https://github.com/srg-sphynx/FakingView/releases).
 2. Read the release's platform, signing status and known limitations.
-3. Download the macOS arm64 archive and its published checksums. Verify the archive's SHA-256
+3. Download the macOS arm64 DMG and its published checksums. Verify the disk image's SHA-256
    against the release before opening it:
 
    ```sh
-   shasum -a 256 /path/to/the-downloaded-archive.zip
+   shasum -a 256 /path/to/FakingView-v0.1.0-macos-arm64.dmg
    ```
 
-4. Extract the archive and move `FakingView.app` to your Applications folder.
-5. Open the app. This preview has no Developer ID signature or notarization, so macOS can present
+4. Open the DMG, drag `FakingView.app` into Applications, then eject the disk image. For ZIP
+   downloads, extract the archive and move the app into Applications.
+5. Open the app. This build has no Developer ID signature or notarization, so macOS can present
    a security notice. Use macOS's normal Privacy & Security review only after checking the source
    and checksum. No command to disable Gatekeeper or remove security protections is required by
    this guide.
@@ -180,7 +181,7 @@ an update. Automatic in-app replacement is disabled.
 | A quote is stale | Check exchange hours, the quote timestamp, network and session validity; an old close is not replaced with a fabricated new trade |
 | A market is unavailable in paper trading or portfolios | INR settlement and contract specifications are not implemented in those account paths; Kite is market data only |
 | API credentials disappear after quit | Check whether Keychain refused storage; the app reports a session-only connection when it cannot persist |
-| Background alerts do not run after quit | The unsigned preview uses foreground evaluation; background Login Items need the documented Apple signing setup |
+| Background alerts do not run after quit | The macOS release uses foreground evaluation. Background Login Items require the documented Apple signing setup |
 
 If you need help, [open an issue](https://github.com/srg-sphynx/FakingView/issues) with the app version,
 macOS version, architecture, provider, timeframe, exact error and reproduction steps. Mask account

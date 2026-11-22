@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0
+
+- First stable FakingView release for Apple Silicon Macs on macOS 14 or newer.
+- Added a drag-to-Applications DMG alongside the ZIP, corresponding source and SHA-256 checksums.
+- Includes read-only market data for Kite Connect, INDmoney and Groww.
+- Backported DegenView fixes for Pine variable scoping, higher-timeframe requests and alerts.
+- Improved live updates for charts built from smaller candles and precision for prices below 1.
+
 ## 0.1.0-beta.2 — 2026-11-19
 
 - Added read-only INDmoney (INDstocks) and Groww market data with secure token setup and a live quote test.

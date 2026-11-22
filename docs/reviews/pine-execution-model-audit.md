@@ -211,7 +211,7 @@ plot(hlcc4[1] == hlcc4[1] ? 1 : 0)   // 0 (na == na is false)
 ```
 
 **6. Block locals keep stale values** (`session.rs:1480-1520`). Locals are not removed after their block;
-`shadowed_by` saves only names that already exist, and the flat `variables` map keeps the stale value, which
+`Session::shadow` saves only names that already exist, and the flat `variables` map keeps the stale value, which
 `commit_histories` pushes every bar. `v[1]` happens to match TradingView; `v[2]` and further differ. Two blocks
 that declare the same name share one history.
 
@@ -221,8 +221,9 @@ if bar_index % 3 == 0
     plot(v[2])      // TV: close from 6 bars ago. Ours: from 3 bars ago.
 ```
 
-**7. Function block locals push `na` on skipped bars** (`session.rs:2848, 2899-2921`). Locals are removed at
-call start, so a local from a skipped `if` reads `Na`, and `invoke_with` pushes that into its history.
+**7. Function block locals push `na` on skipped bars** (`session.rs:2848, 2899-2921`). A local from a skipped
+`if` has no value at the end of the call (or, when an outer variable has its name, that variable's), and
+`invoke_with` pushes that into its history.
 TradingView keeps the last committed value, so `t[1]` is the close of the previous bar the block ran on; ours
 is `na`.
 
@@ -369,6 +370,13 @@ runs over the whole history, so `barstate.isfirst` and `var` initialisation are 
 Deferred, each because it changes the history model, needs a TradingView comparison, or is large:
 
 - Local-scope buffers (6, 7, 8, 21): a change of `commit_histories` and `eval_history`; bench-sensitive.
+- The runtime's three save/restore scoping patches (`invoke_with`'s `saved`, `Shadowed` in
+  `run_block`, `uncover_caller_globals`/`cover_caller_globals`; the block shadowing now saves a name where
+  its flagged declaration runs, after the initializer, and restores it when that execution of the
+  block ends) should move onto `syntax::scopes`
+  (which resolves every variable to a `Global`, `Local` or `Parameter` binding once, for static
+  analysis): for example alpha-renaming the locals that hide a global at build time, so the flat
+  variable table needs no restoring. Do that, not a fourth patch.
 - A broker that survives rolled-back ticks and real `calc_on_order_fills` re-execution (14, 15).
 - `process_orders_on_close` for conditional orders (16); trailing stops (27, beyond the warning).
 - The `na`-window rule (23) and `ta.atr` previous close (9): compare with TradingView output first.
